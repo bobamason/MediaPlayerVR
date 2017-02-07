@@ -49,19 +49,23 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     protected Vector2 texOffset = new Vector2();
     protected VideoMode videoMode;
     protected float aspectRatio = 1f;
-    protected float targetAspectRatio = 1f;
+    //    protected float targetAspectRatio = 1f;
     protected float modelSize = 10f;
     protected Context context;
+    private int width;
+    private int height;
 
-    public VrVideoPlayer(Context context) {
-        this(context, VideoMode.Mono);
+    public VrVideoPlayer(Context context, Uri uri, int width, int height) {
+        this(context, uri, width, height, VideoMode.Mono);
     }
 
-    public VrVideoPlayer(Context context, VideoMode videoMode) {
+    public VrVideoPlayer(Context context, Uri uri, int width, int height, VideoMode videoMode) {
         this.context = context;
+        this.width = width;
+        this.height = height;
         shader = new VideoShader();
         final ModelBuilder modelBuilder = new ModelBuilder();
-        final Model rect = ModelGenerator.createRectScreen(modelBuilder, 4f, 0.5f);
+        final Model rect = ModelGenerator.createRectScreen(modelBuilder, 1f, 0.5f);
         disposables.add(rect);
         rectModelInstance = new ModelInstance(rect);
         final int divisionsU = 64;
@@ -75,6 +79,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         setupRenderTexture();
         initializeMediaPlayer();
         setVideoMode(videoMode);
+        play(uri);
     }
 
     private void initializeMediaPlayer() {
@@ -98,28 +103,29 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     protected void updateAspectRatio() {
         if (!prepared) return;
-        float width;
-        if (isHorizontalSplit && isStereoscopic)
-            width = getVideoWidth() / 2f;
-        else
-            width = getVideoWidth();
-        float height;
-        if (!isHorizontalSplit && isStereoscopic)
-            height = getVideoHeight() / 2f;
-        else
-            height = getVideoHeight();
-        aspectRatio = width / height;
-        if (aspectRatio <= targetAspectRatio) {
-            texScale.set(1f, aspectRatio / targetAspectRatio);
-            texOffset.set(0f, (targetAspectRatio - aspectRatio / targetAspectRatio) * 0.5f);
+        float w;
+        float h;
+        if (isStereoscopic) {
+            if (isHorizontalSplit) {
+                w = width / 2f;
+                h = height;
+            } else {
+                w = width;
+                h = height / 2f;
+            }
         } else {
-            final float aspectRatioInv = targetAspectRatio / aspectRatio;
-            texScale.set(aspectRatioInv, 1f);
-            texOffset.set((targetAspectRatio - aspectRatioInv) * 0.5f, 0f);
+            w = width;
+            h = height;
         }
-        // TODO: 2/6/2017 remove 
-        texScale.set(1f, 1f);
-        texOffset.set(0f, 0f);
+        aspectRatio = w / h;
+
+        if (use180Sphere()) {
+            texScale.set(1f, aspectRatio);
+            texOffset.set(0f, (1f - aspectRatio) * 0.5f);
+        } else {
+            texScale.set(1f, 1f);
+            texOffset.set(0f, 0f);
+        }
     }
 
     public void update() {
@@ -211,40 +217,35 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     protected void mapDistortModel(int eyeType) {
-        modelInstance.transform.idt().scale(1f / texScale.x * modelSize, 1f / texScale.y * modelSize, 1f);
+        if (aspectRatio <= 1f) {
+            modelInstance.transform.idt().scale(modelSize, aspectRatio * modelSize, modelSize);
+        } else {
+            modelInstance.transform.idt().scale(modelSize / aspectRatio, modelSize, modelSize);
+        }
         if (isStereoscopic) {
+            if (isHorizontalSplit) {
+                shader.setTextureScale(0.5f, 1f);
+            } else {
+                shader.setTextureScale(1f, 0.5f);
+            }
             switch (eyeType) {
                 case Eye.Type.LEFT:
-                    if (isHorizontalSplit) {
-                        shader.setTextureScale(0.5f, 1f);
-                        shader.setTextureOffset(texOffset.x, texOffset.y);
-                    } else {
-                        shader.setTextureScale(1f, 0.5f);
-                        shader.setTextureOffset(texOffset.x, texOffset.y);
-                    }
+                    shader.setTextureOffset(0f, 0f);
                     break;
                 case Eye.Type.RIGHT:
                     if (isHorizontalSplit) {
-                        shader.setTextureScale(0.5f, 1f);
-                        shader.setTextureOffset(texOffset.x + 0.5f, texOffset.y);
+                        shader.setTextureOffset(0.5f, 0f);
                     } else {
-                        shader.setTextureScale(1f, 0.5f);
-                        shader.setTextureOffset(texOffset.x, texOffset.y + 0.5f);
+                        shader.setTextureOffset(0f, 0.5f);
                     }
                     break;
                 default:
-                    if (isHorizontalSplit) {
-                        shader.setTextureScale(0.5f, 1f);
-                        shader.setTextureOffset(texOffset.x, texOffset.y);
-                    } else {
-                        shader.setTextureScale(1f, 0.5f);
-                        shader.setTextureOffset(texOffset.x, texOffset.y);
-                    }
+                    shader.setTextureOffset(0f, 0f);
                     break;
             }
         } else {
             shader.setTextureScale(1f, 1f);
-            shader.setTextureOffset(texOffset.x, texOffset.y);
+            shader.setTextureOffset(0f, 0f);
         }
     }
 
@@ -304,9 +305,13 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.errorListener = listener;
     }
 
-    public abstract int getVideoWidth();
+    public float getWidth() {
+        return width;
+    }
 
-    public abstract int getVideoHeight();
+    public float getHeight() {
+        return height;
+    }
 
     public abstract boolean isPlaying();
 
@@ -344,31 +349,26 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         return videoMode == VideoMode.Mono || videoMode == VideoMode.LR3D || videoMode == VideoMode.TB3D;
     }
 
+    public boolean use180Sphere() {
+        return videoMode == VideoMode.Mono180 || videoMode == VideoMode.LR180 || videoMode == VideoMode.TB180;
+    }
+
+    public boolean use360Sphere() {
+        return videoMode == VideoMode.Mono360 || videoMode == VideoMode.LR360 || videoMode == VideoMode.TB360;
+    }
+
     public VideoMode getVideoMode() {
         return videoMode;
     }
 
     public void setVideoMode(VideoMode videoMode) {
         this.videoMode = videoMode;
-        switch (videoMode) {
-            case Mono:
-            case LR3D:
-            case TB3D:
-                modelInstance = rectModelInstance;
-                targetAspectRatio = 1f;
-                break;
-            case Mono180:
-            case LR180:
-            case TB180:
-                modelInstance = halfSphereModelInstance;
-                targetAspectRatio = 1f;
-                break;
-            case Mono360:
-            case LR360:
-            case TB360:
-                modelInstance = sphereModelInstance;
-                targetAspectRatio = 2f;
-                break;
+        if (useFlatRectangle()) {
+            modelInstance = rectModelInstance;
+        } else if (use180Sphere()) {
+            modelInstance = halfSphereModelInstance;
+        } else {
+            modelInstance = sphereModelInstance;
         }
         switch (videoMode) {
             case Mono:

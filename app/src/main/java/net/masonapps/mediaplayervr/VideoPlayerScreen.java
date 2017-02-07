@@ -2,7 +2,6 @@ package net.masonapps.mediaplayervr;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.Uri;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
@@ -13,19 +12,18 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.google.vr.sdk.controller.Controller;
@@ -37,7 +35,6 @@ import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
-import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
@@ -50,15 +47,15 @@ import java.util.Locale;
  * Created by Bob on 12/24/2016.
  */
 
-public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControllerInputListener, VrVideoPlayer.CompletionListener, VrVideoPlayer.ErrorListener {
+public class VideoPlayerScreen extends MediaPlayerScreen implements DaydreamControllerInputListener, VrVideoPlayer.CompletionListener, VrVideoPlayer.ErrorListener {
 
     public static final Quaternion tmpQ = new Quaternion();
-    public static final float DEFAULT_Z = 0f;
     public static final int PADDING = 6;
     private static final Vector3 tmpV = new Vector3();
     private static ObjectMap<String, VideoMode> nameModeMap = new ObjectMap<>();
     private static ObjectMap<VideoMode, String> modeNameMap = new ObjectMap<>();
     private static Array<String> modes = new Array<>();
+
     static {
         modes.add("2D");
         modes.add("3D L/R");
@@ -97,19 +94,15 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     private final VideoDetails videoDetails;
-    private final Skin skin;
-//    private final ImageButton backButton;
+    //    private final ImageButton backButton;
     private Context context;
-    private Uri uri;
     private VrVideoPlayer videoPlayer;
-    private Ray ray = new Ray();
     private boolean controllerTouched = false;
     private float currentX = 0f;
     private float lastX = 0f;
     private float deltaX = 0f;
     private ModelBuilder modelBuilder;
     private boolean isButtonClicked = false;
-    private float z = DEFAULT_Z;
     private VirtualStage stage;
     private Table tableMain;
     private Table tableVideoType;
@@ -124,10 +117,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
-        this.uri = videoDetails.uri;
-        skin = ((MediaPlayerGame) game).getSkin();
-        videoPlayer = new VrVideoPlayerExo(context, VideoMode.LR180);
-        videoPlayer.play(uri);
+        videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
         setBackgroundColor(Color.BLACK);
@@ -137,44 +127,41 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 640, 640);
         stage.set3DTransform(new Vector3(0, 0, -2.5f), getVrCamera().position);
 
-//        final Table table = new Table(skin);
-//        stage.addActor(table);
+        final ImageButton backButton = new ImageButton(skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.LIGHT_GRAY));
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                backButtonClicked();
+            }
+        });
+        stage.addActor(backButton);
+        backButton.setPosition(0, stage.getHeight(), Align.topLeft);
 
-//        final Table header = new Table(skin);
-//        table.add(header).pad(PADDING).expandX().fillX();
-
-//        backButton = new ImageButton(skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.LIGHT_GRAY));
-//        backButton.addListener(new ClickListener() {
-//            @Override
-//            public void clicked(InputEvent event, float x, float y) {
-//                onBackButtonPressed();
-//            }
-//        });
-//        header.add(backButton).left().expandX();
-//
-//        final ImageButton closeButton = new ImageButton(skin.newDrawable(Icons.ic_cancel_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_cancel_white_48dp, Color.LIGHT_GRAY));
-//        backButton.addListener(new ClickListener() {
-//            @Override
-//            public void clicked(InputEvent event, float x, float y) {
-//                setUiVisible(false);
-//            }
-//        });
-//        header.add(closeButton).right().expandX();
-
-//        final WidgetGroup group = new WidgetGroup();
-//        table.add(group).padLeft(PADDING).padRight(PADDING).padBottom(PADDING).expand().fill();
+        final ImageButton closeButton = new ImageButton(skin.newDrawable(Icons.ic_cancel_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_cancel_white_48dp, Color.LIGHT_GRAY));
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                setUiVisible(false);
+            }
+        });
+        stage.addActor(closeButton);
+        closeButton.setPosition(stage.getWidth(), stage.getHeight(), Align.topRight);
 
         tableMain = new Table(skin);
+        tableMain.setBackground(Icons.WINDOW);
+        tableMain.padTop(backButton.getHeight());
         tableMain.setFillParent(true);
         tableMain.center();
         stage.addActor(tableMain);
 
         tableVideoType = new Table(skin);
+        tableVideoType.setBackground(Icons.WINDOW);
+        tableVideoType.padTop(backButton.getHeight());
         tableVideoType.setFillParent(true);
         tableVideoType.center();
         stage.addActor(tableVideoType);
         tableVideoType.setVisible(false);
-        
+
         setupUI();
     }
 
@@ -202,7 +189,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         });
         tableMain.add(playButton).pad(PADDING);
 
-        slider = new Slider(0f, 1f, 100000f, false, skin);
+        slider = new Slider(0f, 1f, 0.001f, false, skin);
         slider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -256,7 +243,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void resume() {
         if (!videoPlayer.isPrepared()) {
-            videoPlayer.play(uri);
+            videoPlayer.play(videoDetails.uri);
         } else {
             videoPlayer.resume();
         }
@@ -297,26 +284,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             if (duration != 0)
                 slider.setValue((float) videoPlayer.getCurrentPosition() / duration);
         }
-        if (videoPlayer != null) {
-            videoPlayer.update();
-            getVrCamera().position.set(0, 0, z);
-//            final MediaPlayer player = videoPlayer.getPlayer();
-//            if (player != null && player.getCurrentPosition() > player.getDuration() - 500)
-//                player.pause();
-        }
-    }
-
-    @Override
-    public void onCardboardTrigger() {
-        super.onCardboardTrigger();
-    }
-
-    @Override
-    public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
-        super.onDaydreamControllerUpdate(controller, connectionState);
-        if (controllerConnected) {
-            ray.set(GdxVr.input.getInputRay());
-        }
+        videoPlayer.update();
     }
 
     @SuppressLint("MissingSuperCall")
@@ -372,13 +340,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 break;
             case DaydreamButtonEvent.BUTTON_APP:
                 if (event.action == DaydreamButtonEvent.ACTION_UP) {
-                    z = DEFAULT_Z;
-                    if(stage.isVisible()){
-                        if(tableVideoType.isVisible()){
-                            tableVideoType.setVisible(false);
-                            tableMain.setVisible(true);
-                        }
-                    }
+                    backButtonClicked();
                 }
                 break;
         }
@@ -397,17 +359,17 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 currentX = controller.touch.x;
                 deltaX += currentX - lastX;
 //                    Log.d(VideoPlayerScreen.class.getSimpleName(), "deltaX = " + deltaX);
-                    if (videoPlayer.isPlaying() && !stage.isVisible()) {
+                if (videoPlayer.isPlaying() && !stage.isVisible()) {
 //                        videoPlayer.pause();
-                        final long currentPosition = videoPlayer.getCurrentPosition();
-                        final long duration = videoPlayer.getDuration();
-                        videoPlayer.seekTo(MathUtils.clamp(startPosition + (int) (deltaX * 20000f), 10, duration - 1000));
+                    final long currentPosition = videoPlayer.getCurrentPosition();
+                    final long duration = videoPlayer.getDuration();
+                    videoPlayer.seekTo(MathUtils.clamp(startPosition + (int) (deltaX * 20000f), 10, duration - 1000));
 //                        stage.setVisible(true);
 //                        timeLabel.setText(getTimeLabelString(currentPosition, duration));
 //                        videoPlayer.resume();
-                    } else {
+                } else {
 //                        z = MathUtils.clamp(z + deltaX * 0.02f, -5f, 5f);
-                    }
+                }
                 lastX = currentX;
             } else if (event.action == DaydreamTouchEvent.ACTION_UP) {
                 deltaX = 0;
@@ -427,11 +389,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 (duration / 1000) % 60);
     }
 
-    private void onBackButtonPressed() {
-        if (tableVideoType.isVisible()) {
-            tableVideoType.setVisible(false);
-            tableMain.setVisible(true);
-//            backButton.setVisible(false);
+    private void backButtonClicked() {
+        if (stage.isVisible()) {
+            if (tableVideoType.isVisible()) {
+                tableVideoType.setVisible(false);
+                tableMain.setVisible(true);
+            } else if (tableMain.isVisible()) {
+                mediaPlayerGame.goToSelectionScreen();
+            }
         }
     }
 

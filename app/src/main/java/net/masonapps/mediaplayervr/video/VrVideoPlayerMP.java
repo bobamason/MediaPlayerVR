@@ -17,12 +17,12 @@ public class VrVideoPlayerMP extends VrVideoPlayer implements MediaPlayer.OnErro
     public static final String TAG = VrVideoPlayerMP.class.getSimpleName();
     private MediaPlayer player;
 
-    public VrVideoPlayerMP(Context context) {
-        super(context);
+    public VrVideoPlayerMP(Context context, Uri uri, int width, int height) {
+        super(context, uri, width, height);
     }
 
-    public VrVideoPlayerMP(Context context, VideoMode videoMode) {
-        super(context, videoMode);
+    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, VideoMode videoMode) {
+        super(context, uri, width, height, videoMode);
     }
 
     @Override
@@ -105,22 +105,6 @@ public class VrVideoPlayerMP extends VrVideoPlayer implements MediaPlayer.OnErro
             player.release();
         }
         super.dispose();
-    }
-
-    @Override
-    public int getVideoWidth() {
-        if (!prepared) {
-            throw new IllegalStateException("Can't get width when video is not yet buffered!");
-        }
-        return player.getVideoWidth();
-    }
-
-    @Override
-    public int getVideoHeight() {
-        if (!prepared) {
-            throw new IllegalStateException("Can't get height when video is not yet buffered!");
-        }
-        return player.getVideoHeight();
     }
 
     @Override

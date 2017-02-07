@@ -24,4 +24,5 @@ public class Icons {
     public static final String ic_volume_down_white_48dp = "ic_volume_down_white_48dp";
     public static final String ic_volume_off_white_48dp = "ic_volume_off_white_48dp";
     public static final String ic_volume_up_white_48dp = "ic_volume_up_white_48dp";
+    public static final String WINDOW = "window";
 }

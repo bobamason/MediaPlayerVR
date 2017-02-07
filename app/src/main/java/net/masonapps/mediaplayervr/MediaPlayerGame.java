@@ -42,6 +42,8 @@ public class MediaPlayerGame extends VrGame {
     private boolean loading;
     private ModelBatch phongModelBatch;
     private Vector3 worldOffset = new Vector3(0, -1.2f, 0);
+    private MediaSelectionScreen mediaSelectionScreen;
+    private LoadingScreen loadingScreen;
 
     public MediaPlayerGame(Context context) {
         super();
@@ -51,7 +53,8 @@ public class MediaPlayerGame extends VrGame {
     @Override
     public void create() {
         super.create();
-        setScreen(new LoadingScreen(this));
+        loadingScreen = new LoadingScreen(this);
+        setScreen(loadingScreen);
         final PointLight light = new PointLight();
         light.setPosition(0, 1, 0);
         assets = new AssetManager();
@@ -105,7 +108,13 @@ public class MediaPlayerGame extends VrGame {
     }
 
     public void goToSelectionScreen() {
-        setScreen(new MediaSelectionScreen(context, this));
+        if (mediaSelectionScreen == null)
+            mediaSelectionScreen = new MediaSelectionScreen(context, this);
+        if (getScreen() instanceof VideoPlayerScreen) {
+            VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
+            setScreen(mediaSelectionScreen);
+            videoPlayerScreen.dispose();
+        }
     }
 
     @Override

@@ -19,18 +19,18 @@ import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.Eye;
 
 import net.masonapps.mediaplayervr.MainActivity;
+import net.masonapps.mediaplayervr.MediaPlayerScreen;
 import net.masonapps.mediaplayervr.media.SongDetails;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
-import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 
 import java.io.IOException;
 
 /**
  * Created by Bob on 5/5/2016.
  */
-public abstract class MusicVisualizerScreen extends VrWorldScreen implements Visualizer.OnDataCaptureListener {
+public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements Visualizer.OnDataCaptureListener {
 
     private static final String TAG = MusicVisualizerScreen.class.getSimpleName();
     private static final float ALPHA = 0.5f;

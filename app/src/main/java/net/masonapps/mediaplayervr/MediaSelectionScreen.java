@@ -14,7 +14,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -30,9 +29,10 @@ import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
-import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
+import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
+import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
+import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ import java.util.List;
  * Created by Bob on 12/24/2016.
  */
 
-public class MediaSelectionScreen extends VrWorldScreen {
+public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamControllerInputListener {
     private static final int ITEMS_PER_PAGE = 6;
     private static final int STATE_NO_LIST = 0;
     private static final int STATE_MUSIC_ALBUM_LIST = 1;
@@ -50,11 +50,8 @@ public class MediaSelectionScreen extends VrWorldScreen {
     private static final int STATE_MUSIC_SONG_LIST = 3;
     private static final int STATE_VIDEO_LIST = 4;
     private final Context context;
-    private final Entity highlightEntity;
-    private Skin skin;
     private Table tableStart;
     private Table tableMediaList;
-    private Table tableSongList;
     private List<VideoDetails> videoList = new ArrayList<>();
     private List<SongDetails> songList = new ArrayList<>();
     private List<AlbumDetails> albumList = new ArrayList<>();
@@ -73,7 +70,6 @@ public class MediaSelectionScreen extends VrWorldScreen {
     private ImageButton nextPageButton;
     private ImageButton backButton;
     private volatile boolean loading = false;
-    private Entity controllerEntity;
     private Table tablePermissions;
     private Drawable defaultVideoDrawable;
     private Drawable defaultAlbumDrawable;
@@ -81,16 +77,10 @@ public class MediaSelectionScreen extends VrWorldScreen {
     public MediaSelectionScreen(final Context context, VrGame game) {
         super(game);
         this.context = context;
-        final MediaPlayerGame mediaPlayerGame = (MediaPlayerGame) game;
-        skin = mediaPlayerGame.getSkin();
         setBackgroundColor(Color.NAVY);
         defaultAlbumDrawable = skin.newDrawable(Icons.ic_album_white_48dp);
         defaultVideoDrawable = skin.newDrawable(Icons.ic_album_white_48dp);
         initStage();
-        getWorld().add(mediaPlayerGame.getRoomEntity());
-        getWorld().add(mediaPlayerGame.getFloorEntity());
-        highlightEntity = getWorld().add(mediaPlayerGame.getHighlightEntity());
-        controllerEntity = getWorld().add(mediaPlayerGame.getControllerEntity());
         if (!((MainActivity) context).isReadStoragePermissionGranted()) {
             tableStart.setVisible(false);
             tablePermissions.setVisible(true);
@@ -108,14 +98,25 @@ public class MediaSelectionScreen extends VrWorldScreen {
         manageDisposable(stage);
         stage.set3DTransform(new Vector3(0, 0, -3f), getVrCamera().position);
 
+        backButton = new ImageButton(skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.LIGHT_GRAY));
+        stage.addActor(backButton);
+        backButton.setPosition(2, stage.getViewport().getWorldHeight() - 2 - backButton.getHeight());
+        backButton.setVisible(false);
+        
         addPermissionsTable();
         addStartTable();
         addListTable();
-//        addSongListTable();
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                backButtonClicked();
+            }
+        });
     }
 
     private void addPermissionsTable() {
-        tablePermissions = new Table();
+        tablePermissions = new Table(skin);
+        tablePermissions.setBackground(Icons.WINDOW);
         tablePermissions.setFillParent(true);
         stage.addActor(tablePermissions);
         tablePermissions.setVisible(false);
@@ -138,7 +139,8 @@ public class MediaSelectionScreen extends VrWorldScreen {
     }
 
     private void addStartTable() {
-        tableStart = new Table();
+        tableStart = new Table(skin);
+        tableStart.setBackground(Icons.WINDOW);
         tableStart.setFillParent(true);
         stage.addActor(tableStart);
         final TextButton videosButton = new TextButton(context.getString(R.string.videos), skin);
@@ -202,25 +204,11 @@ public class MediaSelectionScreen extends VrWorldScreen {
     }
 
     private void addListTable() {
-        tableMediaList = new Table();
+        tableMediaList = new Table(skin);
+        tableMediaList.setBackground(Icons.WINDOW);
         tableMediaList.setFillParent(true);
         stage.addActor(tableMediaList);
         tableMediaList.setVisible(false);
-
-        backButton = new ImageButton(skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.LIGHT_GRAY));
-        backButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                if (tableMediaList.isVisible()) {
-                    tableStart.setVisible(true);
-                    tableMediaList.setVisible(false);
-                    backButton.setVisible(false);
-                }
-            }
-        });
-        stage.addActor(backButton);
-        backButton.setPosition(2, stage.getViewport().getWorldHeight() - 2 - backButton.getHeight());
-        backButton.setVisible(false);
 
         tableMediaList.padTop(backButton.getHeight());
         
@@ -266,32 +254,6 @@ public class MediaSelectionScreen extends VrWorldScreen {
 //        }
         addPageArrows(tableMediaList);
     }
-
-//    private void addSongListTable() {
-//        tableSongList = new Table();
-//        tableSongList.setFillParent(true);
-//        stage.addActor(tableSongList);
-//        tableSongList.setVisible(false);
-//
-//        tableSongList.padTop(backButton.getHeight());
-//        textButtons.clear();
-//        for (int i = 0; i < ITEMS_PER_PAGE; i++) {
-//            
-//            TextButton textButton = new TextButton("", skin);
-//            textButtons.add(textButton);
-//
-//            final int index = i;
-//            textButton.addListener(new ClickListener() {
-//                @Override
-//                public void clicked(InputEvent event, float x, float y) {
-//                    onListItemClicked(index);
-//                }
-//            });
-//            tableSongList.add(textButton).colspan(3).expandX().fillX().row();
-//        }
-//        
-//        addPageArrows(tableSongList);
-//    }
     
     private void addPageArrows(Table table) {
         prevPageButon = new ImageButton(skin.newDrawable(Icons.ic_chevron_left_white_48dp), skin.newDrawable(Icons.ic_chevron_left_white_48dp, Color.GRAY));
@@ -503,11 +465,13 @@ public class MediaSelectionScreen extends VrWorldScreen {
     public void show() {
         GdxVr.app.getGvrView().setNeckModelEnabled(true);
         GdxVr.app.getGvrView().setNeckModelFactor(1f);
+        GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setProcessor(stage);
     }
 
     @Override
     public void hide() {
+        GdxVr.input.getDaydreamControllerHandler().removeListener(this);
         GdxVr.input.setProcessor(null);
         dispose();
     }
@@ -522,16 +486,6 @@ public class MediaSelectionScreen extends VrWorldScreen {
     public void render(Camera camera, int whichEye) {
         super.render(camera, whichEye);
         stage.draw(camera);
-    }
-
-    @Override
-    public void onCardboardTrigger() {
-        super.onCardboardTrigger();
-    }
-
-    @Override
-    public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
-        super.onDaydreamControllerUpdate(controller, connectionState);
     }
 
     @Override
@@ -555,5 +509,31 @@ public class MediaSelectionScreen extends VrWorldScreen {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void backButtonClicked() {
+        if (tableMediaList.isVisible()) {
+            tableStart.setVisible(true);
+            tableMediaList.setVisible(false);
+            backButton.setVisible(false);
+        }
+    }
+
+    @Override
+    public void onConnectionStateChange(int connectionState) {
+
+    }
+
+    @Override
+    public void onButtonEvent(Controller controller, DaydreamButtonEvent event) {
+        if (event.button == DaydreamButtonEvent.BUTTON_APP) {
+            if (event.action == DaydreamButtonEvent.ACTION_UP) {
+                backButtonClicked();
+            }
+        }
+    }
+
+    @Override
+    public void onTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
     }
 }

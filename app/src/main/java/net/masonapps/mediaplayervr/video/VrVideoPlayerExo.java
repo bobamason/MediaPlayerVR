@@ -35,15 +35,13 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
 
     public static final String TAG = VrVideoPlayerExo.class.getSimpleName();
     private ExoPlayer exoPlayer;
-    private int width;
-    private int height;
 
-    public VrVideoPlayerExo(Context context) {
-        super(context);
+    public VrVideoPlayerExo(Context context, Uri uri, int width, int height) {
+        super(context, uri, width, height);
     }
 
-    public VrVideoPlayerExo(Context context, VideoMode videoMode) {
-        super(context, videoMode);
+    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, VideoMode videoMode) {
+        super(context, uri, width, height, videoMode);
     }
 
     @Override
@@ -132,22 +130,6 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
     }
 
     @Override
-    public int getVideoWidth() {
-        if (!prepared) {
-            throw new IllegalStateException("Can't get width when video is not yet buffered!");
-        }
-        return Math.max(width, 1);
-    }
-
-    @Override
-    public int getVideoHeight() {
-        if (!prepared) {
-            throw new IllegalStateException("Can't get height when video is not yet buffered!");
-        }
-        return Math.max(height, 1);
-    }
-
-    @Override
     public boolean isPlaying() {
         return prepared && exoPlayer.getPlayWhenReady();
     }
@@ -167,8 +149,8 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
             final TrackGroup trackGroup = trackGroups.get(i);
             for (int j = 0; j < trackGroup.length; j++) {
                 final Format format = trackGroup.getFormat(j);
-                width = format.width;
-                height = format.height;
+//                width = format.width;
+//                height = format.height;
             }
         }
     }
@@ -232,13 +214,5 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
     @Override
     public long getDuration() {
         return exoPlayer.getDuration();
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
     }
 }
