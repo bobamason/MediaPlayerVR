@@ -1,0 +1,124 @@
+
+buttons.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ic_album_white_48dp
+  rotate: false
+  xy: 1, 149
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_arrow_back_white_48dp
+  rotate: false
+  xy: 1, 75
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_cancel_white_48dp
+  rotate: false
+  xy: 75, 149
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_check_circle_white_48dp
+  rotate: false
+  xy: 1, 1
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_chevron_left_white_48dp
+  rotate: false
+  xy: 75, 75
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_chevron_right_white_48dp
+  rotate: false
+  xy: 149, 149
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_fast_forward_white_48dp
+  rotate: false
+  xy: 75, 1
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_fast_rewind_white_48dp
+  rotate: false
+  xy: 149, 75
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_more_horiz_white_48dp
+  rotate: false
+  xy: 223, 149
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_more_vert_white_48dp
+  rotate: false
+  xy: 149, 1
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_pause_circle_filled_white_48dp
+  rotate: false
+  xy: 223, 75
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_play_circle_filled_white_48dp
+  rotate: false
+  xy: 297, 149
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_skip_next_white_48dp
+  rotate: false
+  xy: 223, 1
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_skip_previous_white_48dp
+  rotate: false
+  xy: 297, 75
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_volume_down_white_48dp
+  rotate: false
+  xy: 371, 149
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_volume_off_white_48dp
+  rotate: false
+  xy: 297, 1
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+ic_volume_up_white_48dp
+  rotate: false
+  xy: 371, 75
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
