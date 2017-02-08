@@ -46,7 +46,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
     private final Context context;
     protected Quaternion controllerOrientation = new Quaternion();
     protected boolean isControllerConnected = false;
-    protected Vector3 controllerOffset = new Vector3(0, 0, -0.06f);
+    protected Vector3 controllerOffset = new Vector3(0, 0, -0.056f);
     private Vector3 controllerPosition = new Vector3();
     private Ray inputRay = new Ray();
     private DaydreamControllerHandler daydreamControllerHandler;

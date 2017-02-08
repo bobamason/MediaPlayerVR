@@ -42,8 +42,8 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     protected BaseLight createLight() {
         final PointLight pointLight = new PointLight();
         pointLight.setColor(Color.WHITE);
-        pointLight.setPosition(0f, 2f, 0f);
-        pointLight.setIntensity(20f);
+        pointLight.setPosition(0f, 3f, 0f);
+        pointLight.setIntensity(10f);
         return pointLight;
     }
 

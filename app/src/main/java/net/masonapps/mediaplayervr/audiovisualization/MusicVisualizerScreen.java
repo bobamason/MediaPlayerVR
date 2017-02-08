@@ -34,6 +34,7 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
 
     private static final String TAG = MusicVisualizerScreen.class.getSimpleName();
     private static final float ALPHA = 0.5f;
+    protected final float[] intensityValues = new float[3];
     private final MainActivity visualizerActivity;
     private final SongDetails songDetails;
     protected boolean hasAudioPermissions = false;
@@ -47,7 +48,6 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
     private boolean isUpdateWaveformEnabled = true;
     private boolean isVisualizerReady = false;
     private float[] maxValues = new float[3];
-    private float[] intensityValues = new float[3];
     private Ray ray = new Ray();
     private boolean mLoading;
     private MediaPlayer mediaPlayer;
@@ -201,25 +201,20 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
     }
 
     protected void onCaptureUpdated(SpectrumAnalyzer spectrumAnalyzer) {
-        float amplitudeLow = spectrumAnalyzer.getAmplitude(0);
-        if (amplitudeLow > maxValues[0]) maxValues[0] = amplitudeLow;
-        float amplitudeMid = (spectrumAnalyzer.getAmplitude(1) + spectrumAnalyzer.getAmplitude(2)) / 2f;
-        if (amplitudeMid > maxValues[1]) maxValues[1] = amplitudeMid;
-        float amplitudeHigh = (spectrumAnalyzer.getAmplitude(3) + spectrumAnalyzer.getAmplitude(4) + spectrumAnalyzer.getAmplitude(5)) / 3f;
-        if (amplitudeHigh > maxValues[2]) maxValues[2] = amplitudeHigh;
+        synchronized (intensityValues) {
+            float amplitudeLow = spectrumAnalyzer.getAmplitude(0);
+            if (amplitudeLow > maxValues[0]) maxValues[0] = amplitudeLow;
+            float amplitudeMid = (spectrumAnalyzer.getAmplitude(1) + spectrumAnalyzer.getAmplitude(2)) / 2f;
+            if (amplitudeMid > maxValues[1]) maxValues[1] = amplitudeMid;
+            float amplitudeHigh = (spectrumAnalyzer.getAmplitude(3) + spectrumAnalyzer.getAmplitude(4) + spectrumAnalyzer.getAmplitude(5)) / 3f;
+            if (amplitudeHigh > maxValues[2]) maxValues[2] = amplitudeHigh;
 
 //        Log.d(getClass().getSimpleName(), "amplitude 1: " + amplitudeMid);
 
-        intensityValues[0] = (amplitudeLow / maxValues[0]) * ALPHA + (1f - ALPHA) * intensityValues[0];
-        intensityValues[1] = (amplitudeMid / maxValues[1]) * ALPHA + (1f - ALPHA) * intensityValues[1];
-        intensityValues[2] = (amplitudeHigh / maxValues[2]) * ALPHA + (1f - ALPHA) * intensityValues[2];
-
-//        float scale = 1f / 127f;
-//        intensityAttrLow.intensity = amplitudeLow * scale;
-//        intensityAttrMid.intensity = amplitudeMid * scale;
-//        intensityAttrHigh.intensity = amplitudeHigh * scale;
-
-//        Log.d(getClass().getSimpleName(), "intensity mid: " + intensityAttrMid.intensity);
+            intensityValues[0] = (amplitudeLow / maxValues[0]) * ALPHA + (1f - ALPHA) * intensityValues[0];
+            intensityValues[1] = (amplitudeMid / maxValues[1]) * ALPHA + (1f - ALPHA) * intensityValues[1];
+            intensityValues[2] = (amplitudeHigh / maxValues[2]) * ALPHA + (1f - ALPHA) * intensityValues[2];
+        }
 
         for (int i = 0; i < maxValues.length; i++) {
             if (maxValues[i] > 64f)
@@ -323,6 +318,11 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean isLoading() {
+        return super.isLoading() || !prepared;
     }
 
     public SpectrumAnalyzer getSpectrumAnalyzer() {

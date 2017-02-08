@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.1'
+    buildToolsVersion '25.0.2'
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 25
@@ -38,8 +38,8 @@ dependencies {
     compile 'com.badlogicgames.gdx:gdx:1.9.4'
     compile 'com.badlogicgames.gdx:gdx-backend-android:1.9.4'
     compile 'com.badlogicgames.gdx:gdx-bullet:1.9.4'
-    compile 'com.android.support:support-annotations:25.1.0'
-    compile 'com.google.vr:sdk-audio:1.10.0'
-    compile 'com.google.vr:sdk-base:1.10.0'
-    compile 'com.google.vr:sdk-controller:1.10.0'
+    compile 'com.android.support:support-annotations:25.1.1'
+    compile 'com.google.vr:sdk-audio:1.20.0'
+    compile 'com.google.vr:sdk-base:1.20.0'
+    compile 'com.google.vr:sdk-controller:1.20.0'
 }
