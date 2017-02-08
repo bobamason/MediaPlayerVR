@@ -103,6 +103,7 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
                 initVisualizer(mediaPlayer.getAudioSessionId());
+                mediaPlayer.start();
             }
         });
         mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {

@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -35,6 +36,7 @@ import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
+import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
@@ -47,7 +49,7 @@ import java.util.Locale;
  * Created by Bob on 12/24/2016.
  */
 
-public class VideoPlayerScreen extends MediaPlayerScreen implements DaydreamControllerInputListener, VrVideoPlayer.CompletionListener, VrVideoPlayer.ErrorListener {
+public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControllerInputListener, VrVideoPlayer.CompletionListener, VrVideoPlayer.ErrorListener {
 
     public static final Quaternion tmpQ = new Quaternion();
     public static final int PADDING = 6;
@@ -94,6 +96,7 @@ public class VideoPlayerScreen extends MediaPlayerScreen implements DaydreamCont
     }
 
     private final VideoDetails videoDetails;
+    private final Skin skin;
     //    private final ImageButton backButton;
     private Context context;
     private VrVideoPlayer videoPlayer;
@@ -117,6 +120,7 @@ public class VideoPlayerScreen extends MediaPlayerScreen implements DaydreamCont
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
+        skin = ((MediaPlayerGame) game).getSkin();
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
@@ -394,8 +398,6 @@ public class VideoPlayerScreen extends MediaPlayerScreen implements DaydreamCont
             if (tableVideoType.isVisible()) {
                 tableVideoType.setVisible(false);
                 tableMain.setVisible(true);
-            } else if (tableMain.isVisible()) {
-                mediaPlayerGame.goToSelectionScreen();
             }
         }
     }

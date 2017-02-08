@@ -2,6 +2,7 @@ package net.masonapps.mediaplayervr;
 
 import android.content.Context;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
@@ -18,7 +19,6 @@ import com.badlogic.gdx.graphics.g3d.particles.influencers.ScaleInfluencer;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.SpawnInfluencer;
 import com.badlogic.gdx.graphics.g3d.particles.renderers.BillboardRenderer;
 import com.badlogic.gdx.graphics.g3d.particles.values.PointSpawnShapeValue;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.google.vr.sdk.controller.Controller;
@@ -57,7 +57,13 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
         getWorld().add(mediaPlayerGame.getFloorEntity());
         highlightEntity = getWorld().add(mediaPlayerGame.getHighlightEntity());
         controllerEntity = getWorld().add(mediaPlayerGame.getControllerEntity());
-        loadAsset(PARTICLE_FILE_NAME, Texture.class);
+//        loadAsset(PARTICLE_FILE_NAME, Texture.class);
+        Texture particleTexture = new Texture(Gdx.files.internal(PARTICLE_FILE_NAME));
+        ParticleController controller = createBillboardController(Color.GREEN, particleTexture);
+        controller.init();
+        controller.start();
+        controller.setTranslation(position.set(0, 0, -4));
+        emitters.add(controller);
     }
 
     @Override
@@ -73,12 +79,12 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
 
     @Override
     protected void doneLoading(AssetManager assets) {
-        Texture particleTexture = assets.get(PARTICLE_FILE_NAME, Texture.class);
-        ParticleController controller = createBillboardController(Color.GREEN, particleTexture);
-        controller.init();
-        controller.start();
-        controller.setTranslation(position.set(0, 0, -4));
-        emitters.add(controller);
+//        Texture particleTexture = assets.get(PARTICLE_FILE_NAME, Texture.class);
+//        ParticleController controller = createBillboardController(Color.GREEN, particleTexture);
+//        controller.init();
+//        controller.start();
+//        controller.setTranslation(position.set(0, 0, -4));
+//        emitters.add(controller);
     }
 
     private ParticleController createBillboardController(Color color, Texture particleTexture) {
@@ -141,19 +147,19 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
     public void render(Camera camera, int whichEye) {
         super.render(camera, whichEye);
         if (isLoading()) return;
-        particleBatch.begin();
-        a += GdxVr.graphics.getDeltaTime();
-        for (ParticleController emitter : emitters) {
-            colorInfluencer.colorValue.setColors(new float[]{MathUtils.sin(a) * 0.5f + 0.5f, 1f, MathUtils.cos(a) * 0.5f + 0.5f, 0, 0, 0});
-//            scaleInfluencer.value.setScaling(new float[]{spectrumAnalyzer.getAmplitude(0) / 127f});
-            emitter.setTranslation(position);
-            emitter.update();
-            emitter.draw();
-        }
-        particleBatch.end();
-        getModelBatch().begin(camera);
-        getModelBatch().render(particleBatch);
-        getModelBatch().end();
+//        getModelBatch().begin(camera);
+//        particleBatch.begin();
+//        a += GdxVr.graphics.getDeltaTime();
+//        for (ParticleController emitter : emitters) {
+////            colorInfluencer.colorValue.setColors(new float[]{MathUtils.sin(a) * 0.5f + 0.5f, 1f, MathUtils.cos(a) * 0.5f + 0.5f, 0, 0, 0});
+//////            scaleInfluencer.value.setScaling(new float[]{spectrumAnalyzer.getAmplitude(0) / 127f});
+//            emitter.setTranslation(position);
+//            emitter.update();
+//            emitter.draw();
+//        }
+//        particleBatch.end();
+//        getModelBatch().render(particleBatch);
+//        getModelBatch().end();
     }
 
     @Override

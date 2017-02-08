@@ -26,6 +26,7 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     protected final Entity roomEntity;
     protected final Entity floorEntity;
     protected final Skin skin;
+    private final Vector3 scale = new Vector3(10f, 10f, 10f);
 
     public MediaPlayerScreen(VrGame game) {
         super(game);
@@ -41,21 +42,21 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     protected BaseLight createLight() {
         final PointLight pointLight = new PointLight();
         pointLight.setColor(Color.WHITE);
-        pointLight.setPosition(0f, 0f, 0f);
-        pointLight.setIntensity(4f);
+        pointLight.setPosition(0f, 2f, 0f);
+        pointLight.setIntensity(20f);
         return pointLight;
     }
 
     @Override
     protected Environment createEnvironment() {
         final Environment environment = new Environment();
-        environment.set(ColorAttribute.createAmbient(Color.DARK_GRAY));
+        environment.set(ColorAttribute.createAmbient(Color.GRAY));
         return environment;
     }
 
     @Override
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         super.onDaydreamControllerUpdate(controller, connectionState);
-        controllerEntity.modelInstance.transform.set(tempV.set(GdxVr.input.getControllerPosition()).add(GdxVr.input.getHandPosition()), GdxVr.input.getControllerOrientation());
+        controllerEntity.modelInstance.transform.set(tempV.set(GdxVr.input.getControllerPosition()).add(GdxVr.input.getHandPosition()), GdxVr.input.getControllerOrientation(), scale);
     }
 }

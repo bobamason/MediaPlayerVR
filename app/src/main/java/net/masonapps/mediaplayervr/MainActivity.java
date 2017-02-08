@@ -13,7 +13,8 @@ import org.masonapps.libgdxgooglevr.vr.VrActivity;
 public class MainActivity extends VrActivity {
 
     private static final String READ_EXTERNAL_STORAGE = Manifest.permission.READ_EXTERNAL_STORAGE;
-    private static final int RC_READ_EXTERNAL_STORAGE = 2001;
+    private static final String RECORD_AUDIO = Manifest.permission.RECORD_AUDIO;
+    private static final int RC_PERMISSIONS = 2001;
     private StoragePermissionResultListener listener = null;
     private MediaPlayerGame game;
 
@@ -26,18 +27,18 @@ public class MainActivity extends VrActivity {
     }
 
     public boolean isReadStoragePermissionGranted() {
-        return ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
     }
 
     public void requestReadStoragePermission(StoragePermissionResultListener listener) {
-        ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE}, RC_READ_EXTERNAL_STORAGE);
+        ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, RECORD_AUDIO}, RC_PERMISSIONS);
         this.listener = listener;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == RC_READ_EXTERNAL_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == RC_PERMISSIONS && grantResults.length >= 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
             if (listener != null) {
                 listener.onResult(true);
             }

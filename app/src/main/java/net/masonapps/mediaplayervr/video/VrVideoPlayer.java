@@ -218,9 +218,9 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     protected void mapDistortModel(int eyeType) {
         if (aspectRatio <= 1f) {
-            modelInstance.transform.idt().scale(modelSize, aspectRatio * modelSize, modelSize);
+            modelInstance.transform.idt().scale(aspectRatio * modelSize, modelSize, modelSize);
         } else {
-            modelInstance.transform.idt().scale(modelSize / aspectRatio, modelSize, modelSize);
+            modelInstance.transform.idt().scale(modelSize, modelSize / aspectRatio, modelSize);
         }
         if (isStereoscopic) {
             if (isHorizontalSplit) {

@@ -5,11 +5,12 @@ import android.content.Context;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.SkinLoader;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.google.vr.sdk.controller.Controller;
@@ -55,8 +56,6 @@ public class MediaPlayerGame extends VrGame {
         super.create();
         loadingScreen = new LoadingScreen(this);
         setScreen(loadingScreen);
-        final PointLight light = new PointLight();
-        light.setPosition(0, 1, 0);
         assets = new AssetManager();
         assets.load(Icons.buttons_pack, TextureAtlas.class);
         assets.load(SKIN_ATLAS_FILENAME, TextureAtlas.class);
@@ -75,7 +74,9 @@ public class MediaPlayerGame extends VrGame {
             if (assets.update()) {
                 skin = assets.get(SKIN_FILENAME, Skin.class);
                 skin.addRegions(assets.get(Icons.buttons_pack, TextureAtlas.class));
-                roomEntity = new Entity(new ModelInstance(assets.get(ROOM_FILENAME, Model.class), worldOffset));
+                final Model model = assets.get(ROOM_FILENAME, Model.class);
+                model.materials.get(0).set(ColorAttribute.createDiffuse(Color.DARK_GRAY));
+                roomEntity = new Entity(new ModelInstance(model, worldOffset));
                 roomEntity.setLightingEnabled(true);
                 highlightEntity = new Entity(new ModelInstance(assets.get(HIGHLIGHT_FILENAME, Model.class), worldOffset));
                 highlightEntity.setLightingEnabled(false);
@@ -83,6 +84,7 @@ public class MediaPlayerGame extends VrGame {
                 floorEntity = new Entity(new ModelInstance(assets.get(FLOOR_FILENAME, Model.class), worldOffset));
                 floorEntity.setLightingEnabled(false);
                 controllerEntity = new Entity(new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class)));
+                controllerEntity.setLightingEnabled(false);
                 goToSelectionScreen();
                 loading = false;
             }
@@ -114,6 +116,8 @@ public class MediaPlayerGame extends VrGame {
             VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
             setScreen(mediaSelectionScreen);
             videoPlayerScreen.dispose();
+        } else {
+            setScreen(mediaSelectionScreen);
         }
     }
 
