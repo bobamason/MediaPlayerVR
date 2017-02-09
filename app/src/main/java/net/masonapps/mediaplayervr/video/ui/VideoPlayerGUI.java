@@ -38,7 +38,7 @@ public class VideoPlayerGUI implements Disposable {
         mainLayout = new MainLayout(this);
         modeLayout = new ModeLayout(this);
         stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 640, 640);
-        stage.set3DTransform(new Vector3(0, 0, -2.5f), videoPlayerScreen.getVrCamera().position);
+        stage.set3DTransform(new Vector3(0, -0.5f, -2.5f), videoPlayerScreen.getVrCamera().position);
         mainLayout.attach(stage);
         mainLayout.setVisible(true);
         modeLayout.attach(stage);
