@@ -10,7 +10,7 @@ precision mediump float;
 #endif
 #define PI 3.141593
 #define PI2 6.283185
-//uniform sampler2D diffuseTexture;
+uniform sampler2D diffuseTexture;
 uniform vec4 u_color;
 uniform float u_time;
 uniform float u_intensity;
@@ -26,17 +26,18 @@ vec3 cartesianToSpherical(vec3 c){
     s.x = r;
     s.y = atan(c.y, c.x);
     s.z = acos(c.z / r);
+    return s;
 }
 
 void main(){
-//    vec3 s = cartesianToSpherical(v_position);
+    vec3 s = cartesianToSpherical(v_position);
 //    float p = dot(texture2D(diffuseTexture, v_texCoord).rgb, vec3(1.0 / 3.0));
-//    float p = dot(texture2D(diffuseTexture, vec2((s.y + PI / PI2), (s.z / PI))).rgb, vec3(1.0 / 3.0));
-//    float lum = sin(PI2 * p + u_time);
+    float p = dot(texture2D(diffuseTexture, vec2((s.y + PI) / PI2, s.z / PI)).rgb, vec3(1.0 / 3.0));
+    float lum = sin(PI2 * p + u_time);
 //    float lum = sin(s.y * 8.0 + u_time);
 //    lum += sin(s.z * 6.0 + u_time);
-//    float step = smoothstep(0.0, 0.5, lum);
-//    gl_FragColor.rgb = mix(u_color.rgb * 0.5, u_color.rgb, step);
-    gl_FragColor.rgb = u_color.rgb;
+    float step = smoothstep(0.0, 0.75, lum);
+    gl_FragColor.rgb = mix(u_color.rgb * 0.25, u_color.rgb, step);
+//    gl_FragColor.rgb = texture2D(diffuseTexture, s.yz).rgb;
     gl_FragColor.a = 1.0;
 }

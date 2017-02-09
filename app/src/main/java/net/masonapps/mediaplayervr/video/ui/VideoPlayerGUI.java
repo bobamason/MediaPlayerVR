@@ -13,15 +13,18 @@ import com.badlogic.gdx.utils.Disposable;
 
 import net.masonapps.mediaplayervr.Icons;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
+import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
+
+import java.util.Locale;
 
 /**
  * Created by Bob on 2/8/2017.
  */
 
-public class VideoPlayerUI implements Disposable {
-    public static final int PADDING = 6;
+public class VideoPlayerGUI implements Disposable {
+    public static final int PADDING = 10;
     private final MainLayout mainLayout;
     private final ModeLayout modeLayout;
     private final VideoPlayerScreen videoPlayerScreen;
@@ -29,13 +32,19 @@ public class VideoPlayerUI implements Disposable {
     private float headerHeight = PADDING;
     private VirtualStage stage;
 
-    public VideoPlayerUI(VideoPlayerScreen videoPlayerScreen, Skin skin) {
+    public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, Skin skin) {
         this.videoPlayerScreen = videoPlayerScreen;
         this.skin = skin;
         mainLayout = new MainLayout(this);
         modeLayout = new ModeLayout(this);
         stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 640, 640);
         stage.set3DTransform(new Vector3(0, 0, -2.5f), videoPlayerScreen.getVrCamera().position);
+        mainLayout.attach(stage);
+        mainLayout.setVisible(true);
+        modeLayout.attach(stage);
+        modeLayout.setVisible(false);
+
+        stage.getViewport().update(640, 420);
 
         final ImageButton backButton = new ImageButton(skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.LIGHT_GRAY));
         backButton.addListener(new ClickListener() {
@@ -48,10 +57,10 @@ public class VideoPlayerUI implements Disposable {
         backButton.setPosition(PADDING, stage.getHeight() - PADDING, Align.topLeft);
 
         final ImageButton closeButton = new ImageButton(skin.newDrawable(Icons.ic_cancel_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_cancel_white_48dp, Color.LIGHT_GRAY));
-        backButton.addListener(new ClickListener() {
+        closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                VideoPlayerUI.this.videoPlayerScreen.setUiVisible(false);
+                VideoPlayerGUI.this.videoPlayerScreen.setUiVisible(false);
             }
         });
         stage.addActor(closeButton);
@@ -60,15 +69,26 @@ public class VideoPlayerUI implements Disposable {
         headerHeight = Math.max(backButton.getHeight(), closeButton.getHeight()) + PADDING;
     }
 
+    private static String getTimeLabelString(long currentPosition, long duration) {
+        return String.format(Locale.ENGLISH,
+                "%d:%02d:%02d / %d:%02d:%02d",
+                currentPosition / 1000 / (60 * 60),
+                (currentPosition / 1000 / 60) % 60,
+                (currentPosition / 1000) % 60,
+                duration / 1000 / (60 * 60),
+                (duration / 1000 / 60) % 60,
+                (duration / 1000) % 60);
+    }
+
     public void setVisible(boolean visible) {
         stage.setVisible(visible);
     }
 
     public void backButtonClicked() {
         if (stage.isVisible()) {
-            if (tableVideoType.isVisible()) {
-                tableVideoType.setVisible(false);
-                tableMain.setVisible(true);
+            if (modeLayout.isVisible()) {
+                modeLayout.setVisible(false);
+                mainLayout.setVisible(true);
             }
         }
     }
@@ -79,16 +99,21 @@ public class VideoPlayerUI implements Disposable {
 
     public void update() {
         stage.act();
-        if (stage.isVisible() && tableMai.isVisible() && videoPlayer.isPrepared()) {
+        final VrVideoPlayer videoPlayer = videoPlayerScreen.getVideoPlayer();
+        if (stage.isVisible() && mainLayout.isVisible() && videoPlayer.isPrepared()) {
             final long duration = videoPlayer.getDuration();
-            timeLabel.setText(getTimeLabelString(videoPlayer.getCurrentPosition(), duration));
+            mainLayout.timeLabel.setText(getTimeLabelString(videoPlayer.getCurrentPosition(), duration));
             if (duration != 0)
-                slider.setValue((float) videoPlayer.getCurrentPosition() / duration);
+                mainLayout.slider.setValue((float) videoPlayer.getCurrentPosition() / duration);
         }
     }
 
     public VirtualStage getStage() {
         return stage;
+    }
+
+    public VideoPlayerScreen getVideoPlayerScreen() {
+        return videoPlayerScreen;
     }
 
     public Skin getSkin() {
@@ -103,5 +128,10 @@ public class VideoPlayerUI implements Disposable {
     public void dispose() {
         if (stage != null) stage.dispose();
         stage = null;
+    }
+
+    public void switchToModeLayout() {
+        modeLayout.setVisible(true);
+        mainLayout.setVisible(false);
     }
 }

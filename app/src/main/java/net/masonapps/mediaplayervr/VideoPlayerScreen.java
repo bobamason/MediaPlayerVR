@@ -13,7 +13,7 @@ import com.google.vr.sdk.controller.Controller;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
-import net.masonapps.mediaplayervr.video.ui.VideoPlayerUI;
+import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
@@ -34,7 +34,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     private final VideoDetails videoDetails;
     private final Entity controllerEntity;
-    private final VideoPlayerUI ui;
+    private final VideoPlayerGUI ui;
     private Context context;
     private VrVideoPlayer videoPlayer;
     private boolean isButtonClicked = false;
@@ -44,11 +44,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
-        ui = new VideoPlayerUI(this, ((MediaPlayerGame) game).getSkin());
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
         setBackgroundColor(Color.BLACK);
+        ui = new VideoPlayerGUI(this, ((MediaPlayerGame) game).getSkin());
         getVrCamera().near = 0.1f;
         getVrCamera().far = 100f;
         controllerEntity = getWorld().add(((MediaPlayerGame) game).getControllerEntity());
@@ -117,12 +117,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void setUiVisible(boolean uiVisible) {
         super.setUiVisible(uiVisible);
         ui.setVisible(uiVisible);
+        controllerEntity.setRenderingEnabled(uiVisible);
     }
 
     @Override
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         super.onDaydreamControllerUpdate(controller, connectionState);
-        controllerEntity.modelInstance.transform.set(tempV.set(GdxVr.input.getControllerPosition()).add(GdxVr.input.getHandPosition()), GdxVr.input.getControllerOrientation(), controllerScale);
+        if (controllerEntity.isRenderingEnabled())
+            controllerEntity.modelInstance.transform.set(tempV.set(GdxVr.input.getControllerPosition()).add(GdxVr.input.getHandPosition()), GdxVr.input.getControllerOrientation(), controllerScale);
     }
 
     @Override
@@ -140,8 +142,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             case DaydreamButtonEvent.BUTTON_TOUCHPAD:
                 if (event.action == DaydreamButtonEvent.ACTION_DOWN) {
                     isButtonClicked = true;
-                } else if (event.action == DaydreamButtonEvent.ACTION_UP) {
-                    isButtonClicked = false;
                     if (videoPlayer.isPrepared()) {
                         if (isUiVisible()) {
                             if (!ui.getStage().isCursorOver()) {
@@ -151,6 +151,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                             setUiVisible(true);
                         }
                     }
+                } else if (event.action == DaydreamButtonEvent.ACTION_UP) {
+                    isButtonClicked = false;
                 }
                 break;
             case DaydreamButtonEvent.BUTTON_APP:
@@ -183,5 +185,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void onError(String error) {
 
+    }
+
+    public VrVideoPlayer getVideoPlayer() {
+        return videoPlayer;
     }
 }

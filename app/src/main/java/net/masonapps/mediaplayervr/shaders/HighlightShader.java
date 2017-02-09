@@ -84,6 +84,7 @@ public class HighlightShader extends BaseShader {
         }
 
         set(u_time, time);
+        time += Gdx.graphics.getDeltaTime();
 
         renderable.meshPart.render(program);
     }

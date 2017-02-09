@@ -14,28 +14,29 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 import net.masonapps.mediaplayervr.Icons;
+import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 
-import java.util.Locale;
+import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
 /**
  * Created by Bob on 2/8/2017.
  */
 
-public class MainLayout {
+public class MainLayout implements Attachable {
 
     private final Table tableMain;
-    private Label timeLabel;
+    protected Label timeLabel;
+    protected Slider slider;
     private ImageButton playButton;
-    private Slider slider;
 
-    public MainLayout(VideoPlayerUI videoPlayerUI) {
-        final Skin skin = videoPlayerUI.getSkin();
+    public MainLayout(final VideoPlayerGUI videoPlayerGUI) {
+        final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
+        final Skin skin = videoPlayerGUI.getSkin();
         tableMain = new Table(skin);
         tableMain.setBackground(Icons.WINDOW);
-        tableMain.padTop(videoPlayerUI.getHeaderHeight());
+        tableMain.padTop(videoPlayerGUI.getHeaderHeight());
         tableMain.setFillParent(true);
         tableMain.center();
-        stage.addActor(tableMain);
 
         final Drawable pauseUp = skin.newDrawable(Icons.ic_pause_circle_filled_white_48dp);
         final Drawable pauseDown = skin.newDrawable(Icons.ic_pause_circle_filled_white_48dp, Color.LIGHT_GRAY);
@@ -58,7 +59,7 @@ public class MainLayout {
                 }
             }
         });
-        tableMain.add(playButton).pad(VideoPlayerUI.PADDING);
+        tableMain.add(playButton).pad(VideoPlayerGUI.PADDING);
 
         slider = new Slider(0f, 1f, 0.001f, false, skin);
         slider.addListener(new ChangeListener() {
@@ -69,31 +70,33 @@ public class MainLayout {
                 }
             }
         });
-        tableMain.add(slider).padTop(VideoPlayerUI.PADDING).padBottom(VideoPlayerUI.PADDING).padRight(VideoPlayerUI.PADDING).colspan(4).expandX().fillX();
+        tableMain.add(slider).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).colspan(4).expandX().fillX();
 
         timeLabel = new Label("0:00:00 / 0:00:00", skin);
-        tableMain.add(timeLabel).padTop(VideoPlayerUI.PADDING).padBottom(VideoPlayerUI.PADDING).padRight(VideoPlayerUI.PADDING).row();
+        tableMain.add(timeLabel).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).row();
 
         final TextButton mode = new TextButton("Mode", skin);
         mode.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                tableMain.setVisible(false);
-                tableVideoType.setVisible(true);
-//                backButton.setVisible(true);
+                videoPlayerGUI.switchToModeLayout();
             }
         });
-        tableMain.add(mode).pad(VideoPlayerUI.PADDING);
+        tableMain.add(mode).pad(VideoPlayerGUI.PADDING);
     }
 
-    private static String getTimeLabelString(long currentPosition, long duration) {
-        return String.format(Locale.ENGLISH,
-                "%d:%02d:%02d / %d:%02d:%02d",
-                currentPosition / 1000 / (60 * 60),
-                (currentPosition / 1000 / 60) % 60,
-                (currentPosition / 1000) % 60,
-                duration / 1000 / (60 * 60),
-                (duration / 1000 / 60) % 60,
-                (duration / 1000) % 60);
+    @Override
+    public void attach(VirtualStage stage) {
+        stage.addActor(tableMain);
+    }
+
+    @Override
+    public boolean isVisible() {
+        return tableMain.isVisible();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        tableMain.setVisible(visible);
     }
 }

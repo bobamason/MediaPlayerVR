@@ -85,11 +85,11 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
 
         //Spawn
         final PointSpawnShapeValue pointSpawnShapeValue = new PointSpawnShapeValue();
-        pointSpawnShapeValue.xOffsetValue.setLow(0, 0.05f);
+        pointSpawnShapeValue.xOffsetValue.setLow(0, 0.015f);
         pointSpawnShapeValue.xOffsetValue.setActive(true);
-        pointSpawnShapeValue.yOffsetValue.setLow(0, 0.05f);
+        pointSpawnShapeValue.yOffsetValue.setLow(0, 0.015f);
         pointSpawnShapeValue.yOffsetValue.setActive(true);
-        pointSpawnShapeValue.zOffsetValue.setLow(0, 0.05f);
+        pointSpawnShapeValue.zOffsetValue.setLow(0, 0.015f);
         pointSpawnShapeValue.zOffsetValue.setActive(true);
         SpawnInfluencer spawnSource = new SpawnInfluencer(pointSpawnShapeValue);
 
@@ -161,7 +161,7 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         super.onDaydreamControllerUpdate(controller, connectionState);
         if (GdxVr.input.isControllerConnected()) {
-            position.set(getControllerRay().direction).scl(5f).add(getControllerRay().origin);
+            position.set(getControllerRay().direction).scl(3f).add(getControllerRay().origin);
             isTouchpadClicked = controller.clickButtonState;
         }
     }

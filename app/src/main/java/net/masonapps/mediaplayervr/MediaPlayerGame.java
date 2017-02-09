@@ -6,11 +6,14 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.SkinLoader;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.google.vr.sdk.controller.Controller;
@@ -33,6 +36,7 @@ public class MediaPlayerGame extends VrGame {
     public static final String HIGHLIGHT_FILENAME = "room/dome_highlight.g3db";
     public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
+    private static final String HIGHLIGHT_TEXTURE_FILENAME = "room/tiled_bg.png";
     private final Context context;
     private Skin skin;
     private Entity roomEntity;
@@ -59,6 +63,7 @@ public class MediaPlayerGame extends VrGame {
         assets = new AssetManager();
         assets.load(Icons.buttons_pack, TextureAtlas.class);
         assets.load(SKIN_ATLAS_FILENAME, TextureAtlas.class);
+        assets.load(HIGHLIGHT_TEXTURE_FILENAME, Texture.class);
         assets.load(SKIN_FILENAME, Skin.class, new SkinLoader.SkinParameter(SKIN_ATLAS_FILENAME));
         assets.load(ROOM_FILENAME, Model.class);
         assets.load(HIGHLIGHT_FILENAME, Model.class);
@@ -74,17 +79,26 @@ public class MediaPlayerGame extends VrGame {
             if (assets.update()) {
                 skin = assets.get(SKIN_FILENAME, Skin.class);
                 skin.addRegions(assets.get(Icons.buttons_pack, TextureAtlas.class));
+
                 final Model model = assets.get(ROOM_FILENAME, Model.class);
-                model.materials.get(0).set(ColorAttribute.createDiffuse(Color.DARK_GRAY));
+                model.materials.get(0).set(ColorAttribute.createDiffuse(Color.BLACK), ColorAttribute.createSpecular(Color.WHITE), FloatAttribute.createShininess(8f));
                 roomEntity = new Entity(new ModelInstance(model, worldOffset));
                 roomEntity.setLightingEnabled(true);
-                highlightEntity = new Entity(new ModelInstance(assets.get(HIGHLIGHT_FILENAME, Model.class), worldOffset));
+
+                final Model highlightModel = assets.get(HIGHLIGHT_FILENAME, Model.class);
+                final Texture highlightTexture = assets.get(HIGHLIGHT_TEXTURE_FILENAME, Texture.class);
+                highlightTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+                highlightModel.materials.get(0).set(ColorAttribute.createDiffuse(Color.CYAN), TextureAttribute.createDiffuse(highlightTexture));
+                highlightEntity = new Entity(new ModelInstance(highlightModel, worldOffset));
                 highlightEntity.setLightingEnabled(false);
                 highlightEntity.setShader(new HighlightShader());
+
                 floorEntity = new Entity(new ModelInstance(assets.get(FLOOR_FILENAME, Model.class), worldOffset));
                 floorEntity.setLightingEnabled(false);
+
                 controllerEntity = new Entity(new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class)));
                 controllerEntity.setLightingEnabled(false);
+
                 goToSelectionScreen();
                 loading = false;
             }

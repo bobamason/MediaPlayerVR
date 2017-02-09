@@ -11,6 +11,9 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 import net.masonapps.mediaplayervr.Icons;
 import net.masonapps.mediaplayervr.video.VideoMode;
+import net.masonapps.mediaplayervr.video.VrVideoPlayer;
+
+import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
 import java.util.ArrayList;
 
@@ -18,7 +21,7 @@ import java.util.ArrayList;
  * Created by Bob on 2/8/2017.
  */
 
-public class ModeLayout {
+public class ModeLayout implements Attachable {
     private static ObjectMap<String, VideoMode> nameModeMap = new ObjectMap<>();
     private static ObjectMap<VideoMode, String> modeNameMap = new ObjectMap<>();
     private static Array<String> modes = new Array<>();
@@ -63,24 +66,24 @@ public class ModeLayout {
     private final Table tableVideoType;
     private ArrayList<TextButton> videoTypeButtons = new ArrayList<>();
 
-    public ModeLayout(VideoPlayerUI videoPlayerUI) {
-        final Skin skin = videoPlayerUI.getSkin();
+    public ModeLayout(VideoPlayerGUI videoPlayerGUI) {
+        final Skin skin = videoPlayerGUI.getSkin();
         tableVideoType = new Table(skin);
         tableVideoType.setBackground(Icons.WINDOW);
-        tableVideoType.padTop(videoPlayerUI.getHeaderHeight());
+        tableVideoType.padTop(videoPlayerGUI.getHeaderHeight());
         tableVideoType.setFillParent(true);
         tableVideoType.center();
-        stage.addActor(tableVideoType);
         tableVideoType.setVisible(false);
 
 
         for (int i = 0; i < modes.size; i++) {
             final TextButton textButton = new TextButton(modes.get(i), skin);
-            final Cell<TextButton> cell = tableVideoType.add(textButton).expandX().fill().center().pad(VideoPlayerUI.PADDING);
+            final Cell<TextButton> cell = tableVideoType.add(textButton).expandX().fill().center().pad(VideoPlayerGUI.PADDING);
             if (i % 3 == 2 && i < modes.size - 1) cell.row();
             videoTypeButtons.add(textButton);
         }
         for (final TextButton button : videoTypeButtons) {
+            final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
             final VideoMode type = videoPlayer.getVideoMode();
             button.setChecked(type == nameModeMap.get(button.getText().toString()));
             button.addListener(new ClickListener() {
@@ -94,5 +97,20 @@ public class ModeLayout {
                 }
             });
         }
+    }
+
+    @Override
+    public void attach(VirtualStage stage) {
+        stage.addActor(tableVideoType);
+    }
+
+    @Override
+    public boolean isVisible() {
+        return tableVideoType.isVisible();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        tableVideoType.setVisible(visible);
     }
 }
