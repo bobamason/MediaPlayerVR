@@ -6,8 +6,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleController;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleShader;
-import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
+import com.badlogic.gdx.graphics.g3d.particles.batches.PointSpriteParticleBatch;
 import com.badlogic.gdx.graphics.g3d.particles.emitters.RegularEmitter;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.ColorInfluencer;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.DynamicsInfluencer;
@@ -15,7 +14,7 @@ import com.badlogic.gdx.graphics.g3d.particles.influencers.DynamicsModifier;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.RegionInfluencer;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.ScaleInfluencer;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.SpawnInfluencer;
-import com.badlogic.gdx.graphics.g3d.particles.renderers.BillboardRenderer;
+import com.badlogic.gdx.graphics.g3d.particles.renderers.PointSpriteRenderer;
 import com.badlogic.gdx.graphics.g3d.particles.values.PointSpawnShapeValue;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -36,7 +35,7 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
 
     public static final String PARTICLE_FILE_NAME = "visualizer/particle.png";
     private static final float ALPHA = 0.005f;
-    BillboardParticleBatch particleBatch;
+    private PointSpriteParticleBatch particleBatch;
     private Array<ParticleController> emitters = new Array<>();
     private ColorInfluencer.Single colorInfluencer;
     private float a = 0;
@@ -48,7 +47,7 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
 
     public ParticlesVisualizerScreen(VrGame game, Context context, SongDetails songDetails) {
         super(game, context, songDetails);
-        particleBatch = new BillboardParticleBatch(ParticleShader.AlignMode.ViewPoint, false, 1000);
+        particleBatch = new PointSpriteParticleBatch(1000);
         particleBatch.setCamera(getVrCamera());
         loadAsset(PARTICLE_FILE_NAME, Texture.class);
     }
@@ -79,9 +78,9 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
         //Emission
         RegularEmitter emitter = new RegularEmitter();
         emitter.getDuration().setLow(3000);
-        emitter.getEmission().setHigh(2900);
+        emitter.getEmission().setHigh(1900);
         emitter.getLife().setHigh(1000);
-        emitter.setMaxParticleCount(3000);
+        emitter.setMaxParticleCount(2000);
 
         //Spawn
         final PointSpawnShapeValue pointSpawnShapeValue = new PointSpawnShapeValue();
@@ -119,7 +118,7 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
         modifier.strengthValue.setLow(1, 5);
         dynamicsInfluencer.velocities.add(modifier);
 
-        return new ParticleController("Billboard Controller", emitter, new BillboardRenderer(particleBatch),
+        return new ParticleController("controller", emitter, new PointSpriteRenderer(particleBatch),
                 new RegionInfluencer.Single(particleTexture),
                 spawnSource,
                 scaleInfluencer,
@@ -131,25 +130,27 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
     @Override
     public void update() {
         super.update();
+        for (ParticleController emitter : emitters) {
+            colors[0] = 1f - intensityValues[0];
+            colors[1] = intensityValues[1];
+            colors[2] = intensityValues[2];
+//            colorInfluencer.colorValue.setColors(colors);
+            scaling[0] = intensityValues[0] * 0.25f + 0.05f;
+//            scaleInfluencer.value.setScaling(scaling);
+            emitter.setTranslation(position);
+            emitter.update();
+        }
     }
 
     @Override
     public void render(Camera camera, int whichEye) {
         super.render(camera, whichEye);
         if (isLoading()) return;
-        getModelBatch().begin(camera);
-        particleBatch.begin();
 //        a += GdxVr.graphics.getDeltaTime();
 //        a %= MathUtils.PI2;
+        getModelBatch().begin(camera);
+        particleBatch.begin();
         for (ParticleController emitter : emitters) {
-            colors[0] = 1f - intensityValues[0];
-            colors[1] = intensityValues[1];
-            colors[2] = intensityValues[2];
-            colorInfluencer.colorValue.setColors(colors);
-            scaling[0] = intensityValues[0] * (isTouchpadClicked ? 0.4f : 0.25f) + 0.05f;
-            scaleInfluencer.value.setScaling(scaling);
-            emitter.setTranslation(position);
-            emitter.update();
             emitter.draw();
         }
         particleBatch.end();

@@ -63,26 +63,26 @@ public class ModeLayout implements Attachable {
         modeNameMap.put(VideoMode.TB360, modes.get(8));
     }
 
-    private final Table tableVideoType;
-    private ArrayList<TextButton> videoTypeButtons = new ArrayList<>();
+    private final Table table;
+    private ArrayList<TextButton> textButtons = new ArrayList<>();
 
     public ModeLayout(VideoPlayerGUI videoPlayerGUI) {
         final Skin skin = videoPlayerGUI.getSkin();
-        tableVideoType = new Table(skin);
-        tableVideoType.setBackground(Icons.WINDOW);
-        tableVideoType.padTop(videoPlayerGUI.getHeaderHeight());
-        tableVideoType.setFillParent(true);
-        tableVideoType.center();
-        tableVideoType.setVisible(false);
+        table = new Table(skin);
+        table.setBackground(Icons.WINDOW);
+        table.padTop(videoPlayerGUI.getHeaderHeight());
+        table.setFillParent(true);
+        table.center();
+        table.setVisible(false);
 
 
         for (int i = 0; i < modes.size; i++) {
             final TextButton textButton = new TextButton(modes.get(i), skin);
-            final Cell<TextButton> cell = tableVideoType.add(textButton).expandX().fill().center().pad(VideoPlayerGUI.PADDING);
+            final Cell<TextButton> cell = table.add(textButton).expandX().fill().center().pad(VideoPlayerGUI.PADDING);
             if (i % 3 == 2 && i < modes.size - 1) cell.row();
-            videoTypeButtons.add(textButton);
+            textButtons.add(textButton);
         }
-        for (final TextButton button : videoTypeButtons) {
+        for (final TextButton button : textButtons) {
             final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
             final VideoMode type = videoPlayer.getVideoMode();
             button.setChecked(type == nameModeMap.get(button.getText().toString()));
@@ -90,7 +90,7 @@ public class ModeLayout implements Attachable {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     videoPlayer.setVideoMode(nameModeMap.get(button.getText().toString()));
-                    for (TextButton b : videoTypeButtons) {
+                    for (TextButton b : textButtons) {
                         b.setChecked(false);
                     }
                     button.setChecked(true);
@@ -101,16 +101,16 @@ public class ModeLayout implements Attachable {
 
     @Override
     public void attach(VirtualStage stage) {
-        stage.addActor(tableVideoType);
+        stage.addActor(table);
     }
 
     @Override
     public boolean isVisible() {
-        return tableVideoType.isVisible();
+        return table.isVisible();
     }
 
     @Override
     public void setVisible(boolean visible) {
-        tableVideoType.setVisible(visible);
+        table.setVisible(visible);
     }
 }

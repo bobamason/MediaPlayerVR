@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -24,7 +25,7 @@ import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
 public class MainLayout implements Attachable {
 
-    private final Table tableMain;
+    private final Table table;
     protected Label timeLabel;
     protected Slider slider;
     private ImageButton playButton;
@@ -32,11 +33,11 @@ public class MainLayout implements Attachable {
     public MainLayout(final VideoPlayerGUI videoPlayerGUI) {
         final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
         final Skin skin = videoPlayerGUI.getSkin();
-        tableMain = new Table(skin);
-        tableMain.setBackground(Icons.WINDOW);
-        tableMain.padTop(videoPlayerGUI.getHeaderHeight());
-        tableMain.setFillParent(true);
-        tableMain.center();
+        table = new Table(skin);
+        table.setBackground(Icons.WINDOW);
+        table.padTop(videoPlayerGUI.getHeaderHeight());
+        table.setFillParent(true);
+        table.center();
 
         final Drawable pauseUp = skin.newDrawable(Icons.ic_pause_circle_filled_white_48dp);
         final Drawable pauseDown = skin.newDrawable(Icons.ic_pause_circle_filled_white_48dp, Color.LIGHT_GRAY);
@@ -59,7 +60,7 @@ public class MainLayout implements Attachable {
                 }
             }
         });
-        tableMain.add(playButton).pad(VideoPlayerGUI.PADDING);
+        table.add(playButton).pad(VideoPlayerGUI.PADDING);
 
         slider = new Slider(0f, 1f, 0.001f, false, skin);
         slider.addListener(new ChangeListener() {
@@ -70,10 +71,10 @@ public class MainLayout implements Attachable {
                 }
             }
         });
-        tableMain.add(slider).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).colspan(4).expandX().fillX();
+        table.add(slider).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).colspan(4).expandX().fillX();
 
         timeLabel = new Label("0:00:00 / 0:00:00", skin);
-        tableMain.add(timeLabel).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).row();
+        table.add(timeLabel).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).row();
 
         final TextButton mode = new TextButton("Mode", skin);
         mode.addListener(new ClickListener() {
@@ -82,21 +83,33 @@ public class MainLayout implements Attachable {
                 videoPlayerGUI.switchToModeLayout();
             }
         });
-        tableMain.add(mode).pad(VideoPlayerGUI.PADDING);
+        table.add(mode).pad(VideoPlayerGUI.PADDING);
+
+        final SelectBox<String> selectBox = new SelectBox<>(skin);
+        final String[] ratioLabels = {"AUTO", "1:1", "4:3", "16:10", "16:9", "2:1"};
+        final float[] ratios = new float[]{-1f, 1f, 4f / 3f, 16f / 10f, 16f / 9f, 2f / 1f};
+        selectBox.setItems(ratioLabels);
+        selectBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                videoPlayer.setAspectRatio(ratios[selectBox.getSelectedIndex()]);
+            }
+        });
+        table.add(selectBox).padTop(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING);
     }
 
     @Override
     public void attach(VirtualStage stage) {
-        stage.addActor(tableMain);
+        stage.addActor(table);
     }
 
     @Override
     public boolean isVisible() {
-        return tableMain.isVisible();
+        return table.isVisible();
     }
 
     @Override
     public void setVisible(boolean visible) {
-        tableMain.setVisible(visible);
+        table.setVisible(visible);
     }
 }

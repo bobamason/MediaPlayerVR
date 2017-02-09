@@ -425,6 +425,13 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     public abstract long getDuration();
 
+    public void setAspectRatio(float ratio) {
+        if (ratio < 0)
+            updateAspectRatio();
+        else
+            aspectRatio = ratio;
+    }
+
     public interface VideoSizeListener {
         void onVideoSizeChanged(float width, float height);
     }

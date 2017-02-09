@@ -15,6 +15,7 @@ import net.masonapps.mediaplayervr.Icons;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 
+import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
 import java.util.Locale;
@@ -98,7 +99,7 @@ public class VideoPlayerGUI implements Disposable {
     }
 
     public void update() {
-        stage.act();
+        stage.act(Math.min(GdxVr.graphics.getDeltaTime(), 0.0333333f));
         final VrVideoPlayer videoPlayer = videoPlayerScreen.getVideoPlayer();
         if (stage.isVisible() && mainLayout.isVisible() && videoPlayer.isPrepared()) {
             final long duration = videoPlayer.getDuration();
