@@ -3,6 +3,8 @@ package net.masonapps.mediaplayervr.video.ui;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
+import net.masonapps.mediaplayervr.vrinterface.Attachable;
+
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
 /**

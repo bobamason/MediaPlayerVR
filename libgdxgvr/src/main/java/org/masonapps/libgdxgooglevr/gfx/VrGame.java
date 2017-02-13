@@ -65,8 +65,16 @@ public abstract class VrGame extends VrApplicationAdapter {
     public void dispose() {
         super.dispose();
         if (screen != null) {
-            screen.hide();
-            screen.dispose();
+            try {
+                screen.hide();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                screen.dispose();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -75,10 +83,18 @@ public abstract class VrGame extends VrApplicationAdapter {
     }
 
     public void setScreen(VrScreen screen) {
-        if (this.screen != null)
-            this.screen.hide();
+        try {
+            if (this.screen != null)
+                this.screen.hide();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         this.screen = screen;
-        if (this.screen != null) 
-            this.screen.show();
+        try {
+            if (this.screen != null)
+                this.screen.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

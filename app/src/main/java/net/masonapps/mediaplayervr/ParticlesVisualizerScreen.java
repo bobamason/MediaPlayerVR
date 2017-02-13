@@ -16,7 +16,7 @@ import com.badlogic.gdx.graphics.g3d.particles.influencers.RegionInfluencer;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.ScaleInfluencer;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.SpawnInfluencer;
 import com.badlogic.gdx.graphics.g3d.particles.renderers.BillboardRenderer;
-import com.badlogic.gdx.graphics.g3d.particles.values.PointSpawnShapeValue;
+import com.badlogic.gdx.graphics.g3d.particles.values.EllipseSpawnShapeValue;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.google.vr.sdk.controller.Controller;
@@ -84,14 +84,15 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
         emitter.setMaxParticleCount(2000);
 
         //Spawn
-        final PointSpawnShapeValue pointSpawnShapeValue = new PointSpawnShapeValue();
-        pointSpawnShapeValue.xOffsetValue.setLow(0, 0.015f);
-        pointSpawnShapeValue.xOffsetValue.setActive(true);
-        pointSpawnShapeValue.yOffsetValue.setLow(0, 0.015f);
-        pointSpawnShapeValue.yOffsetValue.setActive(true);
-        pointSpawnShapeValue.zOffsetValue.setLow(0, 0.015f);
-        pointSpawnShapeValue.zOffsetValue.setActive(true);
-        SpawnInfluencer spawnSource = new SpawnInfluencer(pointSpawnShapeValue);
+        final EllipseSpawnShapeValue ellipseSpawnShapeValue = new EllipseSpawnShapeValue();
+        ellipseSpawnShapeValue.xOffsetValue.setLow(0, 1.5f);
+        ellipseSpawnShapeValue.xOffsetValue.setActive(true);
+        ellipseSpawnShapeValue.yOffsetValue.setLow(0, 1.5f);
+        ellipseSpawnShapeValue.yOffsetValue.setActive(true);
+        ellipseSpawnShapeValue.zOffsetValue.setLow(0, 0.015f);
+        ellipseSpawnShapeValue.zOffsetValue.setActive(true);
+        ellipseSpawnShapeValue.setEdges(true);
+        SpawnInfluencer spawnSource = new SpawnInfluencer(ellipseSpawnShapeValue);
 
         //Scale
         scaleInfluencer = new ScaleInfluencer();

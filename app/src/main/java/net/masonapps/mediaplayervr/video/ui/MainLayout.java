@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
+import net.masonapps.mediaplayervr.vrinterface.Attachable;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 

@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 import net.masonapps.mediaplayervr.video.VideoMode;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
+import net.masonapps.mediaplayervr.vrinterface.Attachable;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 

@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
+import net.masonapps.mediaplayervr.vrinterface.Attachable;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 

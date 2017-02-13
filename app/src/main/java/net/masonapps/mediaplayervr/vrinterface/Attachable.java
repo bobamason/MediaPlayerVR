@@ -1,4 +1,4 @@
-package net.masonapps.mediaplayervr.video.ui;
+package net.masonapps.mediaplayervr.vrinterface;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 

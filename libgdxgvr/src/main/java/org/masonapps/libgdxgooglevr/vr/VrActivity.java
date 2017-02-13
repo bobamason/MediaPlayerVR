@@ -89,8 +89,8 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
         }
 
         setContentView(R.layout.vr_application_layout);
-
         final GvrView gvrView = (GvrView) findViewById(R.id.gvr_view);
+        setGvrView(gvrView);
 
         graphics = new VrGraphics(this, gvrView, config);
         input = VrAndroidInput.newInstance(this);
@@ -145,8 +145,6 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
         controllerManager = new ControllerManager(this, listener);
         controller = controllerManager.getController();
         controller.setEventListener(listener);
-
-        setGvrView(gvrView);
     }
 
     protected void createWakeLock(boolean use) {

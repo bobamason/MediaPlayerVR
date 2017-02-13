@@ -1,4 +1,6 @@
-package net.masonapps.mediaplayervr.video.ui;
+package net.masonapps.mediaplayervr.audiovisualization.ui;
+
+import android.media.MediaPlayer;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,8 +14,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 
 import net.masonapps.mediaplayervr.Style;
-import net.masonapps.mediaplayervr.VideoPlayerScreen;
-import net.masonapps.mediaplayervr.video.VrVideoPlayer;
+import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
@@ -21,51 +22,30 @@ import org.masonapps.libgdxgooglevr.input.VirtualStage;
 import java.util.Locale;
 
 /**
- * Created by Bob on 2/8/2017.
+ * Created by Bob on 2/13/2017.
  */
 
-public class VideoPlayerGUI implements Disposable {
+public class MusicPlayerUI implements Disposable {
     public static final int PADDING = 10;
-    private final MainLayout mainLayout;
-    private final ModeLayout modeLayout;
-    private final VideoPlayerScreen videoPlayerScreen;
+    private final MusicMainLayout mainLayout;
     private final Skin skin;
-    private final AspectRatioLayout aspectRatioLayout;
-    private final CameraSettingsLayout cameraSettingsLayout;
-    private final PlaybackSettingsLayout playbackSettingsLayout;
+    private MusicVisualizerScreen musicVisualizerScreen;
     private float headerHeight = PADDING;
     private VirtualStage stage;
 
-    public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, Skin skin) {
-        this.videoPlayerScreen = videoPlayerScreen;
+    public MusicPlayerUI(MusicVisualizerScreen musicVisualizerScreen, Skin skin) {
+        this.musicVisualizerScreen = musicVisualizerScreen;
         this.skin = skin;
 
-        mainLayout = new MainLayout(this);
-        modeLayout = new ModeLayout(this);
-        aspectRatioLayout = new AspectRatioLayout(this);
-        cameraSettingsLayout = new CameraSettingsLayout(this);
-        playbackSettingsLayout = new PlaybackSettingsLayout(this);
-
+        mainLayout = new MusicMainLayout(this);
         stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 1080, 1080);
-        stage.set3DTransform(new Vector3(0, -0.5f, -2.5f), videoPlayerScreen.getVrCamera().position);
+        stage.set3DTransform(new Vector3(0, -0.5f, -2.5f), musicVisualizerScreen.getVrCamera().position);
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
         bg.setFillParent(true);
         stage.addActor(bg);
-        
+
         mainLayout.attach(stage);
         mainLayout.setVisible(true);
-
-        modeLayout.attach(stage);
-        modeLayout.setVisible(false);
-
-        aspectRatioLayout.attach(stage);
-        aspectRatioLayout.setVisible(false);
-
-        cameraSettingsLayout.attach(stage);
-        cameraSettingsLayout.setVisible(false);
-
-        playbackSettingsLayout.attach(stage);
-        playbackSettingsLayout.setVisible(false);
 
         stage.getViewport().update(1080, 720);
 
@@ -83,7 +63,7 @@ public class VideoPlayerGUI implements Disposable {
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                VideoPlayerGUI.this.videoPlayerScreen.setUiVisible(false);
+                MusicPlayerUI.this.musicVisualizerScreen.setUiVisible(false);
             }
         });
         stage.addActor(closeButton);
@@ -121,13 +101,13 @@ public class VideoPlayerGUI implements Disposable {
 
     public void update() {
         stage.act(Math.min(GdxVr.graphics.getDeltaTime(), 0.0333333f));
-        final VrVideoPlayer videoPlayer = videoPlayerScreen.getVideoPlayer();
-        if (stage.isVisible() && mainLayout.isVisible() && videoPlayer.isPrepared()) {
-            final long duration = videoPlayer.getDuration();
-            mainLayout.timeLabel.setText(getTimeLabelString(videoPlayer.getCurrentPosition(), duration));
+        final MediaPlayer player = musicVisualizerScreen.getMediaPlayer();
+        if (stage.isVisible() && mainLayout.isVisible() && !musicVisualizerScreen.isLoading()) {
+            final long duration = player.getDuration();
+            mainLayout.timeLabel.setText(getTimeLabelString(player.getCurrentPosition(), duration));
             if (duration != 0) {
                 mainLayout.slider.setStepSize(1f / duration);
-                mainLayout.slider.setValue((float) videoPlayer.getCurrentPosition() / duration);
+                mainLayout.slider.setValue((float) player.getCurrentPosition() / duration);
             }
         }
     }
@@ -136,8 +116,8 @@ public class VideoPlayerGUI implements Disposable {
         return stage;
     }
 
-    public VideoPlayerScreen getVideoPlayerScreen() {
-        return videoPlayerScreen;
+    public MusicVisualizerScreen getMusicVisualizerScreen() {
+        return musicVisualizerScreen;
     }
 
     public Skin getSkin() {
@@ -156,41 +136,5 @@ public class VideoPlayerGUI implements Disposable {
 
     public void switchToMainLayout() {
         mainLayout.setVisible(true);
-        modeLayout.setVisible(false);
-        aspectRatioLayout.setVisible(false);
-        cameraSettingsLayout.setVisible(false);
-        playbackSettingsLayout.setVisible(false);
-    }
-
-    public void switchToModeLayout() {
-        mainLayout.setVisible(false);
-        modeLayout.setVisible(true);
-        aspectRatioLayout.setVisible(false);
-        cameraSettingsLayout.setVisible(false);
-        playbackSettingsLayout.setVisible(false);
-    }
-
-    public void switchToAspectRatioLayout() {
-        mainLayout.setVisible(false);
-        modeLayout.setVisible(false);
-        aspectRatioLayout.setVisible(true);
-        cameraSettingsLayout.setVisible(false);
-        playbackSettingsLayout.setVisible(false);
-    }
-
-    public void switchToCameraSettingsLayout() {
-        mainLayout.setVisible(false);
-        modeLayout.setVisible(false);
-        aspectRatioLayout.setVisible(false);
-        cameraSettingsLayout.setVisible(true);
-        playbackSettingsLayout.setVisible(false);
-    }
-
-    public void switchToPlaybackSettingsLayout() {
-        mainLayout.setVisible(false);
-        modeLayout.setVisible(false);
-        aspectRatioLayout.setVisible(false);
-        cameraSettingsLayout.setVisible(false);
-        playbackSettingsLayout.setVisible(true);
     }
 }
