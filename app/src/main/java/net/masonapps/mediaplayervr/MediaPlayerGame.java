@@ -2,11 +2,12 @@ package net.masonapps.mediaplayervr;
 
 import android.content.Context;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.SkinLoader;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -15,7 +16,10 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.media.SongDetails;
@@ -30,13 +34,12 @@ import org.masonapps.libgdxgooglevr.gfx.VrGame;
  */
 
 public class MediaPlayerGame extends VrGame {
-    public static final String SKIN_FILENAME = "skin/neon/neon-ui.json";
-    public static final String SKIN_ATLAS_FILENAME = "skin/neon/neon-ui.atlas";
     public static final String ROOM_FILENAME = "room/dome_room.g3db";
     public static final String HIGHLIGHT_FILENAME = "room/dome_highlight.g3db";
     public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private static final String HIGHLIGHT_TEXTURE_FILENAME = "room/tiled_bg.png";
+    private static final String DEFAULT = "default";
     private final Context context;
     private Skin skin;
     private Entity roomEntity;
@@ -60,11 +63,10 @@ public class MediaPlayerGame extends VrGame {
         super.create();
         loadingScreen = new LoadingScreen(this);
         setScreen(loadingScreen);
+        skin = new Skin();
         assets = new AssetManager();
-        assets.load(Icons.buttons_pack, TextureAtlas.class);
-        assets.load(SKIN_ATLAS_FILENAME, TextureAtlas.class);
+        assets.load(Style.ATLAS_FILE, TextureAtlas.class);
         assets.load(HIGHLIGHT_TEXTURE_FILENAME, Texture.class);
-        assets.load(SKIN_FILENAME, Skin.class, new SkinLoader.SkinParameter(SKIN_ATLAS_FILENAME));
         assets.load(ROOM_FILENAME, Model.class);
         assets.load(HIGHLIGHT_FILENAME, Model.class);
         assets.load(FLOOR_FILENAME, Model.class);
@@ -77,8 +79,8 @@ public class MediaPlayerGame extends VrGame {
         super.update();
         if (loading) {
             if (assets.update()) {
-                skin = assets.get(SKIN_FILENAME, Skin.class);
-                skin.addRegions(assets.get(Icons.buttons_pack, TextureAtlas.class));
+                skin.addRegions(assets.get(Style.ATLAS_FILE, TextureAtlas.class));
+                setupSkin();
 
                 final Model model = assets.get(ROOM_FILENAME, Model.class);
                 model.materials.get(0).set(ColorAttribute.createDiffuse(Color.BLACK), ColorAttribute.createSpecular(Color.WHITE), FloatAttribute.createShininess(8f));
@@ -103,6 +105,41 @@ public class MediaPlayerGame extends VrGame {
                 loading = false;
             }
         }
+    }
+
+    private void setupSkin() {
+        addFont();
+        addSliderStyle();
+        addButtonStyle();
+        addLabelStyle();
+        addImageButtons();
+    }
+
+    private void addFont() {
+        skin.add(DEFAULT, new BitmapFont(Gdx.files.internal(Style.FONT_FILE), skin.getRegion(Style.FONT_REGION)), BitmapFont.class);
+    }
+
+    private void addSliderStyle() {
+        skin.add("default-horizontal", new Slider.SliderStyle(skin.newDrawable(Style.Drawables.slider, Style.COLOR_UP), skin.newDrawable(Style.Drawables.slider_knob, Style.COLOR_UP)), Slider.SliderStyle.class);
+    }
+
+    private void addButtonStyle() {
+        final TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+        textButtonStyle.font = skin.getFont(DEFAULT);
+        textButtonStyle.up = skin.newDrawable(Style.Drawables.button, Style.COLOR_UP);
+        textButtonStyle.over = skin.newDrawable(Style.Drawables.button, Style.COLOR_OVER);
+        textButtonStyle.down = skin.newDrawable(Style.Drawables.button, Style.COLOR_DOWN);
+        textButtonStyle.checked = skin.newDrawable(Style.Drawables.button, Style.COLOR_OVER);
+        textButtonStyle.fontColor = Color.WHITE;
+        skin.add(DEFAULT, textButtonStyle, TextButton.TextButtonStyle.class);
+    }
+
+    private void addLabelStyle() {
+        skin.add(DEFAULT, new Label.LabelStyle(skin.getFont(DEFAULT), Color.WHITE), Label.LabelStyle.class);
+    }
+
+    private void addImageButtons() {
+        
     }
 
     @Override

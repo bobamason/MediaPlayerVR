@@ -157,7 +157,7 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-        if (!isLoading) {
+        if (!isLoading && !prepared) {
             prepared = true;
             updateAspectRatio();
         }

@@ -89,6 +89,7 @@ public class VirtualStage extends Stage implements VrInputProcessor {
             xaxis.set(Vector3.Y).crs(plane.normal).nor();
             yaxis.set(plane.normal).crs(xaxis).nor();
             tmpV2.set(xaxis.dot(tmpV3_2), yaxis.dot(tmpV3_2));
+            bounds.set(0, 0, getViewport().getCamera().viewportWidth / worldToPixelScale.x, getViewport().getCamera().viewportHeight / worldToPixelScale.y);
             if (bounds.contains(tmpV2)) {
                 hitPoint2DPixels.set(tmpV2).scl(worldToPixelScale);
                 isCursorOver = true;

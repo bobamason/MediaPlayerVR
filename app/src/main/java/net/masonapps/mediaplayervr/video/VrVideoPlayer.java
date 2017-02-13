@@ -50,10 +50,11 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     protected VideoMode videoMode;
     protected float aspectRatio = 1f;
     //    protected float targetAspectRatio = 1f;
-    protected float modelSize = 10f;
+    protected float modelSize = 50f;
     protected Context context;
     private int width;
     private int height;
+    private Vector2 stretch = new Vector2();
 
     public VrVideoPlayer(Context context, Uri uri, int width, int height) {
         this(context, uri, width, height, VideoMode.Mono);
@@ -120,11 +121,12 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         aspectRatio = w / h;
 
         if (use180Sphere()) {
-            texScale.set(1f, aspectRatio);
-            texOffset.set(0f, (1f - aspectRatio) * 0.5f);
+            texScale.set(1f, aspectRatio).add(stretch);
+//            texOffset.set(0f, (1f - aspectRatio) * 0.5f);
+            texOffset.set(1f, 1f).sub(texScale).scl(0.5f);
         } else {
-            texScale.set(1f, 1f);
-            texOffset.set(0f, 0f);
+            texScale.set(1f, 1f).add(stretch);
+            texOffset.set(1f, 1f).sub(texScale).scl(0.5f);
         }
     }
 
@@ -218,9 +220,9 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     protected void mapDistortModel(int eyeType) {
         if (aspectRatio <= 1f) {
-            modelInstance.transform.idt().scale(aspectRatio * modelSize, modelSize, modelSize);
+            modelInstance.transform.idt().scale(aspectRatio * modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
         } else {
-            modelInstance.transform.idt().scale(modelSize, modelSize / aspectRatio, modelSize);
+            modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize / aspectRatio + stretch.y * modelSize, modelSize);
         }
         if (isStereoscopic) {
             if (isHorizontalSplit) {
@@ -430,6 +432,12 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             updateAspectRatio();
         else
             aspectRatio = ratio;
+    }
+
+    public void setStretch(Vector2 stretch) {
+        this.stretch.set(stretch);
+        if (!useFlatRectangle())
+            updateAspectRatio();
     }
 
     public interface VideoSizeListener {

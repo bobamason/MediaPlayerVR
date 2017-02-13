@@ -18,6 +18,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AndroidGraphics;
 import com.badlogic.gdx.backends.android.AndroidInput;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -81,8 +82,10 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
     //    private final AndroidOnscreenKeyboard onscreenKeyboard;
     private long currentEventTimeStamp = System.nanoTime();
     private Controller controller;
-    private boolean inputProcessorTouched = false;
-    private Vector3 handPosition = new Vector3(0, -0.3f, -0.3f);
+    private boolean isInputProcessorTouched = false;
+    private Vector3 handPosition = new Vector3(0, -0.45f, -0.3f);
+    private GridPoint2 touch = new GridPoint2(-1, -1);
+    private GridPoint2 lastTouch = new GridPoint2(-1, -1);
 
     private VrAndroidInput(Application application, Context context, AndroidApplicationConfiguration configuration) {
         super(application, context, null, configuration);
@@ -180,26 +183,26 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public int getX() {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return getX(0);
     }
 
     @Override
     public int getY() {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return getY(0);
     }
 
     @Override
     public int getX(int pointer) {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return pointer == 0 ? touch.x : -1;
     }
 
     @Override
     public int getY(int pointer) {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return pointer == 0 ? touch.y : -1;
     }
 
     public boolean isTouched(int pointer) {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return isInputProcessorTouched && pointer == 0;
     }
 
     @Override
@@ -226,7 +229,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public boolean isTouched() {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return isTouched(0);
     }
 
     public void processEvents() {
@@ -527,7 +530,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
     public InputProcessor getInputProcessor() {
         return this.processor;
     }
-    
+
     public void setInputProcessor(InputProcessor processor) {
         synchronized (this) {
             this.processor = processor;
@@ -571,22 +574,22 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public int getDeltaX() {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return getDeltaX(0);
     }
 
     @Override
     public int getDeltaX(int pointer) {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return pointer == 0 ? touch.x - lastTouch.x : 0;
     }
 
     @Override
     public int getDeltaY() {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return getDeltaY(0);
     }
 
     @Override
     public int getDeltaY(int pointer) {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return pointer == 0 ? touch.y - lastTouch.y : 0;
     }
 
     @Override
@@ -634,6 +637,28 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
             updateInputRay(controller);
             if (processor instanceof VrInputProcessor) {
                 ((VrInputProcessor) processor).performRayTest(inputRay);
+                if (((VrInputProcessor) processor).isCursorOver()) {
+//                    Log.d(VrAndroidInput.class.getSimpleName(), event.toString());
+                    final Vector2 hitPoint2D = ((VrInputProcessor) processor).getHitPoint2D();
+                    final int x = (int) hitPoint2D.x;
+                    final int y = (int) hitPoint2D.y;
+                    lastTouch.set(touch);
+                    touch.set(x, y);
+                    if (controller.clickButtonState && !isInputProcessorTouched) {
+                        postTouchEvent(TouchEvent.TOUCH_DOWN, x, y);
+                        isInputProcessorTouched = true;
+                    } else if (!controller.clickButtonState && isInputProcessorTouched) {
+                        postTouchEvent(TouchEvent.TOUCH_UP, x, y);
+                        isInputProcessorTouched = false;
+                    } else {
+                        postTouchEvent(isInputProcessorTouched ? TouchEvent.TOUCH_DRAGGED : TouchEvent.TOUCH_MOVED, x, y);
+                    }
+                } else {
+                    if (isInputProcessorTouched) {
+                        postTouchEvent(TouchEvent.TOUCH_UP, 0, 0);
+                    }
+                    isInputProcessorTouched = false;
+                }
             }
         } else {
             isControllerConnected = false;
@@ -647,6 +672,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         event.pointer = 0;
         event.x = x;
         event.y = y;
+        event.button = 0;
         event.type = type;
         touchEvents.add(event);
     }
@@ -703,29 +729,6 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public void onButtonEvent(Controller controller, DaydreamButtonEvent event) {
-        if (processor instanceof VrInputProcessor) {
-            if (((VrInputProcessor) processor).isCursorOver()) {
-//                    Log.d(VrAndroidInput.class.getSimpleName(), event.toString());
-                final Vector2 hitPoint2D = ((VrInputProcessor) processor).getHitPoint2D();
-                final int x = (int) hitPoint2D.x;
-                final int y = (int) hitPoint2D.y;
-                if (event.button == DaydreamButtonEvent.BUTTON_TOUCHPAD) {
-                    if (event.action == DaydreamButtonEvent.ACTION_DOWN) {
-                        postTouchEvent(TouchEvent.TOUCH_DOWN, x, y);
-                        inputProcessorTouched = true;
-                    } else if (event.action == DaydreamButtonEvent.ACTION_UP) {
-                        postTouchEvent(TouchEvent.TOUCH_UP, x, y);
-                        inputProcessorTouched = false;
-                    }
-                }
-                postTouchEvent(inputProcessorTouched ? TouchEvent.TOUCH_DRAGGED : TouchEvent.TOUCH_MOVED, x, y);
-            } else {
-                if (inputProcessorTouched) {
-                    postTouchEvent(TouchEvent.TOUCH_UP, 0, 0);
-                }
-                inputProcessorTouched = false;
-            }
-        }
     }
 
     @Override

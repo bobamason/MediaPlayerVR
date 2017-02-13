@@ -9,7 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import net.masonapps.mediaplayervr.Icons;
 import net.masonapps.mediaplayervr.video.VideoMode;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 
@@ -69,7 +68,6 @@ public class ModeLayout implements Attachable {
     public ModeLayout(VideoPlayerGUI videoPlayerGUI) {
         final Skin skin = videoPlayerGUI.getSkin();
         table = new Table(skin);
-        table.setBackground(Icons.WINDOW);
         table.padTop(videoPlayerGUI.getHeaderHeight());
         table.setFillParent(true);
         table.center();

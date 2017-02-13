@@ -2,6 +2,7 @@ package net.masonapps.mediaplayervr;
 
 import android.content.Context;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.badlogic.gdx.Gdx;
@@ -12,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -49,6 +51,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private static final int STATE_MUSIC_ARTIST_LIST = 2;
     private static final int STATE_MUSIC_SONG_LIST = 3;
     private static final int STATE_VIDEO_LIST = 4;
+    private static final int MAX_TITLE_LENGTH = 40;
     private final Context context;
     private Table tableStart;
     private Table tableMediaList;
@@ -78,8 +81,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         super(game);
         this.context = context;
         setBackgroundColor(Color.NAVY);
-        defaultAlbumDrawable = skin.newDrawable(Icons.ic_album_white_48dp);
-        defaultVideoDrawable = skin.newDrawable(Icons.ic_album_white_48dp);
+        defaultAlbumDrawable = skin.newDrawable(Style.Drawables.ic_album_white_48dp);
+        defaultVideoDrawable = skin.newDrawable(Style.Drawables.ic_album_white_48dp);
         initStage();
         if (!((MainActivity) context).isReadStoragePermissionGranted()) {
             tableStart.setVisible(false);
@@ -94,11 +97,14 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private void initStage() {
         final SpriteBatch batch = new SpriteBatch();
         manageDisposable(batch);
-        stage = new VirtualStage(batch, 2f, 1.5f, 640, 480);
+        stage = new VirtualStage(batch, 2f, 1.5f, 1080, 810);
         manageDisposable(stage);
         stage.set3DTransform(new Vector3(0, 0, -3f), getVrCamera().position);
+        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+        bg.setFillParent(true);
+        stage.addActor(bg);
 
-        backButton = new ImageButton(skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.LIGHT_GRAY));
+        backButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_UP_2), skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_DOWN_2));
         stage.addActor(backButton);
         backButton.setPosition(2, stage.getViewport().getWorldHeight() - 2 - backButton.getHeight());
         backButton.setVisible(false);
@@ -116,7 +122,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
     private void addPermissionsTable() {
         tablePermissions = new Table(skin);
-        tablePermissions.setBackground(Icons.WINDOW);
         tablePermissions.setFillParent(true);
         stage.addActor(tablePermissions);
         tablePermissions.setVisible(false);
@@ -140,7 +145,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
     private void addStartTable() {
         tableStart = new Table(skin);
-        tableStart.setBackground(Icons.WINDOW);
         tableStart.setFillParent(true);
         stage.addActor(tableStart);
         final TextButton videosButton = new TextButton(context.getString(R.string.videos), skin);
@@ -205,7 +209,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
     private void addListTable() {
         tableMediaList = new Table(skin);
-        tableMediaList.setBackground(Icons.WINDOW);
         tableMediaList.setFillParent(true);
         stage.addActor(tableMediaList);
         tableMediaList.setVisible(false);
@@ -256,7 +259,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
     
     private void addPageArrows(Table table) {
-        prevPageButon = new ImageButton(skin.newDrawable(Icons.ic_chevron_left_white_48dp), skin.newDrawable(Icons.ic_chevron_left_white_48dp, Color.GRAY));
+        prevPageButon = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp, Color.GRAY));
         prevPageButon.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -267,7 +270,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
         pageLabel = new Label("page 0/0", skin);
         tableMediaList.add(pageLabel).center();
-        nextPageButton = new ImageButton(skin.newDrawable(Icons.ic_chevron_right_white_48dp), skin.newDrawable(Icons.ic_chevron_right_white_48dp, Color.GRAY));
+        nextPageButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp, Color.GRAY));
         nextPageButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -408,7 +411,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                     textButton.setText("");
                 } else {
                     textButton.setVisible(true);
-                    textButton.setText(list.get(index).title);
+                    textButton.setText(getTruncatedTitle(list.get(index).title));
                 }
             }else {
                 final ImageButton imageButton = imageButtons.get(i);
@@ -420,7 +423,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                     imageButton.getImage().setDrawable(defaultDrawable);
                 } else {
                     label.setVisible(true);
-                    label.setText(list.get(index).title);
+                    label.setText(getTruncatedTitle(list.get(index).title));
                     imageButton.setVisible(true);
                     final String thumbnailPath = list.get(i).thumbnailPath;
                     if (thumbnailPath != null) {
@@ -433,6 +436,14 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 }
             }
         }
+    }
+
+    @NonNull
+    private String getTruncatedTitle(String title) {
+        if (title.length() > MAX_TITLE_LENGTH) {
+            title = title.substring(0, MAX_TITLE_LENGTH - 3) + "...";
+        }
+        return title;
     }
 
     private void displayVideoList(int page) {

@@ -1,17 +1,17 @@
 package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 
-import net.masonapps.mediaplayervr.Icons;
+import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 
@@ -30,24 +30,46 @@ public class VideoPlayerGUI implements Disposable {
     private final ModeLayout modeLayout;
     private final VideoPlayerScreen videoPlayerScreen;
     private final Skin skin;
+    private final AspectRatioLayout aspectRatioLayout;
+    private final CameraSettingsLayout cameraSettingsLayout;
+    private final PlaybackSettingsLayout playbackSettingsLayout;
     private float headerHeight = PADDING;
     private VirtualStage stage;
 
     public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, Skin skin) {
         this.videoPlayerScreen = videoPlayerScreen;
         this.skin = skin;
+
         mainLayout = new MainLayout(this);
         modeLayout = new ModeLayout(this);
-        stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 640, 640);
+        aspectRatioLayout = new AspectRatioLayout(this);
+        cameraSettingsLayout = new CameraSettingsLayout(this);
+        playbackSettingsLayout = new PlaybackSettingsLayout(this);
+
+        stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 1080, 1080);
         stage.set3DTransform(new Vector3(0, -0.5f, -2.5f), videoPlayerScreen.getVrCamera().position);
+        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+        bg.setFillParent(true);
+        stage.addActor(bg);
+        
         mainLayout.attach(stage);
         mainLayout.setVisible(true);
+
         modeLayout.attach(stage);
         modeLayout.setVisible(false);
 
-        stage.getViewport().update(640, 420);
+        aspectRatioLayout.attach(stage);
+        aspectRatioLayout.setVisible(false);
 
-        final ImageButton backButton = new ImageButton(skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_arrow_back_white_48dp, Color.LIGHT_GRAY));
+        cameraSettingsLayout.attach(stage);
+        cameraSettingsLayout.setVisible(false);
+
+        playbackSettingsLayout.attach(stage);
+        playbackSettingsLayout.setVisible(false);
+
+        stage.getViewport().update(1080, 720);
+
+        final ImageButton backButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_UP_2), skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_DOWN_2));
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -57,7 +79,7 @@ public class VideoPlayerGUI implements Disposable {
         stage.addActor(backButton);
         backButton.setPosition(PADDING, stage.getHeight() - PADDING, Align.topLeft);
 
-        final ImageButton closeButton = new ImageButton(skin.newDrawable(Icons.ic_cancel_white_48dp, Color.WHITE), skin.newDrawable(Icons.ic_cancel_white_48dp, Color.LIGHT_GRAY));
+        final ImageButton closeButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_close_white_48dp, Style.COLOR_UP_2), skin.newDrawable(Style.Drawables.ic_close_white_48dp, Style.COLOR_DOWN_2));
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -87,9 +109,8 @@ public class VideoPlayerGUI implements Disposable {
 
     public void backButtonClicked() {
         if (stage.isVisible()) {
-            if (modeLayout.isVisible()) {
-                modeLayout.setVisible(false);
-                mainLayout.setVisible(true);
+            if (!mainLayout.isVisible()) {
+                switchToMainLayout();
             }
         }
     }
@@ -131,8 +152,43 @@ public class VideoPlayerGUI implements Disposable {
         stage = null;
     }
 
+    public void switchToMainLayout() {
+        mainLayout.setVisible(true);
+        modeLayout.setVisible(false);
+        aspectRatioLayout.setVisible(false);
+        cameraSettingsLayout.setVisible(false);
+        playbackSettingsLayout.setVisible(false);
+    }
+
     public void switchToModeLayout() {
-        modeLayout.setVisible(true);
         mainLayout.setVisible(false);
+        modeLayout.setVisible(true);
+        aspectRatioLayout.setVisible(false);
+        cameraSettingsLayout.setVisible(false);
+        playbackSettingsLayout.setVisible(false);
+    }
+
+    public void switchToAspectRatioLayout() {
+        mainLayout.setVisible(false);
+        modeLayout.setVisible(false);
+        aspectRatioLayout.setVisible(true);
+        cameraSettingsLayout.setVisible(false);
+        playbackSettingsLayout.setVisible(false);
+    }
+
+    public void switchToCameraSettingsLayout() {
+        mainLayout.setVisible(false);
+        modeLayout.setVisible(false);
+        aspectRatioLayout.setVisible(false);
+        cameraSettingsLayout.setVisible(true);
+        playbackSettingsLayout.setVisible(false);
+    }
+
+    public void switchToPlaybackSettingsLayout() {
+        mainLayout.setVisible(false);
+        modeLayout.setVisible(false);
+        aspectRatioLayout.setVisible(false);
+        cameraSettingsLayout.setVisible(false);
+        playbackSettingsLayout.setVisible(true);
     }
 }

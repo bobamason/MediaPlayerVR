@@ -24,20 +24,14 @@ vec3 cartesianToSpherical(vec3 c){
     if(r == 0.0)
         return s;
     s.x = r;
-    s.y = atan(c.y, c.x);
-    s.z = acos(c.z / r);
+    s.y = atan(-c.z, c.x);
+    s.z = acos(c.y / r);
     return s;
 }
 
 void main(){
     vec3 s = cartesianToSpherical(v_position);
-//    float p = dot(texture2D(diffuseTexture, v_texCoord).rgb, vec3(1.0 / 3.0));
-    float p = dot(texture2D(diffuseTexture, vec2((s.y + PI) / PI2, s.z / PI)).rgb, vec3(1.0 / 3.0));
-    float lum = sin(PI2 * p + u_time);
-//    float lum = sin(s.y * 8.0 + u_time);
-//    lum += sin(s.z * 6.0 + u_time);
-    float step = smoothstep(0.0, 0.75, lum);
-    gl_FragColor.rgb = mix(u_color.rgb * 0.25, u_color.rgb, step);
-//    gl_FragColor.rgb = texture2D(diffuseTexture, s.yz).rgb;
+//    vec3 c = texture2D(diffuseTexture, vec2((s.y + PI) / PI2 * 4.0 + cos(u_time), s.z / PI * 4.0 + sin(u_time * 3.0))).rgb;
+    gl_FragColor.rgb = ((sin(s.y * 16.0 + u_time) + sin(s.z * 4.0 + u_time) + cos(length(s.yz) + u_time)) * 0.5 + 0.5) * u_color.rgb;
     gl_FragColor.a = 1.0;
 }
