@@ -24,8 +24,9 @@ public class PlaybackSettingsLayout implements Attachable {
     private static final float STEP = 0.01f;
     private final Table table;
     private Vector2 stretch = new Vector2();
+    private float z = 0f;
 
-    public PlaybackSettingsLayout(VideoPlayerGUI videoPlayerGUI) {
+    public PlaybackSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
         final Skin skin = videoPlayerGUI.getSkin();
         table = new Table(skin);
         table.padTop(videoPlayerGUI.getHeaderHeight());
@@ -38,7 +39,7 @@ public class PlaybackSettingsLayout implements Attachable {
         xLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stretch.x -= STEP;
+                stretch.x += STEP;
                 player.setStretch(stretch);
             }
         });
@@ -50,7 +51,7 @@ public class PlaybackSettingsLayout implements Attachable {
         xRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stretch.x += STEP;
+                stretch.x -= STEP;
                 player.setStretch(stretch);
             }
         });
@@ -60,7 +61,7 @@ public class PlaybackSettingsLayout implements Attachable {
         yLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stretch.y -= STEP;
+                stretch.y += STEP;
                 player.setStretch(stretch);
             }
         });
@@ -72,11 +73,33 @@ public class PlaybackSettingsLayout implements Attachable {
         yRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stretch.y += STEP;
+                stretch.y -= STEP;
                 player.setStretch(stretch);
             }
         });
         table.add(yRight).pad(VideoPlayerGUI.PADDING).row();
+
+        final ImageButton zLeft = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp, Color.LIGHT_GRAY));
+        zLeft.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                z += STEP * 2f;
+                videoPlayerGUI.getVideoPlayerScreen().setZ(z);
+            }
+        });
+        table.add(zLeft).pad(VideoPlayerGUI.PADDING);
+
+        table.add(new Label(" Z ", skin)).pad(VideoPlayerGUI.PADDING);
+
+        final ImageButton zRight = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp, Color.LIGHT_GRAY));
+        zRight.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                z -= STEP * 2f;
+                videoPlayerGUI.getVideoPlayerScreen().setZ(z);
+            }
+        });
+        table.add(zRight).pad(VideoPlayerGUI.PADDING).row();
     }
 
     @Override

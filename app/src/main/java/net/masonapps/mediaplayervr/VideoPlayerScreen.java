@@ -190,4 +190,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public VrVideoPlayer getVideoPlayer() {
         return videoPlayer;
     }
+
+    public void setZ(float z) {
+        getVrCamera().position.z = z;
+    }
 }

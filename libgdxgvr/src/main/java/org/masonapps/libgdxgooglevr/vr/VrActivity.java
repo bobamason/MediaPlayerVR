@@ -34,7 +34,6 @@ import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.GdxNativesLoader;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.SnapshotArray;
-import com.google.vr.sdk.base.AndroidCompat;
 import com.google.vr.sdk.base.GvrActivity;
 import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.controller.Controller;
@@ -135,12 +134,12 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
 
 //        gvrView.enableCardboardTriggerEmulation();
 //        gvrView.setAsyncReprojectionEnabled(false);
-        if (gvrView.setAsyncReprojectionEnabled(true)) {
-//            // Async reprojection decouples the app framerate from the display framerate,
-//            // allowing immersive interaction even at the throttled clockrates set by
-//            // sustained performance mode.
-            AndroidCompat.setSustainedPerformanceMode(this, true);
-        }
+//        if (gvrView.setAsyncReprojectionEnabled(true)) {
+////            // Async reprojection decouples the app framerate from the display framerate,
+////            // allowing immersive interaction even at the throttled clockrates set by
+////            // sustained performance mode.
+//            AndroidCompat.setSustainedPerformanceMode(this, true);
+//        }
         final EventListener listener = new EventListener();
         controllerManager = new ControllerManager(this, listener);
         controller = controllerManager.getController();

@@ -5,151 +5,159 @@ filter: Nearest,Nearest
 repeat: none
 Roboto-hdpi
   rotate: false
-  xy: 1, 297
+  xy: 1, 331
   size: 256, 512
   orig: 256, 512
   offset: 0, 0
   index: -1
 ic_album_white_48dp
   rotate: false
-  xy: 1, 223
+  xy: 1, 257
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_arrow_back_white_48dp
   rotate: false
-  xy: 259, 737
+  xy: 259, 771
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_chevron_left_white_48dp
   rotate: false
-  xy: 1, 149
+  xy: 1, 183
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_chevron_right_white_48dp
   rotate: false
-  xy: 75, 223
+  xy: 75, 257
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_close_white_48dp
   rotate: false
-  xy: 259, 663
+  xy: 259, 697
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_fast_forward_white_48dp
   rotate: false
-  xy: 333, 737
+  xy: 333, 771
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_fast_rewind_white_48dp
   rotate: false
-  xy: 1, 75
+  xy: 1, 109
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_first_page_white_48dp
   rotate: false
-  xy: 75, 149
+  xy: 75, 183
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_last_page_white_48dp
   rotate: false
-  xy: 149, 223
+  xy: 149, 257
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_movie_white_48dp
   rotate: false
-  xy: 259, 589
+  xy: 259, 623
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_pause_circle_filled_white_48dp
   rotate: false
-  xy: 333, 663
+  xy: 333, 697
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_play_circle_filled_white_48dp
   rotate: false
-  xy: 407, 737
+  xy: 407, 771
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_volume_down_white_48dp
   rotate: false
-  xy: 1, 1
+  xy: 1, 35
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_volume_off_white_48dp
   rotate: false
-  xy: 75, 75
+  xy: 75, 109
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
 ic_volume_up_white_48dp
   rotate: false
-  xy: 149, 149
+  xy: 149, 183
   size: 72, 72
   orig: 72, 72
   offset: 0, 0
   index: -1
-button
-  rotate: false
-  xy: 259, 523
-  size: 64, 64
-  split: 7, 6, 8, 6
-  orig: 64, 64
-  offset: 0, 0
-  index: -1
 window
   rotate: false
-  xy: 333, 597
+  xy: 259, 557
   size: 64, 64
   split: 13, 12, 12, 11
   orig: 64, 64
   offset: 0, 0
   index: -1
-slider
+button
   rotate: false
-  xy: 223, 271
-  size: 28, 24
-  split: 9, 9, 0, 24
-  orig: 28, 24
+  xy: 223, 297
+  size: 32, 32
+  split: 7, 7, 7, 8
+  orig: 32, 32
   offset: 0, 0
   index: -1
-slider
+button_down
   rotate: false
-  xy: 223, 271
-  size: 28, 24
-  orig: 28, 24
+  xy: 333, 663
+  size: 32, 32
+  split: 7, 7, 8, 8
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+round_button
+  rotate: false
+  xy: 407, 737
+  size: 32, 32
+  orig: 32, 32
   offset: 0, 0
   index: -1
 slider_knob
   rotate: false
-  xy: 407, 711
-  size: 24, 24
-  orig: 24, 24
+  xy: 1, 1
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+slider
+  rotate: false
+  xy: 481, 811
+  size: 24, 32
+  split: 8, 7, 0, 32
+  orig: 24, 32
   offset: 0, 0
   index: -1
