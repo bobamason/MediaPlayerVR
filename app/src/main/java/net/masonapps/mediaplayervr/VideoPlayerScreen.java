@@ -2,12 +2,17 @@ package net.masonapps.mediaplayervr;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.google.vr.sdk.base.Eye;
+import com.google.vr.sdk.base.FieldOfView;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.media.VideoDetails;
@@ -35,15 +40,21 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private final VideoDetails videoDetails;
     private final Entity controllerEntity;
     private final VideoPlayerGUI ui;
+    private final PerspectiveCamera videoCamera;
+    private final FieldOfView fov = new FieldOfView();
+    private final float[] proj = new float[16];
     private Context context;
     private VrVideoPlayer videoPlayer;
     private boolean isButtonClicked = false;
     private long startPosition;
+    private float ipd;
+    private float zoom = 1f;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails) {
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
+        videoCamera = new PerspectiveCamera();
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
@@ -74,6 +85,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         GdxVr.app.getGvrView().setNeckModelFactor(0f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setProcessor(ui.getStage());
+        ipd = getDefaultIpd();
     }
 
     @Override
@@ -94,6 +106,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer.update();
     }
 
+    @Override
+    public void onDrawEye(Eye eye) {
+        final FieldOfView eyeFov = eye.getFov();
+        Log.i(VideoPlayerScreen.class.getSimpleName(), eyeFov.toString());
+        this.fov.setAngles(eyeFov.getLeft() * zoom, eyeFov.getRight() * zoom, eyeFov.getBottom() * zoom, eyeFov.getTop() * zoom);
+        super.onDrawEye(eye);
+    }
+
     @SuppressLint("MissingSuperCall")
     @Override
     public void render(Camera camera, int whichEye) {
@@ -103,7 +123,13 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         getWorld().render(getModelBatch(), environment);
         getModelBatch().end();
         if (videoPlayer != null) {
-            getModelBatch().begin(camera);
+            videoCamera.view.idt().translate(-camera.position.x, -camera.position.y, -camera.position.z).rotate(getHeadQuaternion()).translate(whichEye == Eye.Type.LEFT ? ipd * 0.5f : -ipd * 0.5f, 0f, 0f);
+            fov.toPerspectiveMatrix(camera.near, camera.far, proj, 0);
+            videoCamera.projection.set(proj);
+            videoCamera.combined.set(videoCamera.projection);
+            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
+
+            getModelBatch().begin(videoCamera);
             videoPlayer.render(getModelBatch(), whichEye);
             getModelBatch().end();
         }
@@ -192,6 +218,19 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     public void setZ(float z) {
-        getVrCamera().position.z = z;
+//        getVrCamera().position.z = z;
+        setZoom(z);
+    }
+
+    public void setZoom(float zoom) {
+        this.zoom = zoom;
+    }
+
+    public void setIpd(float ipd) {
+        this.ipd = ipd;
+    }
+
+    public float getDefaultIpd() {
+        return GdxVr.app.getGvrView().getInterpupillaryDistance();
     }
 }

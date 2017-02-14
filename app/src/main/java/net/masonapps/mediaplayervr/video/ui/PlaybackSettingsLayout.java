@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import net.masonapps.mediaplayervr.Style;
+import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.Attachable;
 
@@ -24,7 +25,8 @@ public class PlaybackSettingsLayout implements Attachable {
     private static final float STEP = 0.01f;
     private final Table table;
     private Vector2 stretch = new Vector2();
-    private float z = 0f;
+    private float z = 1f;
+    private float ipd = 0f;
 
     public PlaybackSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
         final Skin skin = videoPlayerGUI.getSkin();
@@ -83,23 +85,47 @@ public class PlaybackSettingsLayout implements Attachable {
         zLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                z += STEP * 2f;
+                z += STEP;
                 videoPlayerGUI.getVideoPlayerScreen().setZ(z);
             }
         });
         table.add(zLeft).pad(VideoPlayerGUI.PADDING);
 
-        table.add(new Label(" Z ", skin)).pad(VideoPlayerGUI.PADDING);
+        table.add(new Label(" Zoom ", skin)).pad(VideoPlayerGUI.PADDING);
 
         final ImageButton zRight = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp, Color.LIGHT_GRAY));
         zRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                z -= STEP * 2f;
+                z -= STEP;
                 videoPlayerGUI.getVideoPlayerScreen().setZ(z);
             }
         });
         table.add(zRight).pad(VideoPlayerGUI.PADDING).row();
+
+        final ImageButton ipdLeft = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp, Color.LIGHT_GRAY));
+        ipdLeft.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ipd -= STEP;
+                final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
+                screen.setIpd(screen.getDefaultIpd() + ipd);
+            }
+        });
+        table.add(ipdLeft).pad(VideoPlayerGUI.PADDING);
+
+        table.add(new Label(" IPD ", skin)).pad(VideoPlayerGUI.PADDING);
+
+        final ImageButton ipdRight = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp, Color.LIGHT_GRAY));
+        ipdRight.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ipd += STEP;
+                final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
+                screen.setIpd(screen.getDefaultIpd() + ipd);
+            }
+        });
+        table.add(ipdRight).pad(VideoPlayerGUI.PADDING).row();
     }
 
     @Override
