@@ -76,6 +76,8 @@ public class VrCamera extends Camera {
     }
 
     public void onDrawEye(Eye eye, Matrix4 parentMat, boolean updateFrustum) {
+        viewportWidth = eye.getViewport().width;
+        viewportHeight = eye.getViewport().height;
         view.setToTranslation(-position.x, -position.y, -position.z);
         view.mulLeft(tempM.set(eye.getEyeView()));
         if (parentMat != null) {

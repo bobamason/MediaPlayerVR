@@ -9,10 +9,10 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.google.vr.sdk.base.Eye;
-import com.google.vr.sdk.base.FieldOfView;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.media.VideoDetails;
@@ -41,14 +41,15 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private final Entity controllerEntity;
     private final VideoPlayerGUI ui;
     private final PerspectiveCamera videoCamera;
-    private final FieldOfView fov = new FieldOfView();
-    private final float[] proj = new float[16];
+    //    private final FieldOfView fov = new FieldOfView();
+//    private final float[] proj = new float[16];
     private Context context;
     private VrVideoPlayer videoPlayer;
     private boolean isButtonClicked = false;
     private long startPosition;
     private float ipd;
     private float zoom = 1f;
+    private float projZ;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails) {
         super(game);
@@ -60,7 +61,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer.setOnErrorListener(this);
         setBackgroundColor(Color.BLACK);
         ui = new VideoPlayerGUI(this, ((MediaPlayerGame) game).getSkin());
-        getVrCamera().near = 0.1f;
+        getVrCamera().near = 0.25f;
         getVrCamera().far = 100f;
         controllerEntity = getWorld().add(((MediaPlayerGame) game).getControllerEntity());
     }
@@ -86,6 +87,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setProcessor(ui.getStage());
         ipd = getDefaultIpd();
+        Log.i(VideoPlayerScreen.class.getSimpleName(), "default IPD = " + ipd);
     }
 
     @Override
@@ -108,9 +110,16 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     @Override
     public void onDrawEye(Eye eye) {
-        final FieldOfView eyeFov = eye.getFov();
-        Log.i(VideoPlayerScreen.class.getSimpleName(), eyeFov.toString());
-        this.fov.setAngles(eyeFov.getLeft() * zoom, eyeFov.getRight() * zoom, eyeFov.getBottom() * zoom, eyeFov.getTop() * zoom);
+//        final FieldOfView eyeFov = eye.getFov();
+//        Log.i(VideoPlayerScreen.class.getSimpleName(), eyeFov.toString());
+//        if(eye.getProjectionChanged()) {
+//            float l = (float) (-Math.tan(Math.toRadians((double) eyeFov.getLeft()))) * getVrCamera().near;
+//            float r = (float) Math.tan(Math.toRadians((double) eyeFov.getRight())) * getVrCamera().near;
+//            final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f;
+//            final float shift = (l + r) / 2f;
+//            projZ = ipdHalf * getVrCamera().near / shift;
+//        }
+//        this.fov.setAngles(eyeFov.getLeft() * zoom, eyeFov.getRight(), eyeFov.getBottom() * zoom, eyeFov.getTop() * zoom);
         super.onDrawEye(eye);
     }
 
@@ -123,9 +132,17 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         getWorld().render(getModelBatch(), environment);
         getModelBatch().end();
         if (videoPlayer != null) {
-            videoCamera.view.idt().translate(-camera.position.x, -camera.position.y, -camera.position.z).rotate(getHeadQuaternion()).translate(whichEye == Eye.Type.LEFT ? ipd * 0.5f : -ipd * 0.5f, 0f, 0f);
-            fov.toPerspectiveMatrix(camera.near, camera.far, proj, 0);
-            videoCamera.projection.set(proj);
+            videoCamera.view.setToLookAt(tempV.set(getRightVector()).scl(whichEye == Eye.Type.RIGHT ? ipd * 0.5f : -ipd * 0.5f).add(camera.position), getForwardVector(), getUpVector());
+            float aspect = getVrCamera().viewportWidth / getVrCamera().viewportHeight;
+            float fov = 100f * zoom;
+            float projZ = 0.94f;
+            float wd2 = getVrCamera().near * (float) Math.tan(Math.toRadians(fov) / 2d);
+            float shift = ipd * 0.5f * getVrCamera().near / projZ;
+            float l = -aspect * wd2 + (whichEye == Eye.Type.RIGHT ? -shift : shift);
+            float r = aspect * wd2 + (whichEye == Eye.Type.RIGHT ? -shift : shift);
+            float b = -wd2;
+            float t = wd2;
+            videoCamera.projection.setToProjection(l, r, b, t, getVrCamera().near, getVrCamera().far);
             videoCamera.combined.set(videoCamera.projection);
             Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
 
@@ -223,14 +240,18 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     public void setZoom(float zoom) {
-        this.zoom = zoom;
-    }
-
-    public void setIpd(float ipd) {
-        this.ipd = ipd;
+        this.zoom = MathUtils.clamp(zoom, 0.1f, 2f);
     }
 
     public float getDefaultIpd() {
         return GdxVr.app.getGvrView().getInterpupillaryDistance();
+    }
+
+    public float getIpd() {
+        return ipd;
+    }
+
+    public void setIpd(float ipd) {
+        this.ipd = Math.max(ipd, 0f);
     }
 }

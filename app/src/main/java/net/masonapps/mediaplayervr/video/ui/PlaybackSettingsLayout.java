@@ -103,6 +103,9 @@ public class PlaybackSettingsLayout implements Attachable {
         });
         table.add(zRight).pad(VideoPlayerGUI.PADDING).row();
 
+
+        final Label ipdLabel = new Label(" IPD ", skin);
+        
         final ImageButton ipdLeft = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp, Color.LIGHT_GRAY));
         ipdLeft.addListener(new ClickListener() {
             @Override
@@ -110,11 +113,11 @@ public class PlaybackSettingsLayout implements Attachable {
                 ipd -= STEP;
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
                 screen.setIpd(screen.getDefaultIpd() + ipd);
+                ipdLabel.setText("IPD " + screen.getIpd());
             }
         });
         table.add(ipdLeft).pad(VideoPlayerGUI.PADDING);
-
-        table.add(new Label(" IPD ", skin)).pad(VideoPlayerGUI.PADDING);
+        table.add(ipdLabel).pad(VideoPlayerGUI.PADDING);
 
         final ImageButton ipdRight = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp, Color.LIGHT_GRAY));
         ipdRight.addListener(new ClickListener() {
@@ -123,6 +126,7 @@ public class PlaybackSettingsLayout implements Attachable {
                 ipd += STEP;
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
                 screen.setIpd(screen.getDefaultIpd() + ipd);
+                ipdLabel.setText("IPD " + screen.getIpd());
             }
         });
         table.add(ipdRight).pad(VideoPlayerGUI.PADDING).row();
