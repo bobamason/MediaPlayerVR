@@ -2,6 +2,7 @@ package net.masonapps.mediaplayervr;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.controller.Controller;
 
+import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
@@ -51,7 +53,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private float zoom = 1f;
     private float projZ;
 
-    public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails) {
+    public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
@@ -60,7 +62,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
         setBackgroundColor(Color.BLACK);
-        ui = new VideoPlayerGUI(this, ((MediaPlayerGame) game).getSkin());
+        if (videoOptions == null) {
+            videoOptions = new VideoOptions();
+        }
+        ui = new VideoPlayerGUI(this, ((MediaPlayerGame) game).getSkin(), videoOptions);
         getVrCamera().near = 0.25f;
         getVrCamera().far = 100f;
         controllerEntity = getWorld().add(((MediaPlayerGame) game).getControllerEntity());

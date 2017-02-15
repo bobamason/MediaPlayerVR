@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Disposable;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
+import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -33,12 +34,14 @@ public class VideoPlayerGUI implements Disposable {
     private final AspectRatioLayout aspectRatioLayout;
     private final CameraSettingsLayout cameraSettingsLayout;
     private final PlaybackSettingsLayout playbackSettingsLayout;
+    private VideoOptions videoOptions;
     private float headerHeight = PADDING;
     private VirtualStage stage;
 
-    public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, Skin skin) {
+    public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, Skin skin, VideoOptions videoOptions) {
         this.videoPlayerScreen = videoPlayerScreen;
         this.skin = skin;
+        this.videoOptions = videoOptions;
 
         mainLayout = new MainLayout(this);
         modeLayout = new ModeLayout(this);

@@ -3,10 +3,13 @@ package net.masonapps.mediaplayervr;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
 import com.google.vr.sdk.base.AndroidCompat;
+
+import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 
 import org.masonapps.libgdxgooglevr.vr.VrActivity;
 
@@ -17,13 +20,22 @@ public class MainActivity extends VrActivity {
     private static final int RC_PERMISSIONS = 2001;
     private StoragePermissionResultListener listener = null;
     private MediaPlayerGame game;
+    private VideoOptionsDatabaseHelper videoOptionsDatabaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AndroidCompat.setVrModeEnabled(this, true);
         game = new MediaPlayerGame(this);
+        videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
         initialize(game);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (videoOptionsDatabaseHelper != null)
+            videoOptionsDatabaseHelper.close();
+        super.onDestroy();
     }
 
     public boolean isReadStoragePermissionGranted() {
@@ -36,7 +48,7 @@ public class MainActivity extends VrActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == RC_PERMISSIONS && grantResults.length >= 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
             if (listener != null) {
@@ -47,6 +59,10 @@ public class MainActivity extends VrActivity {
                 listener.onResult(false);
             }
         }
+    }
+
+    public VideoOptionsDatabaseHelper getVideoOptionsDatabaseHelper() {
+        return videoOptionsDatabaseHelper;
     }
 
     public interface StoragePermissionResultListener {

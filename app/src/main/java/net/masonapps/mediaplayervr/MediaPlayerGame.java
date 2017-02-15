@@ -22,10 +22,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.google.vr.sdk.controller.Controller;
 
+import net.masonapps.mediaplayervr.database.VideoOptions;
+import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.shaders.HighlightShader;
 
+import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 
@@ -52,6 +55,7 @@ public class MediaPlayerGame extends VrGame {
     private Vector3 worldOffset = new Vector3(0, -1.2f, 0);
     private MediaSelectionScreen mediaSelectionScreen;
     private LoadingScreen loadingScreen;
+    private boolean waitingToPlayVideo = false;
 
     public MediaPlayerGame(Context context) {
         super();
@@ -147,8 +151,23 @@ public class MediaPlayerGame extends VrGame {
         super.render(camera, whichEye);
     }
 
-    public void playVideo(VideoDetails videoDetails) {
-        setScreen(new VideoPlayerScreen(this, context, videoDetails));
+    public void playVideo(final VideoDetails videoDetails) {
+        if (!waitingToPlayVideo) {
+            waitingToPlayVideo = true;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final VideoOptions videoOptions = getVideoOptionsDatabaseHelper().getVideoOptionsByTitle(videoDetails.title);
+                    GdxVr.app.postRunnable(new Runnable() {
+                        @Override
+                        public void run() {
+                            setScreen(new VideoPlayerScreen(MediaPlayerGame.this, context, videoDetails, videoOptions));
+                            waitingToPlayVideo = false;
+                        }
+                    });
+                }
+            }).start();
+        }
     }
 
     public void playMusic(SongDetails songDetails) {
@@ -209,7 +228,7 @@ public class MediaPlayerGame extends VrGame {
         return controllerEntity;
     }
 
-    public ModelBatch getPhongModelBatch() {
-        return phongModelBatch;
+    public VideoOptionsDatabaseHelper getVideoOptionsDatabaseHelper() {
+        return ((MainActivity) context).getVideoOptionsDatabaseHelper();
     }
 }
