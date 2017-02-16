@@ -97,7 +97,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private void initStage() {
         final SpriteBatch batch = new SpriteBatch();
         manageDisposable(batch);
-        stage = new VirtualStage(batch, 2f, 1.5f, 1080, 810);
+        stage = new VirtualStage(batch, 2f, 1.5f, 720, 540);
         manageDisposable(stage);
         stage.set3DTransform(new Vector3(0, 0, -3f), getVrCamera().position);
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));

@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.google.vr.sdk.base.Eye;
+import com.google.vr.sdk.base.FieldOfView;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.database.VideoOptions;
@@ -37,6 +38,7 @@ import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControllerInputListener, VrVideoPlayer.CompletionListener, VrVideoPlayer.ErrorListener {
 
     private static final Vector3 tempV = new Vector3();
+    private static final Matrix4 tempM = new Matrix4();
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
 
     private final VideoDetails videoDetails;
@@ -51,7 +53,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private long startPosition;
     private float ipd;
     private float zoom = 1f;
-    private float projZ;
+    private float projZ = 0.94f;
+    private float yRatio = 1f;
+    private boolean doRatioCalc = true;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -113,48 +117,47 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer.update();
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawEye(Eye eye) {
-//        final FieldOfView eyeFov = eye.getFov();
-//        Log.i(VideoPlayerScreen.class.getSimpleName(), eyeFov.toString());
-//        if(eye.getProjectionChanged()) {
-//            float l = (float) (-Math.tan(Math.toRadians((double) eyeFov.getLeft()))) * getVrCamera().near;
-//            float r = (float) Math.tan(Math.toRadians((double) eyeFov.getRight())) * getVrCamera().near;
-//            final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f;
-//            final float shift = (l + r) / 2f;
-//            projZ = ipdHalf * getVrCamera().near / shift;
-//        }
+        getVrCamera().onDrawEye(eye);
+        Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        if (doRatioCalc) {
+            final FieldOfView eyeFov = eye.getFov();
+            Log.i(VideoPlayerScreen.class.getSimpleName(), eyeFov.toString());
+            final float t1 = (float) Math.tan(Math.toRadians(eyeFov.getTop())) * getVrCamera().near;
+            final float b1 = (float) Math.tan(Math.toRadians(eyeFov.getBottom())) * getVrCamera().near;
+            yRatio = Math.abs(b1 / t1);
+            doRatioCalc = false;
+        }
+        videoCamera.view.setToLookAt(getForwardVector(), getUpVector()).mul(tempM.setToTranslation(tempV.set(getRightVector()).scl(eye.getType() == Eye.Type.RIGHT ? ipd * 0.5f : -ipd * 0.5f).add(getVrCamera().position).scl(-1)));
+        final float aspect = getVrCamera().viewportWidth / getVrCamera().viewportHeight;
+        final float fov = 105f * zoom;
+        final float wd2 = getVrCamera().near * (float) Math.tan(Math.toRadians(fov) / 2d);
+        final float shift = ipd * 0.5f * getVrCamera().near / projZ;
+        final float l = -aspect * wd2 + (eye.getType() == Eye.Type.RIGHT ? -shift : shift);
+        final float r = aspect * wd2 + (eye.getType() == Eye.Type.RIGHT ? -shift : shift);
+        final float ratio = yRatio;
+        final float b = -wd2 * ratio;
+        final float t = wd2 / ratio;
+        videoCamera.projection.setToProjection(l, r, b, t, getVrCamera().near, getVrCamera().far);
+        videoCamera.combined.set(videoCamera.projection);
+        Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
 //        this.fov.setAngles(eyeFov.getLeft() * zoom, eyeFov.getRight(), eyeFov.getBottom() * zoom, eyeFov.getTop() * zoom);
-        super.onDrawEye(eye);
+        getModelBatch().begin(getVrCamera());
+        getWorld().render(getModelBatch(), environment);
+        getModelBatch().end();
+
+        getModelBatch().begin(videoCamera);
+        videoPlayer.render(getModelBatch(), eye.getType());
+        getModelBatch().end();
+        render(getVrCamera(), eye.getType());
     }
 
     @SuppressLint("MissingSuperCall")
     @Override
     public void render(Camera camera, int whichEye) {
-        Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        getModelBatch().begin(camera);
-        getWorld().render(getModelBatch(), environment);
-        getModelBatch().end();
-        if (videoPlayer != null) {
-            videoCamera.view.setToLookAt(tempV.set(getRightVector()).scl(whichEye == Eye.Type.RIGHT ? ipd * 0.5f : -ipd * 0.5f).add(camera.position), getForwardVector(), getUpVector());
-            float aspect = getVrCamera().viewportWidth / getVrCamera().viewportHeight;
-            float fov = 100f * zoom;
-            float projZ = 0.94f;
-            float wd2 = getVrCamera().near * (float) Math.tan(Math.toRadians(fov) / 2d);
-            float shift = ipd * 0.5f * getVrCamera().near / projZ;
-            float l = -aspect * wd2 + (whichEye == Eye.Type.RIGHT ? -shift : shift);
-            float r = aspect * wd2 + (whichEye == Eye.Type.RIGHT ? -shift : shift);
-            float b = -wd2;
-            float t = wd2;
-            videoCamera.projection.setToProjection(l, r, b, t, getVrCamera().near, getVrCamera().far);
-            videoCamera.combined.set(videoCamera.projection);
-            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
-
-            getModelBatch().begin(videoCamera);
-            videoPlayer.render(getModelBatch(), whichEye);
-            getModelBatch().end();
-        }
         if (isUiVisible()) {
             ui.draw(camera);
             renderCursor(camera);

@@ -3,6 +3,7 @@ package net.masonapps.mediaplayervr.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.NonNull;
@@ -23,11 +24,11 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
     @NonNull
     private static ContentValues createContentValues(VideoOptions videoOptions) {
         final ContentValues values = new ContentValues();
-        values.put(VideoOptions.Columns.TITLE, videoOptions.title);
+        values.put(VideoOptions.Columns.TITLE, DatabaseUtils.sqlEscapeString(videoOptions.title));
         values.put(VideoOptions.Columns.USE_CUSTOM_CAMERA, Boolean.toString(videoOptions.useCustomCamera));
         values.put(VideoOptions.Columns.MODE_SELECTION, Integer.toString(videoOptions.modeSelection));
         values.put(VideoOptions.Columns.ASPECT_RATIO_SELECTION, Integer.toString(videoOptions.aspectRatioSelection));
-        values.put(VideoOptions.Columns.TEXTURE_STRETCH, videoOptions.textureStretch.toString());
+        values.put(VideoOptions.Columns.TEXTURE_STRETCH, videoOptions.textureStretch.x + "_" + videoOptions.textureStretch.y);
         values.put(VideoOptions.Columns.IPD, Float.toString(videoOptions.ipd));
         return values;
     }
@@ -43,7 +44,7 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
                 VideoOptions.Columns.ASPECT_RATIO_SELECTION + " TEXT," +
                 VideoOptions.Columns.TEXTURE_STRETCH + " TEXT," +
                 VideoOptions.Columns.IPD + " TEXT," +
-                VideoOptions.Columns.ZOOM + " TEXT," +
+                VideoOptions.Columns.ZOOM + " TEXT" +
                 ")";
         sqLiteDatabase.execSQL(rawSql);
     }
@@ -82,7 +83,7 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
     public VideoOptions getVideoOptionsByTitle(String title) {
         VideoOptions videoOptions = null;
         final SQLiteDatabase db = getReadableDatabase();
-        final Cursor cursor = db.query(TABLE_NAME, VideoOptions.Columns.ALL_COLUMNS, VideoOptions.Columns.TITLE + " = " + title, null, null, null, null);
+        final Cursor cursor = db.query(TABLE_NAME, VideoOptions.Columns.ALL_COLUMNS, VideoOptions.Columns.TITLE + " = " + DatabaseUtils.sqlEscapeString(title), null, null, null, null);
         if (cursor.moveToFirst()) {
             try {
                 videoOptions = new VideoOptions();
@@ -91,7 +92,7 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
                 videoOptions.useCustomCamera = Boolean.parseBoolean(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.USE_CUSTOM_CAMERA)));
                 videoOptions.modeSelection = Integer.parseInt(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.MODE_SELECTION)));
                 videoOptions.aspectRatioSelection = Integer.parseInt(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.ASPECT_RATIO_SELECTION)));
-                videoOptions.textureStretch.fromString((cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.TEXTURE_STRETCH))));
+                videoOptions.textureStretch.fromString("(" + cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.TEXTURE_STRETCH)).replace('_', ',') + ")");
                 videoOptions.ipd = Float.parseFloat(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.IPD)));
                 videoOptions.zoom = Float.parseFloat(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.ZOOM)));
             } catch (Exception e) {

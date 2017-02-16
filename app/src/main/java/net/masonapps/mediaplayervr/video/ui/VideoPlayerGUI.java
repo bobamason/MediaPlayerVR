@@ -49,7 +49,7 @@ public class VideoPlayerGUI implements Disposable {
         cameraSettingsLayout = new CameraSettingsLayout(this);
         playbackSettingsLayout = new PlaybackSettingsLayout(this);
 
-        stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 1080, 1080);
+        stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 720, 720);
         stage.set3DTransform(new Vector3(0, -0.5f, -2.5f), videoPlayerScreen.getVrCamera().position);
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
         bg.setFillParent(true);
@@ -70,7 +70,7 @@ public class VideoPlayerGUI implements Disposable {
         playbackSettingsLayout.attach(stage);
         playbackSettingsLayout.setVisible(false);
 
-        stage.getViewport().update(1080, 720);
+        stage.getViewport().update(720, 640);
 
         final ImageButton backButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_UP_2), skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_DOWN_2));
         backButton.addListener(new ClickListener() {

@@ -167,16 +167,20 @@ public abstract class VrWorldScreen extends VrScreen {
     @Override
     @CallSuper
     public void dispose() {
-        for (Disposable d : disposables) {
-            if (d != null)
-                d.dispose();
+        if (disposables != null) {
+            for (Disposable d : disposables) {
+                if (d != null)
+                    d.dispose();
+            }
+            if (modelBatch != null) {
+                modelBatch.dispose();
+            }
+            disposables.clear();
         }
-        if (modelBatch != null) {
-            modelBatch.dispose();
-        }
-        disposables.clear();
-        assets.dispose();
-        world.dispose();
+        if (assets != null)
+            assets.dispose();
+        if (world != null)
+            world.dispose();
         assets = null;
         world = null;
     }
