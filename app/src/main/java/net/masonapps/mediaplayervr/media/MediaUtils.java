@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ public class MediaUtils {
 
     public static List<VideoDetails> getVideoList(Context context) {
         ArrayList<VideoDetails> list = new ArrayList<>();
-        final String[] projection = {MediaStore.Video.Media._ID, MediaStore.Video.Media.DATA, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.WIDTH, MediaStore.Video.Media.HEIGHT, MediaStore.Video.Media.DURATION};
+        final String[] projection = {MediaStore.Video.Media._ID, MediaStore.Video.Media.DATA, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.WIDTH, MediaStore.Video.Media.HEIGHT, MediaStore.Video.Media.DURATION, MediaStore.Video.Media.MINI_THUMB_MAGIC};
         Cursor c = context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, projection, null, null, MediaStore.Video.Media.DISPLAY_NAME + " ASC");
         if (c != null) {
             try {
@@ -30,7 +31,7 @@ public class MediaUtils {
                         videoDetails.width = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH));
                         videoDetails.height = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT));
                         videoDetails.duration = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
-                        videoDetails.thumbnailPath = getVideoThumbnailPath(context, videoDetails.id);
+                        videoDetails.thumbnailPath = getVideoThumbnailPath(context, c.getLong(c.getColumnIndexOrThrow(MediaStore.Video.Media.MINI_THUMB_MAGIC)));
                         list.add(videoDetails);
                     } while (c.moveToNext());
                 }
@@ -132,7 +133,7 @@ public class MediaUtils {
     @Nullable
     public static String getVideoThumbnailPath(Context context, long id) {
         String path = null;
-        Cursor c = context.getContentResolver().query(MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Video.Thumbnails.VIDEO_ID, MediaStore.Video.Thumbnails.DATA}, MediaStore.Video.Thumbnails.VIDEO_ID + " = ?", new String[]{String.valueOf(id)}, null);
+        Cursor c = context.getContentResolver().query(MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Video.Thumbnails.VIDEO_ID, MediaStore.Video.Thumbnails.DATA}, MediaStore.Video.Thumbnails.VIDEO_ID + "=" + id, null, null);
         if (c != null) {
             try {
                 if (c.moveToFirst()) {
@@ -144,6 +145,7 @@ public class MediaUtils {
                 c.close();
             }
         }
+        Log.d(MediaUtils.class.getSimpleName(), "getVideoThumbnailPath -> " + (path == null ? "null" : path));
         return path;
     }
 

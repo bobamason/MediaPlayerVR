@@ -64,13 +64,15 @@ public class ModeLayout implements Attachable {
     }
 
     private final Table table;
+    private final VideoPlayerGUI videoPlayerGUI;
     private ArrayList<TextButton> textButtons = new ArrayList<>();
 
-    public ModeLayout(VideoPlayerGUI videoPlayerGUI) {
+    public ModeLayout(final VideoPlayerGUI videoPlayerGUI) {
+        this.videoPlayerGUI = videoPlayerGUI;
         final Skin skin = videoPlayerGUI.getSkin();
         table = new Table(skin);
         table.padTop(videoPlayerGUI.getHeaderHeight());
-        table.setFillParent(true);
+        table.setFillParent(false);
         table.center();
         table.setVisible(false);
 
@@ -80,19 +82,19 @@ public class ModeLayout implements Attachable {
             final Cell<TextButton> cell = table.add(textButton).expandX().fill().center().pad(VideoPlayerGUI.PADDING);
             if (i % 3 == 2 && i < modes.size - 1) cell.row();
             textButtons.add(textButton);
-        }
-        for (final TextButton button : textButtons) {
             final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
             final VideoMode type = videoPlayer.getVideoMode();
-            button.setChecked(type == nameModeMap.get(button.getText().toString()));
-            button.addListener(new ClickListener() {
+            textButton.setChecked(type == nameModeMap.get(textButton.getText().toString()));
+            final int index = i;
+            textButton.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    videoPlayer.setVideoMode(nameModeMap.get(button.getText().toString()));
+                    videoPlayer.setVideoMode(nameModeMap.get(textButton.getText().toString()));
+                    videoPlayerGUI.getVideoOptions().modeSelection = index;
                     for (TextButton b : textButtons) {
                         b.setChecked(false);
                     }
-                    button.setChecked(true);
+                    textButton.setChecked(true);
                 }
             });
         }
@@ -111,5 +113,7 @@ public class ModeLayout implements Attachable {
     @Override
     public void setVisible(boolean visible) {
         table.setVisible(visible);
+        if (visible)
+            videoPlayerGUI.getStage().getViewport().update((int) table.getWidth(), (int) table.getHeight(), true);
     }
 }

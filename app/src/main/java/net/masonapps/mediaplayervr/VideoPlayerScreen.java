@@ -262,4 +262,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void setIpd(float ipd) {
         this.ipd = Math.max(ipd, 0f);
     }
+
+    public void exit() {
+        ((MediaPlayerGame) game).goToSelectionScreen();
+    }
 }

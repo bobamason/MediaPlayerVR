@@ -36,7 +36,8 @@ public class VideoOptions {
         public static final String USE_CUSTOM_CAMERA = "useCustomCamera";
         public static final String MODE_SELECTION = "modeSelection";
         public static final String ASPECT_RATIO_SELECTION = "aspectRatioSelection";
-        public static final String TEXTURE_STRETCH = "textureStretch";
+        public static final String TEXTURE_STRETCH_X = "textureStretchX";
+        public static final String TEXTURE_STRETCH_Y = "textureStretchY";
         public static final String IPD = "ipd";
         public static final String ZOOM = "zoom";
 
@@ -46,7 +47,8 @@ public class VideoOptions {
                 USE_CUSTOM_CAMERA,
                 MODE_SELECTION,
                 ASPECT_RATIO_SELECTION,
-                TEXTURE_STRETCH,
+                TEXTURE_STRETCH_X,
+                TEXTURE_STRETCH_Y,
                 IPD,
                 ZOOM};
     }

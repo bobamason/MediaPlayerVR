@@ -25,11 +25,13 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
     private static ContentValues createContentValues(VideoOptions videoOptions) {
         final ContentValues values = new ContentValues();
         values.put(VideoOptions.Columns.TITLE, DatabaseUtils.sqlEscapeString(videoOptions.title));
-        values.put(VideoOptions.Columns.USE_CUSTOM_CAMERA, Boolean.toString(videoOptions.useCustomCamera));
-        values.put(VideoOptions.Columns.MODE_SELECTION, Integer.toString(videoOptions.modeSelection));
-        values.put(VideoOptions.Columns.ASPECT_RATIO_SELECTION, Integer.toString(videoOptions.aspectRatioSelection));
-        values.put(VideoOptions.Columns.TEXTURE_STRETCH, videoOptions.textureStretch.x + "_" + videoOptions.textureStretch.y);
-        values.put(VideoOptions.Columns.IPD, Float.toString(videoOptions.ipd));
+        values.put(VideoOptions.Columns.USE_CUSTOM_CAMERA, videoOptions.useCustomCamera ? 1 : 0);
+        values.put(VideoOptions.Columns.MODE_SELECTION, videoOptions.modeSelection);
+        values.put(VideoOptions.Columns.ASPECT_RATIO_SELECTION, videoOptions.aspectRatioSelection);
+        values.put(VideoOptions.Columns.TEXTURE_STRETCH_X, videoOptions.textureStretch.x);
+        values.put(VideoOptions.Columns.TEXTURE_STRETCH_Y, videoOptions.textureStretch.y);
+        values.put(VideoOptions.Columns.IPD, videoOptions.ipd);
+        values.put(VideoOptions.Columns.ZOOM, videoOptions.zoom);
         return values;
     }
 
@@ -39,12 +41,13 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
                 " (" +
                 VideoOptions.Columns._ID + " INTEGER PRIMARY KEY," +
                 VideoOptions.Columns.TITLE + " TEXT," +
-                VideoOptions.Columns.USE_CUSTOM_CAMERA + " TEXT," +
-                VideoOptions.Columns.MODE_SELECTION + " TEXT," +
-                VideoOptions.Columns.ASPECT_RATIO_SELECTION + " TEXT," +
-                VideoOptions.Columns.TEXTURE_STRETCH + " TEXT," +
-                VideoOptions.Columns.IPD + " TEXT," +
-                VideoOptions.Columns.ZOOM + " TEXT" +
+                VideoOptions.Columns.USE_CUSTOM_CAMERA + " INTEGER," +
+                VideoOptions.Columns.MODE_SELECTION + " INTEGER," +
+                VideoOptions.Columns.ASPECT_RATIO_SELECTION + " INTEGER," +
+                VideoOptions.Columns.TEXTURE_STRETCH_X + " REAL," +
+                VideoOptions.Columns.TEXTURE_STRETCH_Y + " REAL," +
+                VideoOptions.Columns.IPD + " REAL," +
+                VideoOptions.Columns.ZOOM + " REAL" +
                 ")";
         sqLiteDatabase.execSQL(rawSql);
     }
@@ -89,12 +92,13 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
                 videoOptions = new VideoOptions();
                 videoOptions.id = cursor.getLong(cursor.getColumnIndex(VideoOptions.Columns._ID));
                 videoOptions.title = cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.TITLE));
-                videoOptions.useCustomCamera = Boolean.parseBoolean(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.USE_CUSTOM_CAMERA)));
-                videoOptions.modeSelection = Integer.parseInt(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.MODE_SELECTION)));
-                videoOptions.aspectRatioSelection = Integer.parseInt(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.ASPECT_RATIO_SELECTION)));
-                videoOptions.textureStretch.fromString("(" + cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.TEXTURE_STRETCH)).replace('_', ',') + ")");
-                videoOptions.ipd = Float.parseFloat(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.IPD)));
-                videoOptions.zoom = Float.parseFloat(cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.ZOOM)));
+                videoOptions.useCustomCamera = cursor.getInt(cursor.getColumnIndex(VideoOptions.Columns.USE_CUSTOM_CAMERA)) == 1;
+                videoOptions.modeSelection = cursor.getInt(cursor.getColumnIndex(VideoOptions.Columns.MODE_SELECTION));
+                videoOptions.aspectRatioSelection = cursor.getInt(cursor.getColumnIndex(VideoOptions.Columns.ASPECT_RATIO_SELECTION));
+                videoOptions.textureStretch.x = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.TEXTURE_STRETCH_X));
+                videoOptions.textureStretch.y = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.TEXTURE_STRETCH_Y));
+                videoOptions.ipd = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.IPD));
+                videoOptions.zoom = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.ZOOM));
             } catch (Exception e) {
                 e.printStackTrace();
                 videoOptions = null;

@@ -23,13 +23,15 @@ public class AspectRatioLayout implements Attachable {
     private static final float[] ratios = new float[]{-1f, 1f, 4f / 3f, 16f / 10f, 16f / 9f, 2f / 1f};
 
     private final Table table;
+    private final VideoPlayerGUI videoPlayerGUI;
     private ArrayList<TextButton> textButtons = new ArrayList<>();
 
-    public AspectRatioLayout(VideoPlayerGUI videoPlayerGUI) {
+    public AspectRatioLayout(final VideoPlayerGUI videoPlayerGUI) {
+        this.videoPlayerGUI = videoPlayerGUI;
         final Skin skin = videoPlayerGUI.getSkin();
         table = new Table(skin);
         table.padTop(videoPlayerGUI.getHeaderHeight());
-        table.setFillParent(true);
+        table.setFillParent(false);
         table.center();
         table.setVisible(false);
 
@@ -43,6 +45,7 @@ public class AspectRatioLayout implements Attachable {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     videoPlayer.setAspectRatio(ratios[index]);
+                    videoPlayerGUI.getVideoOptions().aspectRatioSelection = index;
                 }
             });
             textButtons.add(textButton);
@@ -62,5 +65,7 @@ public class AspectRatioLayout implements Attachable {
     @Override
     public void setVisible(boolean visible) {
         table.setVisible(visible);
+        if (visible)
+            videoPlayerGUI.getStage().getViewport().update((int) table.getWidth(), (int) table.getHeight(), true);
     }
 }

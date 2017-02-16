@@ -25,17 +25,19 @@ import org.masonapps.libgdxgooglevr.input.VirtualStage;
 public class MainLayout implements Attachable {
 
     private final Table videoTable;
+    private final VideoPlayerGUI videoPlayerGUI;
     //    private final Table settingsTable;
     protected Label timeLabel;
     protected Slider slider;
     private ImageButton playButton;
 
     public MainLayout(final VideoPlayerGUI videoPlayerGUI) {
+        this.videoPlayerGUI = videoPlayerGUI;
         final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
         final Skin skin = videoPlayerGUI.getSkin();
         videoTable = new Table(skin);
         videoTable.padTop(videoPlayerGUI.getHeaderHeight());
-        videoTable.setFillParent(true);
+        videoTable.setFillParent(false);
         videoTable.center();
 
         final Drawable pauseUp = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_UP);
@@ -125,5 +127,7 @@ public class MainLayout implements Attachable {
     @Override
     public void setVisible(boolean visible) {
         videoTable.setVisible(visible);
+        if (visible)
+            videoPlayerGUI.getStage().getViewport().update((int) videoTable.getWidth(), (int) videoTable.getHeight(), true);
     }
 }

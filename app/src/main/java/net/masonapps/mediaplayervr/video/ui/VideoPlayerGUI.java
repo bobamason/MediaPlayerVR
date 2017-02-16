@@ -72,7 +72,7 @@ public class VideoPlayerGUI implements Disposable {
 
         stage.getViewport().update(720, 640);
 
-        final ImageButton backButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_UP_2), skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_DOWN_2));
+        final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -82,7 +82,7 @@ public class VideoPlayerGUI implements Disposable {
         stage.addActor(backButton);
         backButton.setPosition(PADDING, stage.getHeight() - PADDING, Align.topLeft);
 
-        final ImageButton closeButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_close_white_48dp, Style.COLOR_UP_2), skin.newDrawable(Style.Drawables.ic_close_white_48dp, Style.COLOR_DOWN_2));
+        final ImageButton closeButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -111,10 +111,10 @@ public class VideoPlayerGUI implements Disposable {
     }
 
     public void backButtonClicked() {
-        if (stage.isVisible()) {
-            if (!mainLayout.isVisible()) {
-                switchToMainLayout();
-            }
+        if (stage.isVisible() && !mainLayout.isVisible()) {
+            switchToMainLayout();
+        } else {
+            videoPlayerScreen.exit();
         }
     }
 
@@ -141,6 +141,10 @@ public class VideoPlayerGUI implements Disposable {
 
     public VideoPlayerScreen getVideoPlayerScreen() {
         return videoPlayerScreen;
+    }
+
+    public VideoOptions getVideoOptions() {
+        return videoOptions;
     }
 
     public Skin getSkin() {

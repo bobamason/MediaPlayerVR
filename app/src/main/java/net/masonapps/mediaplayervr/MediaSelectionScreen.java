@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -51,7 +53,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private static final int STATE_MUSIC_ARTIST_LIST = 2;
     private static final int STATE_MUSIC_SONG_LIST = 3;
     private static final int STATE_VIDEO_LIST = 4;
-    private static final int MAX_TITLE_LENGTH = 40;
+    private static final int MAX_TITLE_LENGTH = 20;
     private final Context context;
     private Table tableStart;
     private Table tableMediaList;
@@ -64,7 +66,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private int currentPage = 0;
     private int numPages = 0;
     private volatile int currentState = STATE_NO_LIST;
-    private ArrayList<ImageButton> imageButtons = new ArrayList<>();
+    private ArrayList<Image> images = new ArrayList<>();
     private ArrayList<TextButton> textButtons = new ArrayList<>();
     private ArrayList<Label> listLabels = new ArrayList<>();
     private ArrayList<Texture> thumbnailTextures = new ArrayList<>();
@@ -82,7 +84,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         this.context = context;
         setBackgroundColor(Color.NAVY);
         defaultAlbumDrawable = skin.newDrawable(Style.Drawables.ic_album_white_48dp);
-        defaultVideoDrawable = skin.newDrawable(Style.Drawables.ic_album_white_48dp);
+        defaultVideoDrawable = skin.newDrawable(Style.Drawables.ic_movie_white_48dp);
         initStage();
         if (!((MainActivity) context).isReadStoragePermissionGranted()) {
             tableStart.setVisible(false);
@@ -104,7 +106,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         bg.setFillParent(true);
         stage.addActor(bg);
 
-        backButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_UP_2), skin.newDrawable(Style.Drawables.ic_arrow_back_white_48dp, Style.COLOR_DOWN_2));
+        backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
         stage.addActor(backButton);
         backButton.setPosition(2, stage.getViewport().getWorldHeight() - 2 - backButton.getHeight());
         backButton.setVisible(false);
@@ -214,52 +216,52 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         tableMediaList.setVisible(false);
 
         tableMediaList.padTop(backButton.getHeight());
-        
-        textButtons.clear();
-        for (int i = 0; i < ITEMS_PER_PAGE; i++) {
 
-            TextButton textButton = new TextButton("", skin);
-            textButtons.add(textButton);
-
-            final int index = i;
-            textButton.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    onListItemClicked(index);
-                }
-            });
-            tableMediaList.add(textButton).colspan(3).expandX().fillX().row();
-        }
-        
+//        textButtons.clear();
 //        for (int i = 0; i < ITEMS_PER_PAGE; i++) {
 //
-//            final Table table = new Table(skin);
-//            table.setTouchable(Touchable.enabled);
-//
-//            final ImageButton imageButton = new ImageButton(skin.newDrawable(Icons.ic_album_white_48dp));
-//            table.add(imageButton).center().row();
-//            imageButtons.add(imageButton);
-//
-//            final Label label = new Label("", skin);
-//            label.setWrap(false);
-//            table.add(label).center();
-//            listLabels.add(label);
+//            TextButton textButton = new TextButton("", skin);
+//            textButtons.add(textButton);
 //
 //            final int index = i;
-//            table.addListener(new ClickListener() {
+//            textButton.addListener(new ClickListener() {
 //                @Override
 //                public void clicked(InputEvent event, float x, float y) {
 //                    onListItemClicked(index);
 //                }
 //            });
-//            final Cell<Table> cell = tableMediaList.add(table).fill();
-//            if (i % 3 == 2) cell.row();
+//            tableMediaList.add(textButton).colspan(3).expandX().fillX().row();
 //        }
+
+        for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+
+            final Table table = new Table(skin);
+            table.setTouchable(Touchable.enabled);
+
+            final Image image = new Image(skin.newDrawable(Style.Drawables.ic_album_white_48dp));
+            table.add(image).center().row();
+            images.add(image);
+
+            final Label label = new Label("", skin);
+            label.setWrap(false);
+            table.add(label).center();
+            listLabels.add(label);
+
+            final int index = i;
+            table.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    onListItemClicked(index);
+                }
+            });
+            final Cell<Table> cell = tableMediaList.add(table).fill();
+            if (i % 3 == 2) cell.row();
+        }
         addPageArrows(tableMediaList);
     }
     
     private void addPageArrows(Table table) {
-        prevPageButon = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_left_white_48dp, Color.GRAY));
+        prevPageButon = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, true));
         prevPageButon.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -270,7 +272,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
         pageLabel = new Label("page 0/0", skin);
         tableMediaList.add(pageLabel).center();
-        nextPageButton = new ImageButton(skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp), skin.newDrawable(Style.Drawables.ic_chevron_right_white_48dp, Color.GRAY));
+        nextPageButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -414,24 +416,24 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                     textButton.setText(getTruncatedTitle(list.get(index).title));
                 }
             }else {
-                final ImageButton imageButton = imageButtons.get(i);
+                final Image image = images.get(i);
                 final Label label = listLabels.get(i);
                 if (index >= list.size()) {
                     label.setVisible(false);
                     label.setText("");
-                    imageButton.setVisible(false);
-                    imageButton.getImage().setDrawable(defaultDrawable);
+                    image.setVisible(false);
+                    image.setDrawable(defaultDrawable);
                 } else {
                     label.setVisible(true);
                     label.setText(getTruncatedTitle(list.get(index).title));
-                    imageButton.setVisible(true);
+                    image.setVisible(true);
                     final String thumbnailPath = list.get(i).thumbnailPath;
                     if (thumbnailPath != null) {
                         final Texture texture = new Texture(GdxVr.files.external(thumbnailPath));
                         thumbnailTextures.add(texture);
-                        imageButton.getImage().setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
+                        image.setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
                     } else {
-                        imageButton.getImage().setDrawable(defaultDrawable);
+                        image.setDrawable(defaultDrawable);
                     }
                 }
             }
@@ -447,7 +449,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
 
     private void displayVideoList(int page) {
-        displayList(page, STATE_VIDEO_LIST, videoList, null);
+        displayList(page, STATE_VIDEO_LIST, videoList, defaultVideoDrawable);
     }
 
     private void displaySongList(int page) {
@@ -502,8 +504,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     @Override
     public void dispose() {
         super.dispose();
-        if (imageButtons != null)
-            imageButtons.clear();
+        if (images != null)
+            images.clear();
         if (videoList != null)
             videoList.clear();
         if (albumList != null)
