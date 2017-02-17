@@ -266,4 +266,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void exit() {
         ((MediaPlayerGame) game).goToSelectionScreen();
     }
+
+    public VideoDetails getVideoDetails() {
+        return videoDetails;
+    }
 }

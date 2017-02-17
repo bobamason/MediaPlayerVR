@@ -49,8 +49,8 @@ public class VideoPlayerGUI implements Disposable {
         cameraSettingsLayout = new CameraSettingsLayout(this);
         playbackSettingsLayout = new PlaybackSettingsLayout(this);
 
-        stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 720, 720);
-        stage.set3DTransform(new Vector3(0, -0.5f, -2.5f), videoPlayerScreen.getVrCamera().position);
+        stage = new VirtualStage(new SpriteBatch(), 6f, 6f, 2048, 2048);
+        stage.set3DTransform(new Vector3(0, 0f, -2.5f), videoPlayerScreen.getVrCamera().position);
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
         bg.setFillParent(true);
         stage.addActor(bg);
@@ -129,8 +129,7 @@ public class VideoPlayerGUI implements Disposable {
             final long duration = videoPlayer.getDuration();
             mainLayout.timeLabel.setText(getTimeLabelString(videoPlayer.getCurrentPosition(), duration));
             if (duration != 0) {
-                mainLayout.slider.setStepSize(1f / duration);
-                mainLayout.slider.setValue((float) videoPlayer.getCurrentPosition() / duration);
+                mainLayout.slider.setValue((float) videoPlayer.getCurrentPosition());
             }
         }
     }

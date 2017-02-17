@@ -1,6 +1,5 @@
 package org.masonapps.libgdxgooglevr.input;
 
-import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
@@ -21,6 +20,4 @@ public interface VrInputProcessor {
     Vector3 getHitPoint3D();
 
     boolean isCursorOver();
-
-    Plane getPlane();
 }

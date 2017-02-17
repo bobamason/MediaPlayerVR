@@ -1,14 +1,14 @@
 package net.masonapps.mediaplayervr.video.ui;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
@@ -24,7 +24,8 @@ import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
 public class MainLayout implements Attachable {
 
-    private final Table videoTable;
+    private final HorizontalGroup videoGroup;
+    private final Table optionsTable;
     private final VideoPlayerGUI videoPlayerGUI;
     //    private final Table settingsTable;
     protected Label timeLabel;
@@ -35,10 +36,14 @@ public class MainLayout implements Attachable {
         this.videoPlayerGUI = videoPlayerGUI;
         final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
         final Skin skin = videoPlayerGUI.getSkin();
-        videoTable = new Table(skin);
-        videoTable.padTop(videoPlayerGUI.getHeaderHeight());
-        videoTable.setFillParent(true);
-        videoTable.center();
+        videoGroup = new HorizontalGroup();
+        videoGroup.center();
+        videoGroup.space(VideoPlayerGUI.PADDING);
+        videoGroup.wrap(false);
+
+        optionsTable = new Table();
+        optionsTable.padTop(videoPlayerGUI.getHeaderHeight());
+        optionsTable.center();
 
         final Drawable pauseUp = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_UP);
         final Drawable pauseDown = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_DOWN);
@@ -61,21 +66,21 @@ public class MainLayout implements Attachable {
                 }
             }
         });
-        videoTable.add(playButton).pad(VideoPlayerGUI.PADDING);
+        videoGroup.addActor(playButton);
 
-        slider = new Slider(0f, 1f, 0.00001f, false, skin);
-        slider.addListener(new ChangeListener() {
+        slider = new Slider(0f, videoPlayerGUI.getVideoPlayerScreen().getVideoDetails().duration, 1f, false, skin);
+        slider.addListener(new InputListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 if (videoPlayer.isPrepared()) {
-                    videoPlayer.seekTo(Math.round(slider.getValue() * videoPlayer.getDuration()));
+                    videoPlayer.seekTo(Math.round(slider.getValue()));
                 }
             }
         });
-        videoTable.add(slider).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).colspan(4).expandX().fillX();
+        videoGroup.addActor(slider);
 
         timeLabel = new Label("0:00:00 / 0:00:00", skin);
-        videoTable.add(timeLabel).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).row();
+        videoGroup.addActor(timeLabel);
 
         final TextButton modeBtn = new TextButton("Mode", skin);
         modeBtn.addListener(new ClickListener() {
@@ -84,7 +89,7 @@ public class MainLayout implements Attachable {
                 videoPlayerGUI.switchToModeLayout();
             }
         });
-        videoTable.add(modeBtn).pad(VideoPlayerGUI.PADDING);
+        optionsTable.add(modeBtn).pad(VideoPlayerGUI.PADDING);
 
         final TextButton aspectBtn = new TextButton("Aspect Ratio", skin);
         aspectBtn.addListener(new ClickListener() {
@@ -93,7 +98,7 @@ public class MainLayout implements Attachable {
                 videoPlayerGUI.switchToAspectRatioLayout();
             }
         });
-        videoTable.add(aspectBtn).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING);
+        optionsTable.add(aspectBtn).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).row();
 
         final TextButton cameraBtn = new TextButton("Camera", skin);
         cameraBtn.addListener(new ClickListener() {
@@ -102,7 +107,7 @@ public class MainLayout implements Attachable {
                 videoPlayerGUI.switchToCameraSettingsLayout();
             }
         });
-        videoTable.add(cameraBtn).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).row();
+        optionsTable.add(cameraBtn).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING);
 
         final TextButton playbackBtn = new TextButton("Playback", skin);
         playbackBtn.addListener(new ClickListener() {
@@ -111,23 +116,24 @@ public class MainLayout implements Attachable {
                 videoPlayerGUI.switchToPlaybackSettingsLayout();
             }
         });
-        videoTable.add(playbackBtn).padLeft(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING);
+        optionsTable.add(playbackBtn).padLeft(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING);
     }
 
     @Override
     public void attach(VirtualStage stage) {
-        stage.addActor(videoTable);
+        stage.addActor(videoGroup);
+        videoGroup.setBounds(VideoPlayerGUI.PADDING, VideoPlayerGUI.PADDING, stage.getWidth() - VideoPlayerGUI.PADDING, playButton.getHeight() - VideoPlayerGUI.PADDING);
+        stage.addActor(optionsTable);
     }
 
     @Override
     public boolean isVisible() {
-        return videoTable.isVisible();
+        return videoGroup.isVisible();
     }
 
     @Override
     public void setVisible(boolean visible) {
-        videoTable.setVisible(visible);
-//        if (visible)
-//            videoPlayerGUI.getStage().getViewport().update((int) videoTable.getWidth(), (int) videoTable.getHeight(), true);
+        videoGroup.setVisible(visible);
+        optionsTable.setVisible(visible);
     }
 }

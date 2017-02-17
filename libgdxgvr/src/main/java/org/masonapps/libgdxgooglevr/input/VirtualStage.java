@@ -195,6 +195,12 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     }
 
     @Override
+    public void calculateScissors(Rectangle localRect, Rectangle scissorRect) {
+        final Rectangle rect = new Rectangle(Float.MIN_VALUE, Float.MIN_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
+        super.calculateScissors(rect, rect);
+    }
+
+    @Override
     public Vector2 getHitPoint2D() {
         return hitPoint2DPixels;
     }
@@ -204,7 +210,6 @@ public class VirtualStage extends Stage implements VrInputProcessor {
         return hitPoint3D;
     }
 
-    @Override
     public Plane getPlane() {
         return plane;
     }

@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,21 +36,6 @@ public class MediaUtils {
                         videoDetails.width = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH));
                         videoDetails.height = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT));
                         videoDetails.duration = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
-                        final BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inSampleSize = 2;
-                        final Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), videoDetails.id, MediaStore.Video.Thumbnails.MINI_KIND, options);
-                        final int width = bitmap.getWidth();
-                        final int height = bitmap.getHeight();
-                        final Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-                        for (int y = 0; y < height; y++) {
-                            for (int x = 0; x < width; x++) {
-                                int pixel = bitmap.getPixel(x, y);
-                                pixmap.setColor(((pixel & 0x00FF0000) << 8) | ((pixel & 0x0000FF00) << 8) | ((pixel & 0x000000FF) << 8) | ((pixel >> 24) & 0xFF));
-                                pixmap.drawPixel(x, y);
-                            }
-                        }
-                        videoDetails.thumbnail = pixmap;
-                        bitmap.recycle();
                         list.add(videoDetails);
                     } while (c.moveToNext());
                 }
@@ -60,6 +46,24 @@ public class MediaUtils {
             }
         }
         return list;
+    }
+
+    public static Texture getVideoThumbnailTexture(Context context, long id) {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 2;
+        final Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Video.Thumbnails.MINI_KIND, options);
+        final int width = bitmap.getWidth();
+        final int height = bitmap.getHeight();
+        final Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = bitmap.getPixel(x, y);
+                pixmap.setColor(((pixel & 0x00FF0000) << 8) | ((pixel & 0x0000FF00) << 8) | ((pixel & 0x000000FF) << 8) | ((pixel >> 24) & 0xFF));
+                pixmap.drawPixel(x, y);
+            }
+        }
+        bitmap.recycle();
+        return new Texture(pixmap);
     }
 
     public static List<SongDetails> getSongList(Context context, String selection) {

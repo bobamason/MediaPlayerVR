@@ -1,12 +1,15 @@
 package net.masonapps.mediaplayervr.video.ui;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
@@ -24,6 +27,7 @@ public class CameraSettingsLayout implements Attachable {
 
     private static final float STEP = 0.01f;
     private final Table table;
+    private final Window window;
     private final VideoPlayerGUI videoPlayerGUI;
     private Vector2 stretch = new Vector2();
     private float z = 1f;
@@ -33,6 +37,7 @@ public class CameraSettingsLayout implements Attachable {
     public CameraSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
         this.videoPlayerGUI = videoPlayerGUI;
         final Skin skin = videoPlayerGUI.getSkin();
+        window = new Window("Camera Settings", new Window.WindowStyle(skin.getFont("default"), Color.BLACK, skin.newDrawable(Style.Drawables.window, Color.LIGHT_GRAY)));
         table = new Table(skin);
         table.padTop(videoPlayerGUI.getHeaderHeight());
         table.setFillParent(true);
@@ -40,9 +45,14 @@ public class CameraSettingsLayout implements Attachable {
         table.setVisible(false);
         df.setDecimalSeparatorAlwaysShown(true);
 
+        ipd = videoPlayerGUI.getVideoPlayerScreen().getIpd();
+
         final Label zoomLabel = new Label("Zoom " + Math.round(z * 100f) + "%", skin);
 
-        final ImageButton zLeft = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false));
+        final ImageButton.ImageButtonStyle leftButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
+        final ImageButton.ImageButtonStyle rightButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false);
+
+        final ImageButton zLeft = new ImageButton(leftButtonStyle);
         zLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -56,7 +66,7 @@ public class CameraSettingsLayout implements Attachable {
 
         table.add(zoomLabel).pad(VideoPlayerGUI.PADDING);
 
-        final ImageButton zRight = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false));
+        final ImageButton zRight = new ImageButton(rightButtonStyle);
         zRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -71,7 +81,7 @@ public class CameraSettingsLayout implements Attachable {
 
         final Label ipdLabel = new Label("IPD " + df.format(videoPlayerGUI.getVideoPlayerScreen().getIpd()), skin);
 
-        final ImageButton ipdLeft = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false));
+        final ImageButton ipdLeft = new ImageButton(leftButtonStyle);
         ipdLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -85,7 +95,7 @@ public class CameraSettingsLayout implements Attachable {
         table.add(ipdLeft).pad(VideoPlayerGUI.PADDING);
         table.add(ipdLabel).pad(VideoPlayerGUI.PADDING);
 
-        final ImageButton ipdRight = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false));
+        final ImageButton ipdRight = new ImageButton(rightButtonStyle);
         ipdRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -101,7 +111,10 @@ public class CameraSettingsLayout implements Attachable {
 
     @Override
     public void attach(VirtualStage stage) {
-        stage.addActor(table);
+        stage.addActor(window);
+        window.setSize(640, 640);
+        window.setPosition(stage.getWidth() / 2, stage.getHeight() / 2, Align.center);
+        window.add(table).fill();
     }
 
     @Override
@@ -111,8 +124,6 @@ public class CameraSettingsLayout implements Attachable {
 
     @Override
     public void setVisible(boolean visible) {
-        table.setVisible(visible);
-//        if (visible)
-//            videoPlayerGUI.getStage().getViewport().update((int) table.getWidth(), (int) table.getHeight(), true);
+        window.setVisible(visible);
     }
 }
