@@ -8,10 +8,12 @@ import android.support.annotation.Nullable;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
@@ -23,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.media.AlbumDetails;
@@ -47,6 +50,8 @@ import java.util.List;
  */
 
 public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamControllerInputListener {
+
+    private static final float LOADING_SPIN_SPEED = -360f;
     private static final int ITEMS_PER_PAGE = 6;
     private static final int STATE_NO_LIST = 0;
     private static final int STATE_MUSIC_ALBUM_LIST = 1;
@@ -55,6 +60,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private static final int STATE_VIDEO_LIST = 4;
     private static final int MAX_TITLE_LENGTH = 20;
     private final Context context;
+    private final Actor loadingSpinner;
     private Table tableStart;
     private Table tableMediaList;
     private List<VideoDetails> videoList = new ArrayList<>();
@@ -82,10 +88,15 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     public MediaSelectionScreen(final Context context, VrGame game) {
         super(game);
         this.context = context;
-        setBackgroundColor(Color.NAVY);
+        setBackgroundColor(Color.DARK_GRAY);
         defaultAlbumDrawable = skin.newDrawable(Style.Drawables.ic_album_white_48dp);
         defaultVideoDrawable = skin.newDrawable(Style.Drawables.ic_movie_white_48dp);
         initStage();
+        final Texture texture = new Texture("loading.png");
+        manageDisposable(texture);
+        loadingSpinner = new Image(texture);
+        stage.addActor(loadingSpinner);
+        loadingSpinner.setPosition(stage.getWidth() / 2, stage.getHeight() / 2, Align.center);
         if (!((MainActivity) context).isReadStoragePermissionGranted()) {
             tableStart.setVisible(false);
             tablePermissions.setVisible(true);
@@ -427,9 +438,10 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                     label.setVisible(true);
                     label.setText(getTruncatedTitle(list.get(index).title));
                     image.setVisible(true);
-                    final String thumbnailPath = list.get(i).thumbnailPath;
-                    if (thumbnailPath != null) {
-                        final Texture texture = new Texture(GdxVr.files.external(thumbnailPath));
+                    final Pixmap pixmap = list.get(i).thumbnail;
+                    if (pixmap != null) {
+                        final Texture texture = new Texture(pixmap);
+                        manageDisposable(texture);
                         thumbnailTextures.add(texture);
                         image.setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
                     } else {
@@ -486,12 +498,17 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     public void hide() {
         GdxVr.input.getDaydreamControllerHandler().removeListener(this);
         GdxVr.input.setProcessor(null);
-        dispose();
     }
 
     @Override
     public void update() {
         super.update();
+        if (loading) {
+            loadingSpinner.rotateBy(GdxVr.graphics.getDeltaTime() * LOADING_SPIN_SPEED);
+            loadingSpinner.setVisible(true);
+        } else {
+            loadingSpinner.setVisible(false);
+        }
         stage.act();
     }
 

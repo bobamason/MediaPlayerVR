@@ -14,7 +14,7 @@ import android.support.annotation.Nullable;
  */
 
 public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String TABLE_NAME = "video_options";
 
     public VideoOptionsDatabaseHelper(Context context) {

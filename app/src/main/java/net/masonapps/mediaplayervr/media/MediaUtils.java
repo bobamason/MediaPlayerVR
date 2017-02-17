@@ -2,10 +2,14 @@ package net.masonapps.mediaplayervr.media;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.badlogic.gdx.graphics.Pixmap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +35,21 @@ public class MediaUtils {
                         videoDetails.width = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH));
                         videoDetails.height = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT));
                         videoDetails.duration = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
-                        videoDetails.thumbnailPath = getVideoThumbnailPath(context, c.getLong(c.getColumnIndexOrThrow(MediaStore.Video.Media.MINI_THUMB_MAGIC)));
+                        final BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inSampleSize = 2;
+                        final Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), videoDetails.id, MediaStore.Video.Thumbnails.MINI_KIND, options);
+                        final int width = bitmap.getWidth();
+                        final int height = bitmap.getHeight();
+                        final Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+                        for (int y = 0; y < height; y++) {
+                            for (int x = 0; x < width; x++) {
+                                int pixel = bitmap.getPixel(x, y);
+                                pixmap.setColor(((pixel & 0x00FF0000) << 8) | ((pixel & 0x0000FF00) << 8) | ((pixel & 0x000000FF) << 8) | ((pixel >> 24) & 0xFF));
+                                pixmap.drawPixel(x, y);
+                            }
+                        }
+                        videoDetails.thumbnail = pixmap;
+                        bitmap.recycle();
                         list.add(videoDetails);
                     } while (c.moveToNext());
                 }
@@ -66,7 +84,7 @@ public class MediaUtils {
                         songDetails.artistDetails.artistId = c.getLong(c.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST_ID));
                         songDetails.title = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
                         songDetails.uri = Uri.parse(c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)));
-                        songDetails.thumbnailPath = getAlbumThumbnailPath(context, songDetails.albumDetails.albumId);
+//                        songDetails.thumbnailPath = getAlbumThumbnailPath(context, songDetails.albumDetails.albumId);
                         list.add(songDetails);
                     } while (c.moveToNext());
                 }
@@ -91,7 +109,7 @@ public class MediaUtils {
                         final ArtistDetails artistDetails = new ArtistDetails();
                         artistDetails.artistId = c.getLong(c.getColumnIndexOrThrow(MediaStore.Audio.Artists._ID));
                         artistDetails.title = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Artists.ARTIST));
-                        artistDetails.thumbnailPath = getArtistThumbnailPath(context, artistDetails.artistId);
+//                        artistDetails.thumbnailPath = getArtistThumbnailPath(context, artistDetails.artistId);
                         list.add(artistDetails);
                     } while (c.moveToNext());
                 }
@@ -117,7 +135,7 @@ public class MediaUtils {
                         final AlbumDetails albumDetails = new AlbumDetails();
                         albumDetails.albumId = c.getLong(c.getColumnIndexOrThrow(MediaStore.Audio.Albums._ID));
                         albumDetails.title = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM));
-                        albumDetails.thumbnailPath = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM_ART));
+//                        albumDetails.thumbnailPath = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM_ART));
                         list.add(albumDetails);
                     } while (c.moveToNext());
                 }

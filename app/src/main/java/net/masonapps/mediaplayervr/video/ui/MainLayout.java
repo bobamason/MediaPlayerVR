@@ -37,7 +37,7 @@ public class MainLayout implements Attachable {
         final Skin skin = videoPlayerGUI.getSkin();
         videoTable = new Table(skin);
         videoTable.padTop(videoPlayerGUI.getHeaderHeight());
-        videoTable.setFillParent(false);
+        videoTable.setFillParent(true);
         videoTable.center();
 
         final Drawable pauseUp = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_UP);
@@ -127,7 +127,7 @@ public class MainLayout implements Attachable {
     @Override
     public void setVisible(boolean visible) {
         videoTable.setVisible(visible);
-        if (visible)
-            videoPlayerGUI.getStage().getViewport().update((int) videoTable.getWidth(), (int) videoTable.getHeight(), true);
+//        if (visible)
+//            videoPlayerGUI.getStage().getViewport().update((int) videoTable.getWidth(), (int) videoTable.getHeight(), true);
     }
 }

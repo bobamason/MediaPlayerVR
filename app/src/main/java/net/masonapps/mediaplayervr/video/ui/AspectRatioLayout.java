@@ -31,7 +31,7 @@ public class AspectRatioLayout implements Attachable {
         final Skin skin = videoPlayerGUI.getSkin();
         table = new Table(skin);
         table.padTop(videoPlayerGUI.getHeaderHeight());
-        table.setFillParent(false);
+        table.setFillParent(true);
         table.center();
         table.setVisible(false);
 
@@ -65,7 +65,7 @@ public class AspectRatioLayout implements Attachable {
     @Override
     public void setVisible(boolean visible) {
         table.setVisible(visible);
-        if (visible)
-            videoPlayerGUI.getStage().getViewport().update((int) table.getWidth(), (int) table.getHeight(), true);
+//        if (visible)
+//            videoPlayerGUI.getStage().getViewport().update((int) table.getWidth(), (int) table.getHeight(), true);
     }
 }
