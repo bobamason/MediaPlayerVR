@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
@@ -121,9 +122,11 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         aspectRatio = w / h;
 
         if (use180Sphere()) {
-            texScale.set(1f, aspectRatio).add(stretch);
-//            texOffset.set(0f, (1f - aspectRatio) * 0.5f);
-            texOffset.set(1f, 1f).sub(texScale).scl(0.5f);
+//            texScale.set(1f, aspectRatio).add(stretch);
+////            texOffset.set(0f, (1f - aspectRatio) * 0.5f);
+//            texOffset.set(1f, 1f).sub(texScale).scl(0.5f);
+            texScale.set(2f, 1f).add(stretch);
+            texOffset.set(2f, 1f).sub(texScale).scl(0.5f);
         } else {
             texScale.set(1f, 1f).add(stretch);
             texOffset.set(1f, 1f).sub(texScale).scl(0.5f);
@@ -181,7 +184,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     protected void mapDistortTextureCoordinates(int eyeType) {
-        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
+        modelInstance.transform.idt().rotate(Vector3.Y, use180Sphere() ? -90 : 0).scale(modelSize, modelSize, modelSize);
         if (isStereoscopic) {
             switch (eyeType) {
                 case Eye.Type.LEFT:
@@ -368,7 +371,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         if (useFlatRectangle()) {
             modelInstance = rectModelInstance;
         } else if (use180Sphere()) {
-            modelInstance = halfSphereModelInstance;
+//            modelInstance = halfSphereModelInstance;
+            modelInstance = sphereModelInstance;
         } else {
             modelInstance = sphereModelInstance;
         }

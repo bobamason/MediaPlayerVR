@@ -2,9 +2,7 @@ package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -49,11 +47,8 @@ public class VideoPlayerGUI implements Disposable {
         cameraSettingsLayout = new CameraSettingsLayout(this);
         playbackSettingsLayout = new PlaybackSettingsLayout(this);
 
-        stage = new VirtualStage(new SpriteBatch(), 6f, 6f, 2048, 2048);
-        stage.set3DTransform(new Vector3(0, 0f, -2.5f), videoPlayerScreen.getVrCamera().position);
-        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
-        bg.setFillParent(true);
-        stage.addActor(bg);
+        stage = new VirtualStage(new SpriteBatch(), 640, 640);
+        stage.setPosition(0, 0f, -3f);
         
         mainLayout.attach(stage);
         mainLayout.setVisible(true);
@@ -69,8 +64,6 @@ public class VideoPlayerGUI implements Disposable {
 
         playbackSettingsLayout.attach(stage);
         playbackSettingsLayout.setVisible(false);
-
-        stage.getViewport().update(720, 640);
 
         final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
         backButton.addListener(new ClickListener() {

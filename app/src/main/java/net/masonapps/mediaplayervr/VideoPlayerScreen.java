@@ -131,17 +131,25 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             yRatio = Math.abs(b1 / t1);
             doRatioCalc = false;
         }
-        videoCamera.view.setToLookAt(getForwardVector(), getUpVector()).mul(tempM.setToTranslation(tempV.set(getRightVector()).scl(eye.getType() == Eye.Type.RIGHT ? ipd * 0.5f : -ipd * 0.5f).add(getVrCamera().position).scl(-1)));
-        final float aspect = getVrCamera().viewportWidth / getVrCamera().viewportHeight;
-        final float fov = 105f * zoom;
-        final float wd2 = getVrCamera().near * (float) Math.tan(Math.toRadians(fov) / 2d);
-        final float shift = ipd * 0.5f * getVrCamera().near / projZ;
-        final float l = -aspect * wd2 + (eye.getType() == Eye.Type.RIGHT ? -shift : shift);
-        final float r = aspect * wd2 + (eye.getType() == Eye.Type.RIGHT ? -shift : shift);
-        final float ratio = yRatio;
-        final float b = -wd2 * ratio;
-        final float t = wd2 / ratio;
-        videoCamera.projection.setToProjection(l, r, b, t, getVrCamera().near, getVrCamera().far);
+//        videoCamera.view.setToLookAt(getForwardVector(), getUpVector()).mul(tempM.setToTranslation(tempV.set(getRightVector()).scl(eye.getType() == Eye.Type.RIGHT ? ipd * 0.5f : -ipd * 0.5f).add(getVrCamera().position).scl(-1)));
+//        final float aspect = getVrCamera().viewportWidth / getVrCamera().viewportHeight;
+//        final float fov = 105f * zoom;
+//        final float wd2 = getVrCamera().near * (float) Math.tan(Math.toRadians(fov) / 2d);
+//        final float shift = ipd * 0.5f * getVrCamera().near / projZ;
+//        final float l = -aspect * wd2 + (eye.getType() == Eye.Type.RIGHT ? -shift : shift);
+//        final float r = aspect * wd2 + (eye.getType() == Eye.Type.RIGHT ? -shift : shift);
+//        final float ratio = yRatio;
+//        final float b = -wd2;
+//        final float t = wd2;
+//        videoCamera.projection.setToProjection(l, r, b, t, getVrCamera().near, getVrCamera().far);
+        final float l = (float) -Math.tan(Math.toRadians(eye.getFov().getLeft())) * getVrCamera().near;
+        final float r = (float) Math.tan(Math.toRadians(eye.getFov().getRight())) * getVrCamera().near;
+        final float t = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * getVrCamera().near;
+        final float b = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * getVrCamera().near;
+        videoCamera.projection.setToProjection(l * zoom, r * zoom, b * zoom, t * zoom, getVrCamera().near, getVrCamera().far);
+
+        videoCamera.view.setToTranslation(tempV.set(getForwardVector()).scl((1f - zoom) * 2f));
+        videoCamera.view.mulLeft(tempM.set(eye.getEyeView()));
         videoCamera.combined.set(videoCamera.projection);
         Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
 //        this.fov.setAngles(eyeFov.getLeft() * zoom, eyeFov.getRight(), eyeFov.getBottom() * zoom, eyeFov.getTop() * zoom);
@@ -152,7 +160,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         getModelBatch().begin(videoCamera);
         videoPlayer.render(getModelBatch(), eye.getType());
         getModelBatch().end();
-        render(getVrCamera(), eye.getType());
+        render(videoCamera, eye.getType());
     }
 
     @SuppressLint("MissingSuperCall")

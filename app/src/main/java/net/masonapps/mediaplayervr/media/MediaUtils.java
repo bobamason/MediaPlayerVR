@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +47,7 @@ public class MediaUtils {
         return list;
     }
 
-    public static Texture getVideoThumbnailTexture(Context context, long id) {
+    public static Pixmap getVideoThumbnailPixmap(Context context, long id) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 2;
         final Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Video.Thumbnails.MINI_KIND, options);
@@ -63,7 +62,7 @@ public class MediaUtils {
             }
         }
         bitmap.recycle();
-        return new Texture(pixmap);
+        return pixmap;
     }
 
     public static List<SongDetails> getSongList(Context context, String selection) {

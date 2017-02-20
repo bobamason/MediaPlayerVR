@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Plane;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -16,55 +17,189 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+
 /**
  * Created by Bob on 1/6/2017.
  */
 
 public class VirtualStage extends Stage implements VrInputProcessor {
-    private static final Vector3 tmpV3 = new Vector3();
-    private static final Vector3 tmpV3_2 = new Vector3();
+    private static final Vector3 dir = new Vector3();
+    private static final Vector3 tmp = new Vector3();
+    private static final Vector3 tmp2 = new Vector3();
     private static final Vector2 tmpV2 = new Vector2();
     private static final Matrix4 tmpM = new Matrix4();
-    private final Matrix4 transform = new Matrix4();
     private final Vector3 xaxis = new Vector3();
     private final Vector3 yaxis = new Vector3();
-    private Vector2 hitPoint2DPixels = new Vector2();
-    private Vector3 hitPoint3D = new Vector3();
+    private final Quaternion rotation = new Quaternion();
+    private final Quaternion rotator = new Quaternion();
+    private final Matrix4 transform = new Matrix4();
     private Plane plane = new Plane();
     private boolean visible = true;
     private Rectangle bounds = new Rectangle();
-    private Vector2 worldToPixelScale = new Vector2(1, 1);
+    private float pixelSizeWorld = 0.005f;
     private int mouseScreenX;
     private int mouseScreenY;
     private Actor mouseOverActor = null;
-    private volatile boolean isCursorOver = false;
+    private boolean isCursorOver = false;
+    private Vector2 hitPoint2DPixels = new Vector2();
+    private Vector3 hitPoint3D = new Vector3();
+    private boolean touchable = true;
+    private Vector3 position = new Vector3();
+    private float radius;
+    private boolean updated = false;
 
-    public VirtualStage(Batch batch, float width, float height, int virtualPixelWidth, int virtualPixelHeight) {
+    public VirtualStage(Batch batch, int virtualPixelWidth, int virtualPixelHeight) {
         super(new ScreenViewport(), batch);
-        getViewport().update(virtualPixelWidth, virtualPixelHeight, true);
-        bounds.set(0, 0, width, height);
-        worldToPixelScale.set(virtualPixelWidth / width, virtualPixelHeight / height);
+        getViewport().update(virtualPixelWidth, virtualPixelHeight, false);
+        bounds.set(0, 0, virtualPixelWidth, virtualPixelHeight);
     }
 
-    public void set3DTransform(Vector3 position, Vector3 up, Vector3 lookAt) {
-        plane.set(position, tmpV3.set(lookAt).sub(position).nor());
-        xaxis.set(up).crs(plane.normal).nor();
-        yaxis.set(plane.normal).crs(xaxis).nor();
-        tmpM.set(xaxis, yaxis, plane.normal, Vector3.Zero).tra();
-        transform.idt().translate(-bounds.getWidth() * 0.5f, -bounds.getHeight() * 0.5f, 0).mul(tmpM).translate(position).scale(1f / worldToPixelScale.x, 1f / worldToPixelScale.y, 1f);
+    public VirtualStage(Batch batch, int virtualPixelWidth, int virtualPixelHeight, float pixelSizeWorld) {
+        this(batch, virtualPixelWidth, virtualPixelHeight);
+        this.pixelSizeWorld = pixelSizeWorld;
     }
 
-    public void set3DTransform(Vector3 position, Vector3 lookAt) {
-        set3DTransform(position, Vector3.Y, lookAt);
+    public void setRotationX(float angle) {
+        rotation.set(Vector3.X, angle);
+        updated = false;
+    }
+
+    public void setRotationY(float angle) {
+        rotation.set(Vector3.Y, angle);
+        updated = false;
+    }
+
+    public void setRotationZ(float angle) {
+        rotation.set(Vector3.Z, angle);
+        updated = false;
+    }
+
+    public void rotateX(float angle) {
+        rotator.set(Vector3.X, angle);
+        rotation.mul(rotator);
+        updated = false;
+    }
+
+    public void rotateY(float angle) {
+        rotator.set(Vector3.Y, angle);
+        rotation.mul(rotator);
+        updated = false;
+    }
+
+    public void rotateZ(float angle) {
+        rotator.set(Vector3.Z, angle);
+        rotation.mul(rotator);
+        updated = false;
+    }
+
+    public void setRotation(float yaw, float pitch, float roll) {
+        rotation.setEulerAngles(yaw, pitch, roll);
+        updated = false;
+    }
+
+    public void setRotation(Vector3 dir, Vector3 up) {
+        tmp.set(up).crs(dir).nor();
+        tmp2.set(dir).crs(tmp).nor();
+        rotation.setFromAxes(tmp.x, tmp2.x, dir.x, tmp.y, tmp2.y, dir.y, tmp.z, tmp2.z, dir.z);
+        updated = false;
+    }
+
+    public void lookAt(Vector3 position, Vector3 up) {
+        dir.set(position).sub(this.position).nor();
+        setRotation(dir, up);
+    }
+
+    public Quaternion getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(Quaternion q) {
+        rotation.set(q);
+        updated = false;
+    }
+
+    public void translateX(float units) {
+        this.position.x += units;
+        updated = false;
+    }
+
+    public float getX() {
+        return this.position.x;
+    }
+
+    public void setX(float x) {
+        this.position.x = x;
+        updated = false;
+    }
+
+    public void translateY(float units) {
+        this.position.y += units;
+        updated = false;
+    }
+
+    public float getY() {
+        return this.position.y;
+    }
+
+    public void setY(float y) {
+        this.position.y = y;
+        updated = false;
+    }
+
+    public void translateZ(float units) {
+        this.position.z += units;
+        updated = false;
+    }
+
+    public float getZ() {
+        return this.position.z;
+    }
+
+    public void setZ(float z) {
+        this.position.z = z;
+        updated = false;
+    }
+
+    public void translate(float x, float y, float z) {
+        this.position.add(x, y, z);
+        updated = false;
+    }
+
+    public void translate(Vector3 trans) {
+        this.position.add(trans);
+        updated = false;
+    }
+
+    public void setPosition(float x, float y, float z) {
+        this.position.set(x, y, z);
+        updated = false;
+    }
+
+    public Vector3 getPosition() {
+        return position;
+    }
+
+    public void setPosition(Vector3 pos) {
+        this.position.set(pos);
+        updated = false;
+    }
+
+    public void recalculateTransform() {
+        tmpM.set(position, rotation);
+        plane.set(position, tmp.set(Vector3.Z).mul(rotation).nor());
+        bounds.set(0, 0, getViewport().getCamera().viewportWidth * pixelSizeWorld, getViewport().getCamera().viewportHeight * pixelSizeWorld);
+        radius = (float) Math.sqrt(bounds.width * bounds.width + bounds.height * bounds.height);
+        transform.idt().translate(-bounds.getWidth() * 0.5f, -bounds.getHeight() * 0.5f, 0).mul(tmpM).scale(pixelSizeWorld, pixelSizeWorld, 1f);
+        updated = true;
     }
 
     public void draw(Camera camera) {
         if (!visible) return;
+        if (!updated) recalculateTransform();
         Batch batch = this.getBatch();
         getRoot().setTransform(false);
-        batch.setProjectionMatrix(camera.combined);
-//        batch.setProjectionMatrix(tmpM.set(camera.combined).mul(getViewport().getCamera().view));
         batch.begin();
+        batch.setProjectionMatrix(camera.combined);
         batch.setTransformMatrix(transform);
         getRoot().draw(batch, 1);
         batch.end();
@@ -83,15 +218,17 @@ public class VirtualStage extends Stage implements VrInputProcessor {
 
     @Override
     public boolean performRayTest(Ray ray) {
-        if (!visible) return false;
+        if (!visible | !touchable) return false;
+        if (!updated) recalculateTransform();
+//        if(!Intersector.intersectRaySphere(ray, position, radius, null))
+//            return false;
         if (Intersector.intersectRayPlane(ray, plane, hitPoint3D)) {
-            tmpV3_2.set(hitPoint3D).sub(transform.getTranslation(tmpV3));
+            tmp2.set(hitPoint3D).sub(transform.getTranslation(tmp));
             xaxis.set(Vector3.Y).crs(plane.normal).nor();
             yaxis.set(plane.normal).crs(xaxis).nor();
-            tmpV2.set(xaxis.dot(tmpV3_2), yaxis.dot(tmpV3_2));
-            bounds.set(0, 0, getViewport().getCamera().viewportWidth / worldToPixelScale.x, getViewport().getCamera().viewportHeight / worldToPixelScale.y);
+            tmpV2.set(xaxis.dot(tmp2), yaxis.dot(tmp2));
             if (bounds.contains(tmpV2)) {
-                hitPoint2DPixels.set(tmpV2).scl(worldToPixelScale);
+                hitPoint2DPixels.set(tmpV2).scl(1f / pixelSizeWorld);
                 isCursorOver = true;
                 return true;
             }
@@ -200,6 +337,14 @@ public class VirtualStage extends Stage implements VrInputProcessor {
         super.calculateScissors(rect, rect);
     }
 
+    public boolean isTouchable() {
+        return touchable;
+    }
+
+    public void setTouchable(boolean touchable) {
+        this.touchable = touchable;
+    }
+
     @Override
     public Vector2 getHitPoint2D() {
         return hitPoint2DPixels;
@@ -225,5 +370,9 @@ public class VirtualStage extends Stage implements VrInputProcessor {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public void setPixelSizeWorld(float pixelSizeWorld) {
+        this.pixelSizeWorld = pixelSizeWorld;
     }
 }

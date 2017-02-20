@@ -1,15 +1,12 @@
 package net.masonapps.mediaplayervr.video.ui;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Align;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
@@ -27,7 +24,7 @@ public class CameraSettingsLayout implements Attachable {
 
     private static final float STEP = 0.01f;
     private final Table table;
-    private final Window window;
+    //    private final Window window;
     private final VideoPlayerGUI videoPlayerGUI;
     private Vector2 stretch = new Vector2();
     private float z = 1f;
@@ -37,7 +34,7 @@ public class CameraSettingsLayout implements Attachable {
     public CameraSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
         this.videoPlayerGUI = videoPlayerGUI;
         final Skin skin = videoPlayerGUI.getSkin();
-        window = new Window("Camera Settings", new Window.WindowStyle(skin.getFont("default"), Color.BLACK, skin.newDrawable(Style.Drawables.window, Color.LIGHT_GRAY)));
+//        window = new Window("Camera Settings", new Window.WindowStyle(skin.getFont("default"), Color.BLACK, skin.newDrawable(Style.Drawables.window, Color.LIGHT_GRAY)));
         table = new Table(skin);
         table.padTop(videoPlayerGUI.getHeaderHeight());
         table.setFillParent(true);
@@ -59,7 +56,7 @@ public class CameraSettingsLayout implements Attachable {
                 z += STEP;
                 videoPlayerGUI.getVideoPlayerScreen().setZ(z);
                 videoPlayerGUI.getVideoOptions().zoom = z;
-                zoomLabel.setText("Zoom " + Math.round(z * 100f) + "%");
+                zoomLabel.setText("Zoom " + Math.round((1f / z) * 100f) + "%");
             }
         });
         table.add(zLeft).pad(VideoPlayerGUI.PADDING);
@@ -73,7 +70,7 @@ public class CameraSettingsLayout implements Attachable {
                 z -= STEP;
                 videoPlayerGUI.getVideoPlayerScreen().setZ(z);
                 videoPlayerGUI.getVideoOptions().zoom = z;
-                zoomLabel.setText("Zoom " + Math.round(z * 100f) + "%");
+                zoomLabel.setText("Zoom " + Math.round((1f / z) * 100f) + "%");
             }
         });
         table.add(zRight).pad(VideoPlayerGUI.PADDING).row();
@@ -111,10 +108,10 @@ public class CameraSettingsLayout implements Attachable {
 
     @Override
     public void attach(VirtualStage stage) {
-        stage.addActor(window);
-        window.setSize(640, 640);
-        window.setPosition(stage.getWidth() / 2, stage.getHeight() / 2, Align.center);
-        window.add(table).fill();
+        stage.addActor(table);
+//        window.setSize(640, 640);
+//        window.setPosition(stage.getWidth() / 2, stage.getHeight() / 2, Align.center);
+//        window.add(table).fill();
     }
 
     @Override
@@ -124,6 +121,6 @@ public class CameraSettingsLayout implements Attachable {
 
     @Override
     public void setVisible(boolean visible) {
-        window.setVisible(visible);
+        table.setVisible(visible);
     }
 }

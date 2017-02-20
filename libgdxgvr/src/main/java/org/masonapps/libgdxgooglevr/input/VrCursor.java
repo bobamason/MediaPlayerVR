@@ -31,7 +31,6 @@ public class VrCursor {
     public final Vector3 position = new Vector3();
     private final Mesh mesh;
     private Matrix4 transform = new Matrix4();
-    private Camera cam;
     private ShaderProgram shader;
     private float deactivatedDiameter = 0.05f;
     private float activatedDiameter = 0.125f;
@@ -39,8 +38,7 @@ public class VrCursor {
     private Color color = Color.WHITE;
     private boolean visible = true;
 
-    public VrCursor(Camera cam) {
-        this.cam = cam;
+    public VrCursor() {
         mesh = new Mesh(true, 4, 6, VertexAttribute.Position(), VertexAttribute.TexCoords(0));
         mesh.setVertices(new float[]{
                 -1, -1, 0, 0, 1,
@@ -64,10 +62,10 @@ public class VrCursor {
         return fragmentShader;
     }
 
-    public void render() {
+    public void render(Camera camera) {
         if (!visible) return;
         shader.begin();
-        shader.setUniformMatrix(UNIFORM_CAMERATRANSFORM, cam.combined);
+        shader.setUniformMatrix(UNIFORM_CAMERATRANSFORM, camera.combined);
         transform.idt();
         transform.translate(position);
         transform.rotate(rotation);

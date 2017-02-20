@@ -54,7 +54,7 @@ public abstract class VrWorldScreen extends VrScreen {
         environment = createEnvironment();
         environment.add(createLight());
         world = createWorld();
-        cursor = new VrCursor(getVrCamera());
+        cursor = new VrCursor();
         cursor.setDeactivatedDiameter(0.02f);
         modelBatch = createModelBatch();
         shapeRenderer = new ShapeRenderer();
@@ -122,7 +122,7 @@ public abstract class VrWorldScreen extends VrScreen {
             shapeRenderer.line(ray.origin.x, ray.origin.y, ray.origin.z, cursor.position.x, cursor.position.y, cursor.position.z, cursorColor1, cursorColor2);
             shapeRenderer.end();
         }
-        cursor.render();
+        cursor.render(camera);
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 

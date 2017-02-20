@@ -38,8 +38,9 @@ public class MusicPlayerUI implements Disposable {
         this.skin = skin;
 
         mainLayout = new MusicMainLayout(this);
-        stage = new VirtualStage(new SpriteBatch(), 2f, 2f, 1080, 1080);
-        stage.set3DTransform(new Vector3(0, -0.5f, -2.5f), musicVisualizerScreen.getVrCamera().position);
+        stage = new VirtualStage(new SpriteBatch(), 1080, 1080);
+        stage.setPosition(0, -0.5f, -2.5f);
+        stage.lookAt(musicVisualizerScreen.getVrCamera().position, Vector3.Y);
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
         bg.setFillParent(true);
         stage.addActor(bg);

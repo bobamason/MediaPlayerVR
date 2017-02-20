@@ -1,14 +1,14 @@
 package net.masonapps.mediaplayervr.video.ui;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
@@ -24,7 +24,7 @@ import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
 public class MainLayout implements Attachable {
 
-    private final HorizontalGroup videoGroup;
+    private final Table videoGroup;
     private final Table optionsTable;
     private final VideoPlayerGUI videoPlayerGUI;
     //    private final Table settingsTable;
@@ -36,14 +36,14 @@ public class MainLayout implements Attachable {
         this.videoPlayerGUI = videoPlayerGUI;
         final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
         final Skin skin = videoPlayerGUI.getSkin();
-        videoGroup = new HorizontalGroup();
+        videoGroup = new Table();
         videoGroup.center();
-        videoGroup.space(VideoPlayerGUI.PADDING);
-        videoGroup.wrap(false);
 
         optionsTable = new Table();
         optionsTable.padTop(videoPlayerGUI.getHeaderHeight());
+        optionsTable.setFillParent(true);
         optionsTable.center();
+        optionsTable.background(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
 
         final Drawable pauseUp = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_UP);
         final Drawable pauseDown = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_DOWN);
@@ -66,21 +66,21 @@ public class MainLayout implements Attachable {
                 }
             }
         });
-        videoGroup.addActor(playButton);
+        videoGroup.add(playButton).pad(VideoPlayerGUI.PADDING);
 
         slider = new Slider(0f, videoPlayerGUI.getVideoPlayerScreen().getVideoDetails().duration, 1f, false, skin);
-        slider.addListener(new InputListener() {
+        slider.addListener(new ChangeListener() {
             @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+            public void changed(ChangeEvent event, Actor actor) {
                 if (videoPlayer.isPrepared()) {
                     videoPlayer.seekTo(Math.round(slider.getValue()));
                 }
             }
         });
-        videoGroup.addActor(slider);
+        videoGroup.add(slider).expandX().fillX().pad(VideoPlayerGUI.PADDING);
 
         timeLabel = new Label("0:00:00 / 0:00:00", skin);
-        videoGroup.addActor(timeLabel);
+        videoGroup.add(timeLabel).pad(VideoPlayerGUI.PADDING);
 
         final TextButton modeBtn = new TextButton("Mode", skin);
         modeBtn.addListener(new ClickListener() {
@@ -116,13 +116,13 @@ public class MainLayout implements Attachable {
                 videoPlayerGUI.switchToPlaybackSettingsLayout();
             }
         });
-        optionsTable.add(playbackBtn).padLeft(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING);
+        optionsTable.add(playbackBtn).padLeft(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).row();
+
+        optionsTable.add(videoGroup).colspan(3).fillX().expandX().pad(VideoPlayerGUI.PADDING);
     }
 
     @Override
     public void attach(VirtualStage stage) {
-        stage.addActor(videoGroup);
-        videoGroup.setBounds(VideoPlayerGUI.PADDING, VideoPlayerGUI.PADDING, stage.getWidth() - VideoPlayerGUI.PADDING, playButton.getHeight() - VideoPlayerGUI.PADDING);
         stage.addActor(optionsTable);
     }
 

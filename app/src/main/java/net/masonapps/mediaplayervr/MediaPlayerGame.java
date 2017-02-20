@@ -42,7 +42,6 @@ public class MediaPlayerGame extends VrGame {
     public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private static final String HIGHLIGHT_TEXTURE_FILENAME = "room/tiled_bg.png";
-    private static final String DEFAULT = "default";
     private final Context context;
     private Skin skin;
     private Entity roomEntity;
@@ -120,7 +119,7 @@ public class MediaPlayerGame extends VrGame {
     }
 
     private void addFont() {
-        skin.add(DEFAULT, new BitmapFont(Gdx.files.internal(Style.FONT_FILE), skin.getRegion(Style.FONT_REGION)), BitmapFont.class);
+        skin.add(Style.DEFAULT, new BitmapFont(Gdx.files.internal(Style.FONT_FILE), skin.getRegion(Style.FONT_REGION)), BitmapFont.class);
     }
 
     private void addSliderStyle() {
@@ -129,17 +128,17 @@ public class MediaPlayerGame extends VrGame {
 
     private void addButtonStyle() {
         final TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
-        textButtonStyle.font = skin.getFont(DEFAULT);
+        textButtonStyle.font = skin.getFont(Style.DEFAULT);
         textButtonStyle.up = skin.newDrawable(Style.Drawables.button, Style.COLOR_UP);
         textButtonStyle.over = skin.newDrawable(Style.Drawables.button, Style.COLOR_OVER);
         textButtonStyle.down = skin.newDrawable(Style.Drawables.button, Style.COLOR_DOWN);
         textButtonStyle.checked = skin.newDrawable(Style.Drawables.button, Style.COLOR_OVER);
         textButtonStyle.fontColor = Color.WHITE;
-        skin.add(DEFAULT, textButtonStyle, TextButton.TextButtonStyle.class);
+        skin.add(Style.DEFAULT, textButtonStyle, TextButton.TextButtonStyle.class);
     }
 
     private void addLabelStyle() {
-        skin.add(DEFAULT, new Label.LabelStyle(skin.getFont(DEFAULT), Color.WHITE), Label.LabelStyle.class);
+        skin.add(Style.DEFAULT, new Label.LabelStyle(skin.getFont(Style.DEFAULT), Color.WHITE), Label.LabelStyle.class);
     }
 
     private void addImageButtons() {
