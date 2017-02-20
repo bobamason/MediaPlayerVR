@@ -30,6 +30,7 @@ import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
+import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
 /**
  * Created by Bob on 12/24/2016.
@@ -56,11 +57,13 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private float projZ = 0.94f;
     private float yRatio = 1f;
     private boolean doRatioCalc = true;
+    private VrInputMultiplexer inputMultiplexer;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
+        ipd = getDefaultIpd();
         videoCamera = new PerspectiveCamera();
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
@@ -69,7 +72,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         if (videoOptions == null) {
             videoOptions = new VideoOptions();
         }
+        inputMultiplexer = new VrInputMultiplexer();
         ui = new VideoPlayerGUI(this, ((MediaPlayerGame) game).getSkin(), videoOptions);
+        ui.attach(inputMultiplexer);
         getVrCamera().near = 0.25f;
         getVrCamera().far = 100f;
         controllerEntity = getWorld().add(((MediaPlayerGame) game).getControllerEntity());
@@ -94,8 +99,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         GdxVr.app.getGvrView().setNeckModelEnabled(false);
         GdxVr.app.getGvrView().setNeckModelFactor(0f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
-        GdxVr.input.setProcessor(ui.getStage());
-        ipd = getDefaultIpd();
+        GdxVr.input.setProcessor(inputMultiplexer);
         Log.i(VideoPlayerScreen.class.getSimpleName(), "default IPD = " + ipd);
     }
 
@@ -146,10 +150,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         final float r = (float) Math.tan(Math.toRadians(eye.getFov().getRight())) * getVrCamera().near;
         final float t = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * getVrCamera().near;
         final float b = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * getVrCamera().near;
-        videoCamera.projection.setToProjection(l * zoom, r * zoom, b * zoom, t * zoom, getVrCamera().near, getVrCamera().far);
+        videoCamera.projection.setToProjection(l / zoom, r / zoom, b / zoom, t / zoom, getVrCamera().near, getVrCamera().far);
 
-        videoCamera.view.setToTranslation(tempV.set(getForwardVector()).scl((1f - zoom) * 2f));
-        videoCamera.view.mulLeft(tempM.set(eye.getEyeView()));
+//        videoCamera.view.setToTranslation(tempV.set(getForwardVector()).scl((1f - zoom) * 2f));
+        videoCamera.view.set(eye.getEyeView());
         videoCamera.combined.set(videoCamera.projection);
         Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
 //        this.fov.setAngles(eyeFov.getLeft() * zoom, eyeFov.getRight(), eyeFov.getBottom() * zoom, eyeFov.getTop() * zoom);
@@ -203,7 +207,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                     isButtonClicked = true;
                     if (videoPlayer.isPrepared()) {
                         if (isUiVisible()) {
-                            if (!ui.getStage().isCursorOver()) {
+                            if (!inputMultiplexer.isCursorOver()) {
                                 setUiVisible(false);
                             }
                         } else {

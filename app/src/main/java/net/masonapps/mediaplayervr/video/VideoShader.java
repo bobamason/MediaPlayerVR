@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
@@ -20,18 +20,26 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class VideoShader extends BaseShader {
 
-    private final int u_projTrans = register(new Uniform("u_projTrans"));
-    private final int u_worldTrans = register(new Uniform("u_worldTrans"));
-//    private final int u_texture = register(new Uniform("u_texture"));
-    private final int u_texScale = register(new Uniform("u_texScale"));
-    private final int u_texOffset = register(new Uniform("u_texOffset"));
-    
-    private Vector2 textureScale = new Vector2();
-    private Vector2 textureOffset = new Vector2();
-
     private static String vertexShader = null;
     private static String fragmentShader = null;
+    private final int u_projTrans = register(new Uniform("u_projTrans"));
+    private final int u_worldTrans = register(new Uniform("u_worldTrans"));
+    private final int u_srcRect = register(new Uniform("u_srcRect"));
+    private final int u_dstRect = register(new Uniform("u_dstRect"));
+    private final ShaderProgram program;
+    private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
+    private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
     private int textureId = -1;
+
+    public VideoShader() {
+        program = new ShaderProgram(getVertexShader(), getFragmentShader());
+
+        if (!program.isCompiled())
+            throw new GdxRuntimeException("Couldn't compile shader " + program.getLog());
+        String log = program.getLog();
+        if (log.length() > 0) Gdx.app.error("ShaderTest", "Shader compilation log: " + log);
+        init();
+    }
 
     private static String getVertexShader() {
         if (vertexShader == null)
@@ -43,18 +51,6 @@ public class VideoShader extends BaseShader {
         if (fragmentShader == null)
             fragmentShader = Gdx.files.internal("video.fragment.glsl").readString();
         return fragmentShader;
-    }
-
-    private final ShaderProgram program;
-
-    public VideoShader() {
-        program = new ShaderProgram(getVertexShader(), getFragmentShader());
-
-        if (!program.isCompiled())
-            throw new GdxRuntimeException("Couldn't compile shader " + program.getLog());
-        String log = program.getLog();
-        if (log.length() > 0) Gdx.app.error("ShaderTest", "Shader compilation log: " + log);
-        init();
     }
 
     @Override
@@ -88,8 +84,8 @@ public class VideoShader extends BaseShader {
         if(textureId >= 0) {
             GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         }
-        set(u_texOffset, textureOffset);
-        set(u_texScale, textureScale);
+        set(u_srcRect, srcRect.x, srcRect.y, srcRect.width, srcRect.height);
+        set(u_dstRect, dstRect.x, dstRect.y, dstRect.width, dstRect.height);
         renderable.meshPart.render(program);
     }
 
@@ -104,12 +100,20 @@ public class VideoShader extends BaseShader {
         program.dispose();
     }
 
-    public void setTextureOffset(float x, float y) {
-        this.textureOffset.set(x, y);
+    public void setSrcRect(float x, float y, float width, float height) {
+        this.srcRect.set(x, y, width, height);
     }
 
-    public void setTextureScale(float x, float y) {
-        this.textureScale.set(x, y);
+    public void setDstRect(float x, float y, float width, float height) {
+        this.dstRect.set(x, y, width, height);
+    }
+
+    public Rectangle getSrcRect() {
+        return srcRect;
+    }
+
+    public Rectangle getDstRect() {
+        return dstRect;
     }
 
     public void setTextureId(int textureId) {

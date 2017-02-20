@@ -220,8 +220,8 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     public boolean performRayTest(Ray ray) {
         if (!visible | !touchable) return false;
         if (!updated) recalculateTransform();
-//        if(!Intersector.intersectRaySphere(ray, position, radius, null))
-//            return false;
+        if (!Intersector.intersectRaySphere(ray, position, radius, null))
+            return false;
         if (Intersector.intersectRayPlane(ray, plane, hitPoint3D)) {
             tmp2.set(hitPoint3D).sub(transform.getTranslation(tmp));
             xaxis.set(Vector3.Y).crs(plane.normal).nor();
@@ -333,8 +333,8 @@ public class VirtualStage extends Stage implements VrInputProcessor {
 
     @Override
     public void calculateScissors(Rectangle localRect, Rectangle scissorRect) {
-        final Rectangle rect = new Rectangle(Float.MIN_VALUE, Float.MIN_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
-        super.calculateScissors(rect, rect);
+        super.calculateScissors(localRect, scissorRect);
+        scissorRect.set(Float.MIN_VALUE, Float.MIN_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
     }
 
     public boolean isTouchable() {
@@ -364,6 +364,16 @@ public class VirtualStage extends Stage implements VrInputProcessor {
         return isCursorOver;
     }
 
+    public float getWidthWorld() {
+        if (!updated) recalculateTransform();
+        return getWidth() * pixelSizeWorld;
+    }
+
+    public float getHeightWorld() {
+        if (!updated) recalculateTransform();
+        return getHeight() * pixelSizeWorld;
+    }
+
     public boolean isVisible() {
         return visible;
     }
@@ -374,5 +384,6 @@ public class VirtualStage extends Stage implements VrInputProcessor {
 
     public void setPixelSizeWorld(float pixelSizeWorld) {
         this.pixelSizeWorld = pixelSizeWorld;
+        updated = false;
     }
 }

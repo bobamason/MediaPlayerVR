@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -23,6 +24,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.media.MediaUtils;
@@ -34,6 +36,7 @@ import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +53,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private static final int ITEMS_PER_PAGE = 6;
     private static final int STATE_NO_LIST = 0;
     private static final int STATE_VIDEO_LIST = 1;
-    private static final int MAX_TITLE_LENGTH = 20;
+    private static final int MAX_TITLE_LENGTH = 18;
+    private static final float PADDING = 10f;
     private final Context context;
     private final Actor loadingSpinner;
     private final Object lock = new Object();
@@ -58,16 +62,18 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private final SpriteBatch spriteBatch;
     private Table tableStart;
     private Table tableList;
-    private Table tableMedia;
     private List<VideoDetails> videoList = new ArrayList<>();
-    private VirtualStage stage;
+    private VirtualStage stageList;
+    private VirtualStage stageStart;
+    private VirtualStage stagePages;
+    private VirtualStage stageBack;
+    private VrInputMultiplexer inputMultiplexer;
     private int currentPage = 0;
     private int numPages = 0;
     private volatile int currentState = STATE_NO_LIST;
     private Label pageLabel;
     private ImageButton prevPageButon;
     private ImageButton nextPageButton;
-    private ImageButton backButton;
     private volatile boolean loading = false;
     private Table tablePermissions;
     private Drawable defaultVideoDrawable;
@@ -86,11 +92,13 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         setBackgroundColor(Color.DARK_GRAY);
         defaultVideoDrawable = skin.newDrawable(Style.Drawables.ic_movie_white_48dp);
         initStage();
+        inputMultiplexer = new VrInputMultiplexer(stageList, stagePages, stageStart, stageBack);
         final Texture texture = new Texture("loading.png");
         manageDisposable(texture);
         loadingSpinner = new Image(texture);
-        stage.addActor(loadingSpinner);
-        loadingSpinner.setPosition(stage.getWidth() / 2, stage.getHeight() / 2, center);
+        stageList.addActor(loadingSpinner);
+        loadingSpinner.setZIndex(Integer.MAX_VALUE);
+        loadingSpinner.setPosition(stageList.getWidth() / 2, stageList.getHeight() / 2, center);
         if (!((MainActivity) context).isReadStoragePermissionGranted()) {
             tableStart.setVisible(false);
             tablePermissions.setVisible(true);
@@ -98,39 +106,55 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
 
     private static int getTotalPages(int itemsPerPage, List list) {
-        return list.size() / itemsPerPage + 1;
+        return list.size() / itemsPerPage;
     }
 
     private void initStage() {
         final SpriteBatch batch = new SpriteBatch();
         manageDisposable(batch);
-        stage = new VirtualStage(batch, 720, 540);
-        manageDisposable(stage);
-        stage.setPosition(0, 0, -3f);
+        stageStart = new VirtualStage(batch, 720, 540);
+        stageList = new VirtualStage(batch, 720, 420);
+        stagePages = new VirtualStage(batch, 720, 100);
+        stageBack = new VirtualStage(batch, 100, 100);
+        manageDisposable(stageStart);
+        manageDisposable(stageList);
+        manageDisposable(stagePages);
+        manageDisposable(stageBack);
+        stageStart.setPosition(0, 0, -3f);
+        stageList.setPosition(0, 0.5f, -3f);
+        stagePages.setPosition(0, -1f, -3f);
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
         bg.setFillParent(true);
-        stage.addActor(bg);
-
-        backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
-        stage.addActor(backButton);
-        backButton.setPosition(2, stage.getViewport().getWorldHeight() - 2 - backButton.getHeight());
-        backButton.setVisible(false);
-
+        stageStart.addActor(bg);
+        stagePages.addActor(bg);
+        
         addPermissionsTable();
         addStartTable();
         addListTable();
+
+        final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, true));
+        stageList.addActor(backButton);
+        backButton.setPosition(PADDING, stageList.getViewport().getWorldHeight() - PADDING - backButton.getHeight());
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 backButtonClicked();
             }
         });
+        stageBack.getViewport().update((int) backButton.getWidth(), (int) backButton.getHeight(), false);
+        stageBack.setPosition(0, -1.2f, -2f);
+        stageBack.setRotation(Vector3.Z, Vector3.Y);
+        setBackButtonVisible(false);
+    }
+
+    private void setBackButtonVisible(boolean visible) {
+        stageBack.setVisible(visible);
     }
 
     private void addPermissionsTable() {
         tablePermissions = new Table(skin);
         tablePermissions.setFillParent(true);
-        stage.addActor(tablePermissions);
+        stageStart.addActor(tablePermissions);
         tablePermissions.setVisible(false);
         final Label label = new Label(context.getString(R.string.permission_explaination), skin);
         tablePermissions.add(label).pad(12).row();
@@ -153,7 +177,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private void addStartTable() {
         tableStart = new Table(skin);
         tableStart.setFillParent(true);
-        stage.addActor(tableStart);
+        stageStart.addActor(tableStart);
         final TextButton videosButton = new TextButton(context.getString(R.string.videos), skin);
         videosButton.addListener(new ClickListener() {
             @Override
@@ -170,9 +194,9 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                             Gdx.app.postRunnable(new Runnable() {
                                 @Override
                                 public void run() {
-                                    tableStart.setVisible(false);
-                                    tableMedia.setVisible(true);
-                                    backButton.setVisible(true);
+                                    stageStart.setVisible(false);
+                                    stagePages.setVisible(true);
+                                    stageList.setVisible(true);
 
                                     videoList.addAll(list);
                                     displayList(0);
@@ -188,18 +212,32 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
 
     private void addListTable() {
-        tableMedia = new Table(skin);
-        tableMedia.setFillParent(true);
-        stage.addActor(tableMedia);
-        tableMedia.setVisible(false);
-
         tableList = new Table(skin);
         tableList.setFillParent(true);
-        stage.addActor(tableList);
+        stageList.addActor(tableList);
 
-        tableMedia.padTop(backButton.getHeight());
-        tableMedia.add(tableList).colspan(3).expand().fill().row();
+        final Table table = new Table(skin);
+        table.setTouchable(Touchable.enabled);
 
+        final Label label = new Label("", skin);
+        label.setWrap(false);
+        table.add(label).center();
+
+        final Image image = new Image(defaultVideoDrawable);
+        image.setScaling(Scaling.fit);
+        image.setAlign(Align.center);
+        image.setSize(stageList.getWidth() / 3f - PADDING * 6f, stageList.getHeight() / 2f - label.getStyle().font.getLineHeight() * 2 - PADDING * 4f);
+        table.add(image).center().row();
+        table.setBackground(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+
+        final VideoListItemHolder holder = new VideoListItemHolder(table, image, label);
+        holder.videoDetails = null;
+        holders.add(holder);
+
+        final Table tablePages = new Table(skin);
+        tablePages.setFillParent(true);
+        stagePages.addActor(tablePages);
+        
         prevPageButon = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, true));
         prevPageButon.addListener(new ClickListener() {
             @Override
@@ -207,10 +245,11 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 prevPagePressed();
             }
         });
-        tableMedia.add(prevPageButon).left().pad(6);
+        tablePages.add(prevPageButon).left().pad(PADDING);
 
         pageLabel = new Label("page 0/0", skin);
-        tableMedia.add(pageLabel).center();
+        tablePages.add(pageLabel).center();
+        
         nextPageButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.addListener(new ClickListener() {
             @Override
@@ -218,7 +257,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 nextPagePressed();
             }
         });
-        tableMedia.add(nextPageButton).right().pad(6);
+        tablePages.add(nextPageButton).right().pad(PADDING);
     }
 
     private void prevPagePressed() {
@@ -251,7 +290,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             }
 
             thumbnailTextures.clear();
-            holders.clear();
             tableList.clear();
 
             currentState = STATE_VIDEO_LIST;
@@ -269,31 +307,27 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
             for (int i = 0; i < ITEMS_PER_PAGE; i++) {
                 final int index = i + ITEMS_PER_PAGE * currentPage;
-                if (index >= videoList.size())
+
+                final VideoListItemHolder holder = holders.get(i);
+                if (index >= videoList.size()) {
+                    holder.image.setDrawable(defaultVideoDrawable);
+                    holder.label.setText("");
+                    holder.videoDetails = null;
                     break;
+                }
 
                 final VideoDetails videoDetails = videoList.get(index);
-                final Table table = new Table(skin);
-                table.setTouchable(Touchable.enabled);
-
-                final Image image = new Image(defaultVideoDrawable);
-                table.add(image).center().row();
-
-                final Label label = new Label(getTruncatedTitle(videoDetails.title), skin);
-                label.setWrap(false);
-                table.add(label).center();
-
-                final VideoListItemHolder holder = new VideoListItemHolder(table, image, label);
                 holder.videoDetails = videoDetails;
-                holders.add(holder);
+                holder.image.setDrawable(defaultVideoDrawable);
+                holder.label.setText(getTruncatedTitle(videoDetails.title));
 
-                table.addListener(new ClickListener() {
+                holder.table.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         onListItemClicked(holder.videoDetails);
                     }
                 });
-                final Cell<Table> cell = tableList.add(table).fill();
+                final Cell<Table> cell = tableList.add(holder.table).pad(PADDING).fill();
                 if (i % 3 == 2) cell.row();
             }
         }
@@ -356,7 +390,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         GdxVr.app.getGvrView().setNeckModelEnabled(true);
         GdxVr.app.getGvrView().setNeckModelFactor(1f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
-        GdxVr.input.setProcessor(stage);
+        GdxVr.input.setProcessor(inputMultiplexer);
     }
 
     @Override
@@ -376,13 +410,13 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             loadingSpinner.setVisible(false);
         }
 //        label3d.rotateY(GdxVr.graphics.getDeltaTime() * LOADING_SPIN_SPEED);
-        stage.act();
+        stageList.act();
     }
 
     @Override
     public void render(Camera camera, int whichEye) {
         super.render(camera, whichEye);
-        stage.draw(camera);
+        stageList.draw(camera);
         spriteBatch.begin();
         spriteBatch.setProjectionMatrix(camera.combined);
 //        label3d.draw(spriteBatch);
@@ -413,10 +447,11 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
 
     private void backButtonClicked() {
-        if (tableMedia.isVisible()) {
-            tableStart.setVisible(true);
-            tableMedia.setVisible(false);
-            backButton.setVisible(false);
+        if (currentState == STATE_VIDEO_LIST) {
+            stageStart.setVisible(true);
+            stageList.setVisible(false);
+            stagePages.setVisible(false);
+            currentState = STATE_NO_LIST;
         }
     }
 

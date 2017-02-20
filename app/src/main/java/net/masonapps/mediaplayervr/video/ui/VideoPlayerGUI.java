@@ -2,20 +2,13 @@ package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Disposable;
 
-import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
-import net.masonapps.mediaplayervr.video.VrVideoPlayer;
+import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
-import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
 import java.util.Locale;
 
@@ -23,8 +16,7 @@ import java.util.Locale;
  * Created by Bob on 2/8/2017.
  */
 
-public class VideoPlayerGUI implements Disposable {
-    public static final int PADDING = 10;
+public class VideoPlayerGUI extends BaseUiLayout {
     private final MainLayout mainLayout;
     private final ModeLayout modeLayout;
     private final VideoPlayerScreen videoPlayerScreen;
@@ -33,59 +25,25 @@ public class VideoPlayerGUI implements Disposable {
     private final CameraSettingsLayout cameraSettingsLayout;
     private final PlaybackSettingsLayout playbackSettingsLayout;
     private VideoOptions videoOptions;
-    private float headerHeight = PADDING;
-    private VirtualStage stage;
+    private SpriteBatch spriteBatch;
 
     public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, Skin skin, VideoOptions videoOptions) {
         this.videoPlayerScreen = videoPlayerScreen;
         this.skin = skin;
         this.videoOptions = videoOptions;
+        spriteBatch = new SpriteBatch();
 
         mainLayout = new MainLayout(this);
         modeLayout = new ModeLayout(this);
         aspectRatioLayout = new AspectRatioLayout(this);
         cameraSettingsLayout = new CameraSettingsLayout(this);
         playbackSettingsLayout = new PlaybackSettingsLayout(this);
-
-        stage = new VirtualStage(new SpriteBatch(), 640, 640);
-        stage.setPosition(0, 0f, -3f);
         
-        mainLayout.attach(stage);
         mainLayout.setVisible(true);
-
-        modeLayout.attach(stage);
         modeLayout.setVisible(false);
-
-        aspectRatioLayout.attach(stage);
         aspectRatioLayout.setVisible(false);
-
-        cameraSettingsLayout.attach(stage);
         cameraSettingsLayout.setVisible(false);
-
-        playbackSettingsLayout.attach(stage);
         playbackSettingsLayout.setVisible(false);
-
-        final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
-        backButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                backButtonClicked();
-            }
-        });
-        stage.addActor(backButton);
-        backButton.setPosition(PADDING, stage.getHeight() - PADDING, Align.topLeft);
-
-        final ImageButton closeButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
-        closeButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                VideoPlayerGUI.this.videoPlayerScreen.setUiVisible(false);
-            }
-        });
-        stage.addActor(closeButton);
-        closeButton.setPosition(stage.getWidth() - PADDING, stage.getHeight() - PADDING, Align.topRight);
-
-        headerHeight = Math.max(backButton.getHeight(), closeButton.getHeight()) + PADDING;
     }
 
     private static String getTimeLabelString(long currentPosition, long duration) {
@@ -99,12 +57,38 @@ public class VideoPlayerGUI implements Disposable {
                 (duration / 1000) % 60);
     }
 
+    @Override
+    public void attach(VrInputMultiplexer inputMultiplexer) {
+        mainLayout.attach(inputMultiplexer);
+        modeLayout.attach(inputMultiplexer);
+        aspectRatioLayout.attach(inputMultiplexer);
+        cameraSettingsLayout.attach(inputMultiplexer);
+        playbackSettingsLayout.attach(inputMultiplexer);
+    }
+
+    @Override
+    public boolean isVisible() {
+        return false;
+    }
+
+    @Override
     public void setVisible(boolean visible) {
-        stage.setVisible(visible);
+        if (visible) {
+            switchToMainLayout();
+        } else {
+            mainLayout.setVisible(false);
+            modeLayout.setVisible(false);
+            aspectRatioLayout.setVisible(false);
+            cameraSettingsLayout.setVisible(false);
+            playbackSettingsLayout.setVisible(false);
+        }
     }
 
     public void backButtonClicked() {
-        if (stage.isVisible() && !mainLayout.isVisible()) {
+        if (modeLayout.isVisible() ||
+                aspectRatioLayout.isVisible() ||
+                cameraSettingsLayout.isVisible() ||
+                playbackSettingsLayout.isVisible()) {
             switchToMainLayout();
         } else {
             videoPlayerScreen.exit();
@@ -112,23 +96,19 @@ public class VideoPlayerGUI implements Disposable {
     }
 
     public void draw(Camera camera) {
-        stage.draw(camera);
+        mainLayout.draw(camera);
+        modeLayout.draw(camera);
+        aspectRatioLayout.draw(camera);
+        cameraSettingsLayout.draw(camera);
+        playbackSettingsLayout.draw(camera);
     }
 
     public void update() {
-        stage.act(Math.min(GdxVr.graphics.getDeltaTime(), 0.0333333f));
-        final VrVideoPlayer videoPlayer = videoPlayerScreen.getVideoPlayer();
-        if (stage.isVisible() && mainLayout.isVisible() && videoPlayer.isPrepared()) {
-            final long duration = videoPlayer.getDuration();
-            mainLayout.timeLabel.setText(getTimeLabelString(videoPlayer.getCurrentPosition(), duration));
-            if (duration != 0) {
-                mainLayout.slider.setValue((float) videoPlayer.getCurrentPosition());
-            }
-        }
-    }
-
-    public VirtualStage getStage() {
-        return stage;
+        mainLayout.update();
+        modeLayout.update();
+        aspectRatioLayout.update();
+        cameraSettingsLayout.update();
+        playbackSettingsLayout.update();
     }
 
     public VideoPlayerScreen getVideoPlayerScreen() {
@@ -143,14 +123,17 @@ public class VideoPlayerGUI implements Disposable {
         return skin;
     }
 
-    public float getHeaderHeight() {
-        return headerHeight;
-    }
-
     @Override
     public void dispose() {
-        if (stage != null) stage.dispose();
-        stage = null;
+        mainLayout.dispose();
+        modeLayout.dispose();
+        aspectRatioLayout.dispose();
+        cameraSettingsLayout.dispose();
+        playbackSettingsLayout.dispose();
+        if (spriteBatch != null) {
+            spriteBatch.dispose();
+            spriteBatch = null;
+        }
     }
 
     public void switchToMainLayout() {
@@ -191,5 +174,9 @@ public class VideoPlayerGUI implements Disposable {
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(true);
+    }
+
+    public SpriteBatch getSpriteBatch() {
+        return spriteBatch;
     }
 }

@@ -15,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
-import net.masonapps.mediaplayervr.vrinterface.Attachable;
+import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
@@ -23,7 +23,7 @@ import org.masonapps.libgdxgooglevr.input.VirtualStage;
  * Created by Bob on 2/13/2017.
  */
 
-public class MusicMainLayout implements Attachable {
+public class MusicMainLayout implements BaseUiLayout {
 
     public Table table;
     public Label timeLabel;
@@ -62,7 +62,7 @@ public class MusicMainLayout implements Attachable {
                 }
             }
         });
-        table.add(playButton).pad(VideoPlayerGUI.PADDING);
+        table.add(playButton).pad(VideoPlayerGUI.padding);
 
         slider = new Slider(0f, 1f, 0.00001f, false, skin);
         slider.addListener(new ChangeListener() {
@@ -74,10 +74,10 @@ public class MusicMainLayout implements Attachable {
                 }
             }
         });
-        table.add(slider).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).colspan(4).expandX().fillX();
+        table.add(slider).padTop(VideoPlayerGUI.padding).padBottom(VideoPlayerGUI.padding).padRight(VideoPlayerGUI.padding).colspan(4).expandX().fillX();
 
         timeLabel = new Label("0:00:00 / 0:00:00", skin);
-        table.add(timeLabel).padTop(VideoPlayerGUI.PADDING).padBottom(VideoPlayerGUI.PADDING).padRight(VideoPlayerGUI.PADDING).row();
+        table.add(timeLabel).padTop(VideoPlayerGUI.padding).padBottom(VideoPlayerGUI.padding).padRight(VideoPlayerGUI.padding).row();
     }
 
     @Override

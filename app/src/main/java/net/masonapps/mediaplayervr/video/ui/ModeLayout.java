@@ -1,19 +1,25 @@
 package net.masonapps.mediaplayervr.video.ui;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VideoMode;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
-import net.masonapps.mediaplayervr.vrinterface.Attachable;
+import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
 import java.util.ArrayList;
 
@@ -21,7 +27,7 @@ import java.util.ArrayList;
  * Created by Bob on 2/8/2017.
  */
 
-public class ModeLayout implements Attachable {
+public class ModeLayout extends BaseUiLayout {
     private static ObjectMap<String, VideoMode> nameModeMap = new ObjectMap<>();
     private static ObjectMap<VideoMode, String> modeNameMap = new ObjectMap<>();
     private static Array<String> modes = new Array<>();
@@ -66,20 +72,37 @@ public class ModeLayout implements Attachable {
     private final Table table;
     private final VideoPlayerGUI videoPlayerGUI;
     private ArrayList<TextButton> textButtons = new ArrayList<>();
+    private VirtualStage stage;
 
     public ModeLayout(final VideoPlayerGUI videoPlayerGUI) {
         this.videoPlayerGUI = videoPlayerGUI;
         final Skin skin = videoPlayerGUI.getSkin();
+        stage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360);
+        stage.setPosition(0, 0, -2.5f);
+        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+        bg.setFillParent(true);
+        stage.addActor(bg);
+
+        final ImageButton closeButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
+        closeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                setVisible(false);
+            }
+        });
+        stage.addActor(closeButton);
+
+        closeButton.setPosition(stage.getWidth() - padding, stage.getHeight() - padding, Align.topRight);
         table = new Table(skin);
-        table.padTop(videoPlayerGUI.getHeaderHeight());
+        table.padTop(closeButton.getHeight());
         table.setFillParent(true);
         table.center();
-        table.setVisible(false);
+
 
 
         for (int i = 0; i < modes.size; i++) {
             final TextButton textButton = new TextButton(modes.get(i), skin);
-            final Cell<TextButton> cell = table.add(textButton).expandX().fill().center().pad(VideoPlayerGUI.PADDING);
+            final Cell<TextButton> cell = table.add(textButton).expandX().fill().center().pad(padding);
             if (i % 3 == 2 && i < modes.size - 1) cell.row();
             textButtons.add(textButton);
             final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
@@ -98,22 +121,38 @@ public class ModeLayout implements Attachable {
                 }
             });
         }
+        setVisible(false);
     }
 
     @Override
-    public void attach(VirtualStage stage) {
+    public void update() {
+        stage.act();
+    }
+
+    @Override
+    public void draw(Camera camera) {
+        stage.draw(camera);
+    }
+
+    @Override
+    public void attach(VrInputMultiplexer inputMultiplexer) {
         stage.addActor(table);
+        inputMultiplexer.addProcessor(stage);
     }
 
     @Override
     public boolean isVisible() {
-        return table.isVisible();
+        return stage.isVisible();
     }
 
     @Override
     public void setVisible(boolean visible) {
-        table.setVisible(visible);
-//        if (visible)
-//            videoPlayerGUI.getStage().getViewport().update((int) table.getWidth(), (int) table.getHeight(), true);
+        stage.setVisible(visible);
+    }
+
+    @Override
+    public void dispose() {
+        if (stage != null)
+            stage.dispose();
     }
 }

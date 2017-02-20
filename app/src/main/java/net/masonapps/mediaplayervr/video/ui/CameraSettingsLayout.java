@@ -1,46 +1,61 @@
 package net.masonapps.mediaplayervr.video.ui;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
-import net.masonapps.mediaplayervr.vrinterface.Attachable;
+import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-
-import java.text.DecimalFormat;
+import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
 /**
  * Created by Bob on 2/8/2017.
  */
 
-public class CameraSettingsLayout implements Attachable {
+public class CameraSettingsLayout extends BaseUiLayout {
 
     private static final float STEP = 0.01f;
     private final Table table;
     //    private final Window window;
     private final VideoPlayerGUI videoPlayerGUI;
+    private VirtualStage stage;
     private Vector2 stretch = new Vector2();
     private float z = 1f;
     private float ipd = 0f;
-    private DecimalFormat df = new DecimalFormat("0.00");
 
     public CameraSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
         this.videoPlayerGUI = videoPlayerGUI;
         final Skin skin = videoPlayerGUI.getSkin();
-//        window = new Window("Camera Settings", new Window.WindowStyle(skin.getFont("default"), Color.BLACK, skin.newDrawable(Style.Drawables.window, Color.LIGHT_GRAY)));
+        stage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360);
+        stage.setPosition(0, 0, -2.5f);
+        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+        bg.setFillParent(true);
+        stage.addActor(bg);
+
+        final ImageButton closeButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
+        closeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                setVisible(false);
+            }
+        });
+        stage.addActor(closeButton);
+
+        closeButton.setPosition(stage.getWidth() - padding, stage.getHeight() - padding, Align.topRight);
         table = new Table(skin);
-        table.padTop(videoPlayerGUI.getHeaderHeight());
+        table.padTop(closeButton.getHeight());
         table.setFillParent(true);
         table.center();
-        table.setVisible(false);
-        df.setDecimalSeparatorAlwaysShown(true);
 
         ipd = videoPlayerGUI.getVideoPlayerScreen().getIpd();
 
@@ -56,12 +71,12 @@ public class CameraSettingsLayout implements Attachable {
                 z += STEP;
                 videoPlayerGUI.getVideoPlayerScreen().setZ(z);
                 videoPlayerGUI.getVideoOptions().zoom = z;
-                zoomLabel.setText("Zoom " + Math.round((1f / z) * 100f) + "%");
+                zoomLabel.setText("Zoom " + Math.round(z * 100f) + "%");
             }
         });
-        table.add(zLeft).pad(VideoPlayerGUI.PADDING);
+        table.add(zLeft).pad(padding);
 
-        table.add(zoomLabel).pad(VideoPlayerGUI.PADDING);
+        table.add(zoomLabel).pad(padding);
 
         final ImageButton zRight = new ImageButton(rightButtonStyle);
         zRight.addListener(new ClickListener() {
@@ -70,13 +85,13 @@ public class CameraSettingsLayout implements Attachable {
                 z -= STEP;
                 videoPlayerGUI.getVideoPlayerScreen().setZ(z);
                 videoPlayerGUI.getVideoOptions().zoom = z;
-                zoomLabel.setText("Zoom " + Math.round((1f / z) * 100f) + "%");
+                zoomLabel.setText("Zoom " + Math.round(z * 100f) + "%");
             }
         });
-        table.add(zRight).pad(VideoPlayerGUI.PADDING).row();
+        table.add(zRight).pad(padding).row();
 
 
-        final Label ipdLabel = new Label("IPD " + df.format(videoPlayerGUI.getVideoPlayerScreen().getIpd()), skin);
+        final Label ipdLabel = new Label("IPD " + Math.round(videoPlayerGUI.getVideoPlayerScreen().getIpd() * 1000) + "mm", skin);
 
         final ImageButton ipdLeft = new ImageButton(leftButtonStyle);
         ipdLeft.addListener(new ClickListener() {
@@ -85,12 +100,12 @@ public class CameraSettingsLayout implements Attachable {
                 ipd -= STEP;
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
                 screen.setIpd(screen.getDefaultIpd() + ipd);
-                ipdLabel.setText("IPD " + df.format(screen.getIpd()));
+                ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 1000) + "mm");
                 videoPlayerGUI.getVideoOptions().ipd = screen.getIpd();
             }
         });
-        table.add(ipdLeft).pad(VideoPlayerGUI.PADDING);
-        table.add(ipdLabel).pad(VideoPlayerGUI.PADDING);
+        table.add(ipdLeft).pad(padding);
+        table.add(ipdLabel).pad(padding);
 
         final ImageButton ipdRight = new ImageButton(rightButtonStyle);
         ipdRight.addListener(new ClickListener() {
@@ -99,28 +114,43 @@ public class CameraSettingsLayout implements Attachable {
                 ipd += STEP;
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
                 screen.setIpd(screen.getDefaultIpd() + ipd);
-                ipdLabel.setText("IPD " + df.format(screen.getIpd()));
+                ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 1000) + "mm");
                 videoPlayerGUI.getVideoOptions().ipd = screen.getIpd();
             }
         });
-        table.add(ipdRight).pad(VideoPlayerGUI.PADDING).row();
+        table.add(ipdRight).pad(padding).row();
+        setVisible(false);
     }
 
     @Override
-    public void attach(VirtualStage stage) {
+    public void update() {
+        stage.act();
+    }
+
+    @Override
+    public void draw(Camera camera) {
+        stage.draw(camera);
+    }
+
+    @Override
+    public void attach(VrInputMultiplexer inputMultiplexer) {
         stage.addActor(table);
-//        window.setSize(640, 640);
-//        window.setPosition(stage.getWidth() / 2, stage.getHeight() / 2, Align.center);
-//        window.add(table).fill();
+        inputMultiplexer.addProcessor(stage);
     }
 
     @Override
     public boolean isVisible() {
-        return table.isVisible();
+        return stage.isVisible();
     }
 
     @Override
     public void setVisible(boolean visible) {
-        table.setVisible(visible);
+        stage.setVisible(visible);
+    }
+
+    @Override
+    public void dispose() {
+        if (stage != null)
+            stage.dispose();
     }
 }

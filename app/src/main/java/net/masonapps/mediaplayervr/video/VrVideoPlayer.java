@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -56,6 +57,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private int width;
     private int height;
     private Vector2 stretch = new Vector2();
+    private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
+    private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
 
     public VrVideoPlayer(Context context, Uri uri, int width, int height) {
         this(context, uri, width, height, VideoMode.Mono);
