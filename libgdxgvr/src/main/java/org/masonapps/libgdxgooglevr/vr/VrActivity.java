@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.util.Log;
@@ -39,8 +40,6 @@ import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
 
-import org.masonapps.libgdxgooglevr.R;
-
 import java.lang.reflect.Method;
 
 /**
@@ -73,6 +72,14 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     private int wasFocusChanged = -1;
     private boolean isWaitingForAudio = false;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        GvrView gvrView = new GvrView(this);
+        setContentView(gvrView);
+        setGvrView(gvrView);
+    }
+
     public void initialize(VrApplicationAdapter adapter) {
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         initialize(adapter, config);
@@ -87,11 +94,7 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
             throw new GdxRuntimeException("LibGDX requires Android API Level " + MINIMUM_SDK + " or later.");
         }
 
-        setContentView(R.layout.vr_application_layout);
-        final GvrView gvrView = (GvrView) findViewById(R.id.gvr_view);
-        setGvrView(gvrView);
-
-        graphics = new VrGraphics(this, gvrView, config);
+        graphics = new VrGraphics(this, getGvrView(), config);
         input = VrAndroidInput.newInstance(this);
         input.setController(controller);
         audio = new AndroidAudio(this, config);

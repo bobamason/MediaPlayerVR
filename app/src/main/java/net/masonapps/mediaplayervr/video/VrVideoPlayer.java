@@ -15,7 +15,6 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
@@ -47,8 +46,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     protected CompletionListener completionListener;
     @Nullable
     protected ErrorListener errorListener;
-    protected Vector2 texScale = new Vector2();
-    protected Vector2 texOffset = new Vector2();
     protected VideoMode videoMode;
     protected float aspectRatio = 1f;
     //    protected float targetAspectRatio = 1f;
@@ -125,14 +122,11 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         aspectRatio = w / h;
 
         if (use180Sphere()) {
-//            texScale.set(1f, aspectRatio).add(stretch);
-////            texOffset.set(0f, (1f - aspectRatio) * 0.5f);
-//            texOffset.set(1f, 1f).sub(texScale).scl(0.5f);
-            texScale.set(2f, 1f).add(stretch);
-            texOffset.set(2f, 1f).sub(texScale).scl(0.5f);
+            srcRect.set(0, 0, 1, 1);
+            dstRect.set(0.25f, 0, 0.5f, 1);
         } else {
-            texScale.set(1f, 1f).add(stretch);
-            texOffset.set(1f, 1f).sub(texScale).scl(0.5f);
+            srcRect.set(0, 0, 1, 1);
+            dstRect.set(0, 0, 1, 1);
         }
     }
 
@@ -187,41 +181,35 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     protected void mapDistortTextureCoordinates(int eyeType) {
-        modelInstance.transform.idt().rotate(Vector3.Y, use180Sphere() ? -90 : 0).scale(modelSize, modelSize, modelSize);
+        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
         if (isStereoscopic) {
             switch (eyeType) {
                 case Eye.Type.LEFT:
                     if (isHorizontalSplit) {
-                        shader.setTextureScale(0.5f * texScale.x, texScale.y);
-                        shader.setTextureOffset(texOffset.x, texOffset.y);
+                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width * 0.5f, srcRect.height);
                     } else {
-                        shader.setTextureScale(texScale.x, 0.5f * texScale.y);
-                        shader.setTextureOffset(texOffset.x, texOffset.y);
+                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
                     }
                     break;
                 case Eye.Type.RIGHT:
                     if (isHorizontalSplit) {
-                        shader.setTextureScale(0.5f * texScale.x, texScale.y);
-                        shader.setTextureOffset(texOffset.x + 0.5f, texOffset.y);
+                        shader.setSrcRect(srcRect.x + 0.5f, srcRect.y, srcRect.width * 0.5f, srcRect.height);
                     } else {
-                        shader.setTextureScale(texScale.x, 0.5f * texScale.y);
-                        shader.setTextureOffset(texOffset.x, texOffset.y + 0.5f);
+                        shader.setSrcRect(srcRect.x, srcRect.y + 0.5f, srcRect.width, srcRect.height * 0.5f);
                     }
                     break;
                 default:
                     if (isHorizontalSplit) {
-                        shader.setTextureScale(0.5f * texScale.x, texScale.y);
-                        shader.setTextureOffset(texOffset.x, texOffset.y);
+                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width * 0.5f, srcRect.height);
                     } else {
-                        shader.setTextureScale(texScale.x, 0.5f * texScale.y);
-                        shader.setTextureOffset(texOffset.x, texOffset.y);
+                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
                     }
                     break;
             }
         } else {
-            shader.setTextureScale(texScale.x, texScale.y);
-            shader.setTextureOffset(texOffset.x, texOffset.y);
+            shader.getSrcRect().set(srcRect);
         }
+        shader.getDstRect().set(dstRect);
     }
 
     protected void mapDistortModel(int eyeType) {
@@ -231,30 +219,33 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize / aspectRatio + stretch.y * modelSize, modelSize);
         }
         if (isStereoscopic) {
-            if (isHorizontalSplit) {
-                shader.setTextureScale(0.5f, 1f);
-            } else {
-                shader.setTextureScale(1f, 0.5f);
-            }
             switch (eyeType) {
                 case Eye.Type.LEFT:
-                    shader.setTextureOffset(0f, 0f);
+                    if (isHorizontalSplit) {
+                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width * 0.5f, srcRect.height);
+                    } else {
+                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
+                    }
                     break;
                 case Eye.Type.RIGHT:
                     if (isHorizontalSplit) {
-                        shader.setTextureOffset(0.5f, 0f);
+                        shader.setSrcRect(srcRect.x + 0.5f, srcRect.y, srcRect.width * 0.5f, srcRect.height);
                     } else {
-                        shader.setTextureOffset(0f, 0.5f);
+                        shader.setSrcRect(srcRect.x, srcRect.y + 0.5f, srcRect.width, srcRect.height * 0.5f);
                     }
                     break;
                 default:
-                    shader.setTextureOffset(0f, 0f);
+                    if (isHorizontalSplit) {
+                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width * 0.5f, srcRect.height);
+                    } else {
+                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
+                    }
                     break;
             }
         } else {
-            shader.setTextureScale(1f, 1f);
-            shader.setTextureOffset(0f, 0f);
+            shader.getSrcRect().set(srcRect);
         }
+        shader.getDstRect().set(dstRect);
     }
 
     public abstract void stop();

@@ -26,6 +26,7 @@ public class VideoShader extends BaseShader {
     private final int u_worldTrans = register(new Uniform("u_worldTrans"));
     private final int u_srcRect = register(new Uniform("u_srcRect"));
     private final int u_dstRect = register(new Uniform("u_dstRect"));
+    private final int u_clip = register(new Uniform("u_clip"));
     private final ShaderProgram program;
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
@@ -86,6 +87,7 @@ public class VideoShader extends BaseShader {
         }
         set(u_srcRect, srcRect.x, srcRect.y, srcRect.width, srcRect.height);
         set(u_dstRect, dstRect.x, dstRect.y, dstRect.width, dstRect.height);
+        set(u_clip, dstRect.x, dstRect.y, dstRect.x + dstRect.width, dstRect.y + dstRect.height);
         renderable.meshPart.render(program);
     }
 
