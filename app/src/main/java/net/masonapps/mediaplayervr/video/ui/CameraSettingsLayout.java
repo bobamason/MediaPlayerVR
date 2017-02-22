@@ -3,7 +3,6 @@ package net.masonapps.mediaplayervr.video.ui;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -38,9 +37,7 @@ public class CameraSettingsLayout extends BaseUiLayout {
         final Skin skin = videoPlayerGUI.getSkin();
         stage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360);
         stage.setPosition(0, 0, -2.5f);
-        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
-        bg.setFillParent(true);
-        stage.addActor(bg);
+        stage.addActor(Style.newBackgroundImage(skin));
 
         final ImageButton closeButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
         closeButton.addListener(new ClickListener() {

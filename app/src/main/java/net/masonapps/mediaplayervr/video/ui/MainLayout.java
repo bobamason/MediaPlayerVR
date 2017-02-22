@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -48,10 +47,8 @@ public class MainLayout extends BaseUiLayout {
         videoStage.setPosition(0, -1f, -2.5f);
         optionsStage.setPosition(-1f, 0, -2.5f);
         optionsStage.lookAt(Vector3.Zero, Vector3.Y);
-        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
-        bg.setFillParent(true);
-        videoStage.addActor(bg);
-        optionsStage.addActor(new Image(bg.getDrawable()));
+        videoStage.addActor(Style.newBackgroundImage(skin));
+        optionsStage.addActor(Style.newBackgroundImage(skin));
 
         final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
         backButton.addListener(new ClickListener() {

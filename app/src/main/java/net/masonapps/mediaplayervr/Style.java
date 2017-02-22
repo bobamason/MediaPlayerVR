@@ -1,6 +1,7 @@
 package net.masonapps.mediaplayervr;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
@@ -31,6 +32,12 @@ public class Style {
         return new ImageButton.ImageButtonStyle(drawableUp, drawableDown, null, imageUp, imageDown, null);
     }
 
+    public static Image newBackgroundImage(Skin skin) {
+        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+        bg.setFillParent(true);
+        return bg;
+    }
+
     public static class Drawables {
         public static final String ic_album_white_48dp = "ic_album_white_48dp";
         public static final String ic_movie_white_48dp = "ic_movie_white_48dp";
@@ -53,5 +60,6 @@ public class Style {
         public static final String slider = "slider";
         public static final String slider_knob = "slider_knob";
         public static final String controller_swipe = "controller_swipe";
+        public static final String loading_spinner = "";
     }
 }

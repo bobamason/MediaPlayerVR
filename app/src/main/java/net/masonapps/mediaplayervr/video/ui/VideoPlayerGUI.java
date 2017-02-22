@@ -145,7 +145,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToModeLayout() {
-        mainLayout.setVisible(false);
+        mainLayout.setVisible(true);
         modeLayout.setVisible(true);
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
@@ -153,7 +153,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToAspectRatioLayout() {
-        mainLayout.setVisible(false);
+        mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(true);
         cameraSettingsLayout.setVisible(false);
@@ -161,7 +161,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToCameraSettingsLayout() {
-        mainLayout.setVisible(false);
+        mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(true);
@@ -169,7 +169,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToPlaybackSettingsLayout() {
-        mainLayout.setVisible(false);
+        mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);

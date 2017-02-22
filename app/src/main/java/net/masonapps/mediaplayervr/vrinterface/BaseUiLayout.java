@@ -12,9 +12,11 @@ import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 public abstract class BaseUiLayout implements Disposable {
     protected int padding = 10;
 
-    public abstract void update();
+    public void update() {
+    }
 
-    public abstract void draw(Camera camera);
+    public void draw(Camera camera) {
+    }
 
     public abstract void attach(VrInputMultiplexer inputMultiplexer);
 

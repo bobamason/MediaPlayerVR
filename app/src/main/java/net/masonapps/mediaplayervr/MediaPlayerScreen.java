@@ -59,4 +59,8 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
         super.onDaydreamControllerUpdate(controller, connectionState);
         controllerEntity.modelInstance.transform.set(tempV.set(GdxVr.input.getControllerPosition()).add(GdxVr.input.getHandPosition()), GdxVr.input.getControllerOrientation(), scale);
     }
+
+    public Skin getSkin() {
+        return skin;
+    }
 }
