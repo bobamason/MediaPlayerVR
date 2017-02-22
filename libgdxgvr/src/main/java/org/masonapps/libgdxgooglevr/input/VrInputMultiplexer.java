@@ -2,6 +2,7 @@ package org.masonapps.libgdxgooglevr.input;
 
 import android.support.annotation.Nullable;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
@@ -46,6 +47,19 @@ public class VrInputMultiplexer implements VrInputProcessor {
         focusedProcessor = null;
         isCursorOver = false;
         return false;
+    }
+
+    public void act() {
+        for (VrInputProcessor inputProcessor : inputProcessors) {
+            if (inputProcessor instanceof VirtualStage) ((VirtualStage) inputProcessor).act();
+        }
+    }
+
+    public void draw(Camera camera) {
+        for (VrInputProcessor inputProcessor : inputProcessors) {
+            if (inputProcessor instanceof VirtualStage)
+                ((VirtualStage) inputProcessor).draw(camera);
+        }
     }
 
     @Override

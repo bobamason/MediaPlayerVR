@@ -87,7 +87,7 @@ public class VideoShader extends BaseShader {
         }
         set(u_srcRect, srcRect.x, srcRect.y, srcRect.width, srcRect.height);
         set(u_dstRect, dstRect.x, dstRect.y, dstRect.width, dstRect.height);
-        set(u_clip, dstRect.x, dstRect.y, dstRect.x + dstRect.width, dstRect.y + dstRect.height);
+        set(u_clip, srcRect.x, srcRect.y, srcRect.x + srcRect.width, srcRect.y + srcRect.height);
         renderable.meshPart.render(program);
     }
 

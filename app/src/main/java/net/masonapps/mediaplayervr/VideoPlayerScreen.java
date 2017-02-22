@@ -63,7 +63,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
-        ipd = getDefaultIpd();
+        ipd = 0;
         videoCamera = new PerspectiveCamera();
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
@@ -263,16 +263,13 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         this.zoom = MathUtils.clamp(zoom, 0.1f, 2f);
     }
 
-    public float getDefaultIpd() {
-        return GdxVr.app.getGvrView().getInterpupillaryDistance();
-    }
-
     public float getIpd() {
         return ipd;
     }
 
     public void setIpd(float ipd) {
-        this.ipd = Math.max(ipd, 0f);
+        this.ipd = MathUtils.clamp(ipd, -0.1f, 0.1f);
+        videoPlayer.set3dShift(ipd);
     }
 
     public void exit() {

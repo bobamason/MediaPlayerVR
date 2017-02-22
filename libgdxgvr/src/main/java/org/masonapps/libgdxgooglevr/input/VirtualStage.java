@@ -36,7 +36,7 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     private Plane plane = new Plane();
     private boolean visible = true;
     private Rectangle bounds = new Rectangle();
-    private float pixelSizeWorld = 0.005f;
+    private float pixelSizeWorld = 0.0025f;
     private int mouseScreenX;
     private int mouseScreenY;
     private Actor mouseOverActor = null;

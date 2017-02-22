@@ -2,6 +2,7 @@ package net.masonapps.mediaplayervr.audiovisualization.ui;
 
 import android.media.MediaPlayer;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -14,16 +15,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 import net.masonapps.mediaplayervr.Style;
-import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
-import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
 /**
  * Created by Bob on 2/13/2017.
  */
 
-public class MusicMainLayout implements BaseUiLayout {
+public class MusicMainLayout extends BaseUiLayout {
 
     public Table table;
     public Label timeLabel;
@@ -62,7 +62,7 @@ public class MusicMainLayout implements BaseUiLayout {
                 }
             }
         });
-        table.add(playButton).pad(VideoPlayerGUI.padding);
+        table.add(playButton).pad(padding);
 
         slider = new Slider(0f, 1f, 0.00001f, false, skin);
         slider.addListener(new ChangeListener() {
@@ -74,15 +74,25 @@ public class MusicMainLayout implements BaseUiLayout {
                 }
             }
         });
-        table.add(slider).padTop(VideoPlayerGUI.padding).padBottom(VideoPlayerGUI.padding).padRight(VideoPlayerGUI.padding).colspan(4).expandX().fillX();
+        table.add(slider).padTop(padding).padBottom(padding).padRight(padding).colspan(4).expandX().fillX();
 
         timeLabel = new Label("0:00:00 / 0:00:00", skin);
-        table.add(timeLabel).padTop(VideoPlayerGUI.padding).padBottom(VideoPlayerGUI.padding).padRight(VideoPlayerGUI.padding).row();
+        table.add(timeLabel).padTop(padding).padBottom(padding).padRight(padding).row();
     }
 
     @Override
-    public void attach(VirtualStage stage) {
-        stage.addActor(table);
+    public void update() {
+        
+    }
+
+    @Override
+    public void draw(Camera camera) {
+
+    }
+
+    @Override
+    public void attach(VrInputMultiplexer vrInputMultiplexer) {
+//        stage.addActor(table);
     }
 
     @Override
@@ -93,5 +103,10 @@ public class MusicMainLayout implements BaseUiLayout {
     @Override
     public void setVisible(boolean visible) {
         table.setVisible(visible);
+    }
+
+    @Override
+    public void dispose() {
+
     }
 }

@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -106,7 +105,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
 
     private static int getTotalPages(int itemsPerPage, List list) {
-        return list.size() / itemsPerPage;
+        return list.size() / itemsPerPage + (list.size() % itemsPerPage == 0 ? 0 : 1);
     }
 
     private void initStage() {
@@ -122,19 +121,21 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         manageDisposable(stageBack);
         stageStart.setPosition(0, 0, -3f);
         stageList.setPosition(0, 0.5f, -3f);
-        stagePages.setPosition(0, -1f, -3f);
+        stagePages.setPosition(0, -0.5f, -3f);
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
         bg.setFillParent(true);
         stageStart.addActor(bg);
         stagePages.addActor(bg);
-        
+        stageList.setVisible(false);
+        stagePages.setVisible(false);
+
         addPermissionsTable();
         addStartTable();
         addListTable();
 
         final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, true));
-        stageList.addActor(backButton);
-        backButton.setPosition(PADDING, stageList.getViewport().getWorldHeight() - PADDING - backButton.getHeight());
+        stageBack.addActor(backButton);
+        backButton.setPosition(0, 0, Align.bottomLeft);
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -142,8 +143,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             }
         });
         stageBack.getViewport().update((int) backButton.getWidth(), (int) backButton.getHeight(), false);
-        stageBack.setPosition(0, -1.2f, -2f);
-        stageBack.setRotation(Vector3.Z, Vector3.Y);
+        stageBack.setPosition(0, -0.8f, -2.8f);
+//        stageBack.setRotation(Vector3.Z, Vector3.Y);
         setBackButtonVisible(false);
     }
 
@@ -185,7 +186,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 if (!loading) {
                     loading = true;
                     videoList.clear();
-                    holders.clear();
                     disposeTextures();
                     new Thread(new Runnable() {
                         @Override
@@ -216,28 +216,31 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         tableList.setFillParent(true);
         stageList.addActor(tableList);
 
-        final Table table = new Table(skin);
-        table.setTouchable(Touchable.enabled);
+        for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+            final Table table = new Table(skin);
+//            table.setFillParent(true);
+            table.setTouchable(Touchable.enabled);
 
-        final Label label = new Label("", skin);
-        label.setWrap(false);
-        table.add(label).center();
+            final Image image = new Image(defaultVideoDrawable);
+            image.setScaling(Scaling.fit);
+            image.setAlign(Align.center);
+//            image.setSize(stageList.getWidth() / 3f - PADDING * 6f, stageList.getHeight() / 2f - label.getStyle().font.getLineHeight() * 2 - PADDING * 4f);
+            table.add(image).expand().fill().center().row();
+            table.setBackground(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
 
-        final Image image = new Image(defaultVideoDrawable);
-        image.setScaling(Scaling.fit);
-        image.setAlign(Align.center);
-        image.setSize(stageList.getWidth() / 3f - PADDING * 6f, stageList.getHeight() / 2f - label.getStyle().font.getLineHeight() * 2 - PADDING * 4f);
-        table.add(image).center().row();
-        table.setBackground(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+            final Label label = new Label("", skin);
+            label.setWrap(false);
+            table.add(label).center();
 
-        final VideoListItemHolder holder = new VideoListItemHolder(table, image, label);
-        holder.videoDetails = null;
-        holders.add(holder);
+            final VideoListItemHolder holder = new VideoListItemHolder(table, image, label);
+            holder.videoDetails = null;
+            holders.add(holder);
+        }
 
         final Table tablePages = new Table(skin);
         tablePages.setFillParent(true);
         stagePages.addActor(tablePages);
-        
+
         prevPageButon = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, true));
         prevPageButon.addListener(new ClickListener() {
             @Override
@@ -248,8 +251,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         tablePages.add(prevPageButon).left().pad(PADDING);
 
         pageLabel = new Label("page 0/0", skin);
-        tablePages.add(pageLabel).center();
-        
+        tablePages.add(pageLabel).center().expandX().fillX();
+
         nextPageButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.addListener(new ClickListener() {
             @Override
@@ -331,6 +334,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 if (i % 3 == 2) cell.row();
             }
         }
+        stageBack.setVisible(true);
         loadThumbnailTextures();
     }
 
@@ -351,6 +355,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                     loading = true;
                     disposeTextures();
                     for (final VideoListItemHolder holder : holders) {
+                        if (holder.videoDetails == null) continue;
                         final Pixmap pixmap = MediaUtils.getVideoThumbnailPixmap(context, holder.videoDetails.id);
                         GdxVr.app.postRunnable(new Runnable() {
                             @Override
@@ -410,13 +415,13 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             loadingSpinner.setVisible(false);
         }
 //        label3d.rotateY(GdxVr.graphics.getDeltaTime() * LOADING_SPIN_SPEED);
-        stageList.act();
+        inputMultiplexer.act();
     }
 
     @Override
     public void render(Camera camera, int whichEye) {
         super.render(camera, whichEye);
-        stageList.draw(camera);
+        inputMultiplexer.draw(camera);
         spriteBatch.begin();
         spriteBatch.setProjectionMatrix(camera.combined);
 //        label3d.draw(spriteBatch);

@@ -8,6 +8,8 @@ varying vec2 v_texCoord;
 
 void main() {
     vec4 pos = u_worldTrans * a_position;
-    v_texCoord = (u_srcRect.zw * a_texCoord0 + u_srcRect.xy) / u_dstRect.zw - u_dstRect.xy;
+    vec2 scale = u_srcRect.zw / u_dstRect.zw;
+    vec2 offset = u_srcRect.xy - u_dstRect.xy;
+    v_texCoord = scale * a_texCoord0 + offset;
 	gl_Position = u_projTrans * pos;
 }

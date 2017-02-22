@@ -43,7 +43,7 @@ public class MainLayout extends BaseUiLayout {
         this.videoPlayerGUI = videoPlayerGUI;
         final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
         final Skin skin = videoPlayerGUI.getSkin();
-        videoStage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 720, 80);
+        videoStage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 720, 100);
         optionsStage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 420, 300);
         videoStage.setPosition(0, -1f, -2.5f);
         optionsStage.setPosition(-1f, 0, -2.5f);
@@ -51,7 +51,7 @@ public class MainLayout extends BaseUiLayout {
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
         bg.setFillParent(true);
         videoStage.addActor(bg);
-        optionsStage.addActor(bg);
+        optionsStage.addActor(new Image(bg.getDrawable()));
 
         final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
         backButton.addListener(new ClickListener() {
@@ -176,6 +176,8 @@ public class MainLayout extends BaseUiLayout {
 
     @Override
     public void attach(VrInputMultiplexer inputMultiplexer) {
+        videoStage.addActor(videoTable);
+        optionsStage.addActor(optionsTable);
         inputMultiplexer.addProcessor(videoStage);
         inputMultiplexer.addProcessor(optionsStage);
     }

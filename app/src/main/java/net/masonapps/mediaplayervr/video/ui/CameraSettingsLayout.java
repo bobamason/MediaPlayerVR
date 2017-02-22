@@ -57,8 +57,6 @@ public class CameraSettingsLayout extends BaseUiLayout {
         table.setFillParent(true);
         table.center();
 
-        ipd = videoPlayerGUI.getVideoPlayerScreen().getIpd();
-
         final Label zoomLabel = new Label("Zoom " + Math.round(z * 100f) + "%", skin);
 
         final ImageButton.ImageButtonStyle leftButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
@@ -97,9 +95,9 @@ public class CameraSettingsLayout extends BaseUiLayout {
         ipdLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ipd -= STEP;
+                ipd -= STEP * 0.5f;
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
-                screen.setIpd(screen.getDefaultIpd() + ipd);
+                screen.setIpd(ipd);
                 ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 1000) + "mm");
                 videoPlayerGUI.getVideoOptions().ipd = screen.getIpd();
             }
@@ -111,9 +109,9 @@ public class CameraSettingsLayout extends BaseUiLayout {
         ipdRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ipd += STEP;
+                ipd += STEP * 0.5f;
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
-                screen.setIpd(screen.getDefaultIpd() + ipd);
+                screen.setIpd(ipd);
                 ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 1000) + "mm");
                 videoPlayerGUI.getVideoOptions().ipd = screen.getIpd();
             }

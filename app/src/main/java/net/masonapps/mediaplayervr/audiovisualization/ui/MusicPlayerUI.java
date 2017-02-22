@@ -45,7 +45,7 @@ public class MusicPlayerUI implements Disposable {
         bg.setFillParent(true);
         stage.addActor(bg);
 
-        mainLayout.attach(stage);
+//        mainLayout.attach(stage);
         mainLayout.setVisible(true);
 
         stage.getViewport().update(1080, 720);

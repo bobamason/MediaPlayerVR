@@ -56,6 +56,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Vector2 stretch = new Vector2();
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
+    private float shift = 0f;
 
     public VrVideoPlayer(Context context, Uri uri, int width, int height) {
         this(context, uri, width, height, VideoMode.Mono);
@@ -173,15 +174,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 //        }
 
         if (useFlatRectangle())
-            mapDistortModel(eyeType);
+            mapDistortModel();
         else
-            mapDistortTextureCoordinates(eyeType);
+            mapDistortTextureCoordinates();
 
-        batch.render(modelInstance, shader);
-    }
-
-    protected void mapDistortTextureCoordinates(int eyeType) {
-        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
         if (isStereoscopic) {
             switch (eyeType) {
                 case Eye.Type.LEFT:
@@ -190,6 +186,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                     } else {
                         shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
                     }
+                    shader.setDstRect(dstRect.x - shift, dstRect.y, dstRect.width, dstRect.height);
                     break;
                 case Eye.Type.RIGHT:
                     if (isHorizontalSplit) {
@@ -197,6 +194,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                     } else {
                         shader.setSrcRect(srcRect.x, srcRect.y + 0.5f, srcRect.width, srcRect.height * 0.5f);
                     }
+                    shader.setDstRect(dstRect.x + shift, dstRect.y, dstRect.width, dstRect.height);
                     break;
                 default:
                     if (isHorizontalSplit) {
@@ -204,48 +202,27 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                     } else {
                         shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
                     }
+                    shader.setDstRect(dstRect.x - shift, dstRect.y, dstRect.width, dstRect.height);
                     break;
             }
         } else {
             shader.getSrcRect().set(srcRect);
+            shader.getDstRect().set(dstRect);
         }
-        shader.getDstRect().set(dstRect);
+
+        batch.render(modelInstance, shader);
     }
 
-    protected void mapDistortModel(int eyeType) {
+    protected void mapDistortTextureCoordinates() {
+        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
+    }
+
+    protected void mapDistortModel() {
         if (aspectRatio <= 1f) {
             modelInstance.transform.idt().scale(aspectRatio * modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
         } else {
             modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize / aspectRatio + stretch.y * modelSize, modelSize);
         }
-        if (isStereoscopic) {
-            switch (eyeType) {
-                case Eye.Type.LEFT:
-                    if (isHorizontalSplit) {
-                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width * 0.5f, srcRect.height);
-                    } else {
-                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
-                    }
-                    break;
-                case Eye.Type.RIGHT:
-                    if (isHorizontalSplit) {
-                        shader.setSrcRect(srcRect.x + 0.5f, srcRect.y, srcRect.width * 0.5f, srcRect.height);
-                    } else {
-                        shader.setSrcRect(srcRect.x, srcRect.y + 0.5f, srcRect.width, srcRect.height * 0.5f);
-                    }
-                    break;
-                default:
-                    if (isHorizontalSplit) {
-                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width * 0.5f, srcRect.height);
-                    } else {
-                        shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
-                    }
-                    break;
-            }
-        } else {
-            shader.getSrcRect().set(srcRect);
-        }
-        shader.getDstRect().set(dstRect);
     }
 
     public abstract void stop();
@@ -417,6 +394,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                 updateAspectRatio();
                 break;
         }
+    }
+
+    public void set3dShift(float shift) {
+        this.shift = shift * 0.5f;
     }
 
     public abstract void seekTo(long position);
