@@ -23,6 +23,7 @@ public class Style {
     public static final Color COLOR_OVER_2 = new Color(Color.LIGHT_GRAY);
     public static final Color COLOR_WINDOW = new Color(Color.DARK_GRAY);
     public static final String DEFAULT = "default";
+    public static final String TOGGLE = "toggle";
 
     public static ImageButton.ImageButtonStyle getImageButtonStyle(Skin skin, String name, boolean useBackground) {
         final Drawable drawableUp = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_UP) : null;

@@ -8,10 +8,10 @@ import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
  * Created by Bob on 2/22/2017.
  */
 
-public class AlbumArtistListUi extends BaseUiLayout {
+public class SongListLayout extends BaseUiLayout {
     @Override
     public void attach(VrInputMultiplexer inputMultiplexer) {
-        
+
     }
 
     @Override

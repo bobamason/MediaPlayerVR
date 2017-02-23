@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.google.vr.sdk.controller.Controller;
 
+import net.masonapps.mediaplayervr.media.AlbumDetails;
 import net.masonapps.mediaplayervr.media.MediaUtils;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 
@@ -40,7 +41,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private final SpriteBatch spriteBatch;
     private Table tableStart;
     private VirtualStage stageStart;
-    private VirtualStage stagePages;
     private VirtualStage stageBack;
     private VrInputMultiplexer inputMultiplexer;
     private volatile int currentState = STATE_NO_LIST;
@@ -57,43 +57,30 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 //        label3d.setAlignment(Align.center);
         setBackgroundColor(Color.DARK_GRAY);
         initStage();
-        inputMultiplexer = new VrInputMultiplexer(stagePages, stageStart, stageBack);
+        inputMultiplexer = new VrInputMultiplexer(stageStart, stageBack);
         if (!((MainActivity) context).isReadStoragePermissionGranted()) {
             tableStart.setVisible(false);
             tablePermissions.setVisible(true);
         }
     }
 
-    private static int getTotalPages(int itemsPerPage, List list) {
-        return list.size() / itemsPerPage + (list.size() % itemsPerPage == 0 ? 0 : 1);
-    }
-
     private void initStage() {
         final SpriteBatch batch = new SpriteBatch();
         manageDisposable(batch);
         stageStart = new VirtualStage(batch, 720, 540);
-        stageSongList = new VirtualStage(batch, 720, 420);
-        stagePages = new VirtualStage(batch, 720, 100);
+//        stageSongList = new VirtualStage(batch, 720, 420);
         stageBack = new VirtualStage(batch, 100, 100);
 
         manageDisposable(stageStart);
-        manageDisposable(stagePages);
         manageDisposable(stageBack);
 
         stageStart.setPosition(0, 0, -3f);
-        stageSongList.setPosition(0, 0.5f, -3f);
-        stagePages.setPosition(0, -0.5f, -3f);
+//        stageSongList.setPosition(0, 0.5f, -3f);
 
         stageStart.addActor(Style.newBackgroundImage(skin));
-        stagePages.addActor(Style.newBackgroundImage(skin));
-        
-        stageList.setVisible(false);
-        stageSongList.setVisible(false);
-        stagePages.setVisible(false);
 
         addPermissionsTable();
         addStartTable();
-        addListTable();
 
         final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, true));
         stageBack.addActor(backButton);
@@ -147,8 +134,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             public void clicked(InputEvent event, float x, float y) {
                 if (!isLoading()) {
                     setLoading(true);
-                    videoList.clear();
-                    disposeTextures();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -157,11 +142,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                                 @Override
                                 public void run() {
                                     stageStart.setVisible(false);
-                                    stagePages.setVisible(true);
-                                    stageList.setVisible(true);
-
-                                    videoList.addAll(list);
-                                    displayList(0);
                                     setLoading(false);
                                 }
                             });
@@ -171,6 +151,29 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             }
         });
         tableStart.add(videosButton).center().pad(6);
+        final TextButton musicButton = new TextButton(context.getString(R.string.music), skin);
+        musicButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!isLoading()) {
+                    setLoading(true);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final List<AlbumDetails> list = MediaUtils.getAlbumList(context);
+                            Gdx.app.postRunnable(new Runnable() {
+                                @Override
+                                public void run() {
+                                    stageStart.setVisible(false);
+                                    setLoading(false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+            }
+        });
+        tableStart.add(musicButton).center().pad(6);
     }
 
     @Override
@@ -200,13 +203,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     @Override
     public void update() {
         super.update();
-        if (isLoading()) {
-            loadingSpinner.setOrigin(Align.center);
-            loadingSpinner.rotateBy(GdxVr.graphics.getDeltaTime() * LOADING_SPIN_SPEED);
-            loadingSpinner.setVisible(true);
-        } else {
-            loadingSpinner.setVisible(false);
-        }
 //        label3d.rotateY(GdxVr.graphics.getDeltaTime() * LOADING_SPIN_SPEED);
         inputMultiplexer.act();
     }
@@ -234,8 +230,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private void backButtonClicked() {
         if (currentState == STATE_VIDEO_LIST) {
             stageStart.setVisible(true);
-            stageList.setVisible(false);
-            stagePages.setVisible(false);
             currentState = STATE_NO_LIST;
         }
     }
