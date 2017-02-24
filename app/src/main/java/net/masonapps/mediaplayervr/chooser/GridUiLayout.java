@@ -34,6 +34,8 @@ import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.badlogic.gdx.utils.Align.center;
 
@@ -51,6 +53,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     private final Object lock = new Object();
     private final Actor loadingSpinner;
     private final WeakReference<Context> contextRef;
+    private final ExecutorService executor;
     private Label pageLabel;
     private ImageButton prevPageButon;
     private ImageButton nextPageButton;
@@ -63,11 +66,11 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     private List<Texture> thumbnailTextures = new CopyOnWriteArrayList<>();
     private List<GridItemHolder<T>> holders = new CopyOnWriteArrayList<>();
     private boolean loading;
-    private Thread thumbnailThread;
     private OnGridItemClickedListener<T> listener = null;
 
     public GridUiLayout(Context context, Skin skin, Batch batch) {
         contextRef = new WeakReference<>(context);
+        executor = Executors.newCachedThreadPool();
         this.skin = skin;
         stageList = new VirtualStage(batch, 720, 420);
         stageList.setPosition(0, 0.5f, -3f);
@@ -119,8 +122,14 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     }
 
     @Override
+    @CallSuper
     public void dispose() {
-
+        try {
+            executor.shutdown();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        disposeTextures();
     }
 
     private void addListTable() {
@@ -199,12 +208,10 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         }
     }
 
-    private void displayList(int page) {
+    public void displayList(int page) {
         synchronized (lock) {
             loading = true;
-            for (Texture texture : thumbnailTextures) {
-                texture.dispose();
-            }
+            disposeTextures();
 
             thumbnailTextures.clear();
             tableList.clear();
@@ -250,8 +257,9 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     }
 
     private void loadThumbnailTextures() {
-        thumbnailThread = new Thread(new ThumbnailTask());
-        thumbnailThread.start();
+        for (GridItemHolder<T> holder : holders) {
+            executor.execute(new ThumbnailTask<>(this, holder));
+        }
     }
 
     protected abstract Pixmap getImagePixmap(Context context, T obj);
@@ -262,6 +270,10 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
 
     public void setOnItemClickedListener(OnGridItemClickedListener<T> listener) {
         this.listener = listener;
+    }
+
+    public List<T> getList() {
+        return list;
     }
 
     private void disposeTextures() {
@@ -275,6 +287,14 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
             }
             thumbnailTextures.clear();
         }
+    }
+
+    public void clear() {
+        list.clear();
+        for (GridItemHolder<T> holder : holders) {
+            holder.reset();
+        }
+        disposeTextures();
     }
 
     public interface OnGridItemClickedListener<T> {
@@ -309,31 +329,34 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         }
     }
 
-    private class ThumbnailTask implements Runnable {
+    private static class ThumbnailTask<T> implements Runnable {
 
+        private GridUiLayout<T> gridUiLayout;
+        private GridItemHolder<T> holder;
+
+        private ThumbnailTask(GridUiLayout<T> gridUiLayout, GridItemHolder<T> holder) {
+            this.gridUiLayout = gridUiLayout;
+            this.holder = holder;
+        }
+        
         @Override
         public void run() {
-            loading = true;
-            disposeTextures();
-            for (final GridItemHolder<T> holder : holders) {
-                final Context context = contextRef.get();
-                if (context == null || Thread.interrupted()) {
-                    disposeTextures();
-                    loading = false;
-                    break;
-                }
-                if (holder.obj == null) continue;
-                final Pixmap pixmap = getImagePixmap(context, holder.obj);
+            final Context context = gridUiLayout.contextRef.get();
+            if (holder.obj == null) return;
+            final Pixmap pixmap = gridUiLayout.getImagePixmap(context, holder.obj);
+            if (pixmap == null) return;
+            try {
                 GdxVr.app.postRunnable(new Runnable() {
                     @Override
                     public void run() {
                         final Texture texture = new Texture(pixmap);
-                        thumbnailTextures.add(texture);
+                        gridUiLayout.thumbnailTextures.add(texture);
                         holder.image.setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
                     }
                 });
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            loading = false;
         }
     }
 }

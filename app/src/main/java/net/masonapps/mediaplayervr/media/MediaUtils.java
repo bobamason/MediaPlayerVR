@@ -56,6 +56,11 @@ public class MediaUtils {
         final Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
+                if (Thread.interrupted()) {
+                    bitmap.recycle();
+                    pixmap.dispose();
+                    return null;
+                }
                 int pixel = bitmap.getPixel(x, y);
                 pixmap.setColor(((pixel & 0x00FF0000) << 8) | ((pixel & 0x0000FF00) << 8) | ((pixel & 0x000000FF) << 8) | ((pixel >> 24) & 0xFF));
                 pixmap.drawPixel(x, y);
@@ -138,7 +143,7 @@ public class MediaUtils {
                         final AlbumDetails albumDetails = new AlbumDetails();
                         albumDetails.albumId = c.getLong(c.getColumnIndexOrThrow(MediaStore.Audio.Albums._ID));
                         albumDetails.title = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM));
-//                        albumDetails.thumbnailPath = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM_ART));
+                        albumDetails.thumbnailPath = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM_ART));
                         list.add(albumDetails);
                     } while (c.moveToNext());
                 }

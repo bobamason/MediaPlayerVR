@@ -6,4 +6,5 @@ package net.masonapps.mediaplayervr.media;
 
 public class AlbumDetails extends MediaDetails {
     public long albumId;
+    public String thumbnailPath;
 }
