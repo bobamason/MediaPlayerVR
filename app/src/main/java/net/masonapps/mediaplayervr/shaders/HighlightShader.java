@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
@@ -85,6 +86,7 @@ public class HighlightShader extends BaseShader {
 
         set(u_time, time);
         time += Gdx.graphics.getDeltaTime();
+        time %= MathUtils.PI2;
 
         renderable.meshPart.render(program);
     }

@@ -1,6 +1,7 @@
 package net.masonapps.mediaplayervr;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
@@ -22,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.google.vr.sdk.controller.Controller;
 
+import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.media.SongDetails;
@@ -31,6 +33,8 @@ import net.masonapps.mediaplayervr.shaders.HighlightShader;
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
+
+import java.util.List;
 
 /**
  * Created by Bob on 12/24/2016.
@@ -144,6 +148,15 @@ public class MediaPlayerGame extends VrGame {
         toggleStyle.checked = skin.newDrawable(Style.Drawables.button, Style.COLOR_OVER);
         toggleStyle.fontColor = Color.WHITE;
         skin.add(Style.TOGGLE, textButtonStyle, TextButton.TextButtonStyle.class);
+
+        final TextButton.TextButtonStyle listBtnStyle = new TextButton.TextButtonStyle();
+        listBtnStyle.font = skin.getFont(Style.DEFAULT);
+        listBtnStyle.up = skin.newDrawable(Style.Drawables.button, new Color(0, 0, 0, 0.84706f));
+        listBtnStyle.over = skin.newDrawable(Style.Drawables.button, new Color(0.15f, 0.15f, 0.15f, 0.84706f));
+        listBtnStyle.down = skin.newDrawable(Style.Drawables.button, Style.COLOR_DOWN);
+        listBtnStyle.checked = null;
+        listBtnStyle.fontColor = Color.WHITE;
+        skin.add(Style.LIST_ITEM, textButtonStyle, TextButton.TextButtonStyle.class);
     }
 
     private void addLabelStyle() {
@@ -178,8 +191,8 @@ public class MediaPlayerGame extends VrGame {
         }
     }
 
-    public void playMusic(SongDetails songDetails) {
-        setScreen(new ParticlesVisualizerScreen(this, context, songDetails));
+    public void playMusic(List<SongDetails> songList, int index) {
+        setScreen(new MusicTunnelScreen(this, context, songList, index));
     }
 
     @Override
@@ -190,10 +203,16 @@ public class MediaPlayerGame extends VrGame {
     public void goToSelectionScreen() {
         if (mediaSelectionScreen == null)
             mediaSelectionScreen = new MediaSelectionScreen(context, this);
-        if (getScreen() instanceof VideoPlayerScreen) {
+        if (getScreen() instanceof MusicVisualizerScreen) {
+            MusicVisualizerScreen musicVisualizerScreen = (MusicVisualizerScreen) getScreen();
+            setScreen(mediaSelectionScreen);
+            musicVisualizerScreen.dispose();
+            Log.d(MediaPlayerGame.class.getSimpleName(), "MusicVisualizerScreen disposed");
+        } else if (getScreen() instanceof VideoPlayerScreen) {
             VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
             setScreen(mediaSelectionScreen);
             videoPlayerScreen.dispose();
+            Log.d(MediaPlayerGame.class.getSimpleName(), "VideoPlayerScreen disposed");
         } else {
             setScreen(mediaSelectionScreen);
         }

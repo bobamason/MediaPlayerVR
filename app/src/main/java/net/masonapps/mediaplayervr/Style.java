@@ -24,6 +24,7 @@ public class Style {
     public static final Color COLOR_WINDOW = new Color(Color.DARK_GRAY);
     public static final String DEFAULT = "default";
     public static final String TOGGLE = "toggle";
+    public static final String LIST_ITEM = "list_item";
 
     public static ImageButton.ImageButtonStyle getImageButtonStyle(Skin skin, String name, boolean useBackground) {
         final ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle();

@@ -29,8 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SongListLayout extends BaseUiLayout {
 
-    private static final float LOADING_SPIN_SPEED = -360f;
-    private static final int ITEMS_PER_PAGE = 6;
+    private static final int ITEMS_PER_PAGE = 10;
     private static final int MAX_TITLE_LENGTH = 60;
     private static final float PADDING = 10f;
     protected final Skin skin;
@@ -48,8 +47,9 @@ public class SongListLayout extends BaseUiLayout {
 
     public SongListLayout(Skin skin, Batch batch) {
         this.skin = skin;
-        stageList = new VirtualStage(batch, 840, 380);
-        stageList.setPosition(0, 0.25f, -2f);
+        stageList = new VirtualStage(batch, 1080, 800);
+        stageList.setPixelSizeWorld(0.00125f);
+        stageList.setPosition(0, 0.5f, -2f);
         stagePages = new VirtualStage(batch, 720, 100);
         stagePages.setPosition(0, -0.5f, -2f);
         stagePages.addActor(Style.newBackgroundImage(skin));
@@ -106,7 +106,7 @@ public class SongListLayout extends BaseUiLayout {
         stageList.addActor(tableList);
 
         for (int i = 0; i < ITEMS_PER_PAGE; i++) {
-            textButtons.add(new TextButton("", skin));
+            textButtons.add(new TextButton("", skin, Style.LIST_ITEM));
         }
 
         final Table tablePages = new Table(skin);
@@ -120,10 +120,10 @@ public class SongListLayout extends BaseUiLayout {
                 prevPagePressed();
             }
         });
-        tablePages.add(prevPageButon).left().pad(PADDING);
+        tablePages.add(prevPageButon).pad(PADDING);
 
         pageLabel = new Label("page 0/0", skin);
-        tablePages.add(pageLabel).expandX().fillX().center();
+        tablePages.add(pageLabel).expandX().center();
 
         nextPageButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.addListener(new ClickListener() {
@@ -132,7 +132,7 @@ public class SongListLayout extends BaseUiLayout {
                 nextPagePressed();
             }
         });
-        tablePages.add(nextPageButton).right().pad(PADDING);
+        tablePages.add(nextPageButton).pad(PADDING);
     }
 
     private void prevPagePressed() {
@@ -182,7 +182,7 @@ public class SongListLayout extends BaseUiLayout {
                     onListItemClicked(index, songDetails);
                 }
             });
-            tableList.add(textButton).pad(PADDING * 0.25f).expandX().fillX().row();
+            tableList.add(textButton).expandX().fillX().row();
         }
     }
 

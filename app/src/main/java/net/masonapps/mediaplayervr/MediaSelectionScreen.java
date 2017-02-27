@@ -94,7 +94,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 mediaPlayerGame.playVideo(obj);
             }
         });
-        
+
         layoutAlbumList = new AlbumListLayout(context, skin, spriteBatch);
         layoutAlbumList.attach(inputMultiplexer);
         layoutAlbumList.setOnItemClickedListener(new GridUiLayout.OnGridItemClickedListener<AlbumDetails>() {
@@ -122,13 +122,32 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 }
             }
         });
-        
+
         layoutArtistList = new ArtistListLayout(context, skin, spriteBatch);
         layoutArtistList.attach(inputMultiplexer);
         layoutArtistList.setOnItemClickedListener(new GridUiLayout.OnGridItemClickedListener<ArtistDetails>() {
             @Override
             public void onItemClicked(int index, ArtistDetails obj) {
-
+                final String projection = MediaStore.Audio.Media.ARTIST_ID + "=" + obj.artistId;
+                if (!isLoading()) {
+                    setLoading(true);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final List<SongDetails> list = MediaUtils.getSongList(context, projection);
+                            Gdx.app.postRunnable(new Runnable() {
+                                @Override
+                                public void run() {
+                                    layoutSongList.clear();
+                                    layoutSongList.getList().addAll(list);
+                                    layoutSongList.displayList(0);
+                                    switchToSongScreen();
+                                    setLoading(false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
             }
         });
 
@@ -137,7 +156,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         layoutSongList.setOnItemClickedListener(new SongListLayout.OnSongItemClickedListener() {
             @Override
             public void onItemClicked(int index, SongDetails obj) {
-
+                mediaPlayerGame.playMusic(layoutSongList.getList(), index);
             }
         });
 
@@ -151,6 +170,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         manageDisposable(layoutVideoList);
         manageDisposable(layoutAlbumList);
         manageDisposable(layoutArtistList);
+        manageDisposable(layoutSongList);
 
         stageStart.setPosition(0, 0, -2f);
 //        stageSongList.setPosition(0, 0.5f, -3f);

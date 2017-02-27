@@ -26,6 +26,7 @@ import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by Bob on 5/5/2016.
@@ -35,8 +36,9 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
     private static final String TAG = MusicVisualizerScreen.class.getSimpleName();
     private static final float ALPHA = 0.5f;
     protected final float[] intensityValues = new float[3];
+    protected final SongDetails currentSongDetails;
+    protected final List<SongDetails> songList;
     private final MainActivity visualizerActivity;
-    private final SongDetails songDetails;
     protected boolean hasAudioPermissions = false;
     protected Visualizer visualizer;
     protected int captureSize;
@@ -54,11 +56,12 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
     private AudioManager audioManager;
     private boolean prepared = false;
 
-    public MusicVisualizerScreen(VrGame game, Context context, SongDetails songDetails) {
+    public MusicVisualizerScreen(VrGame game, Context context, List<SongDetails> songList, int index) {
         super(game);
         mediaPlayer = new MediaPlayer();
-        this.songDetails = songDetails;
-        prepareMedia(context, songDetails.uri);
+        this.songList = songList;
+        currentSongDetails = songList.get(index);
+        prepareMedia(context, currentSongDetails.uri);
         audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         gvrAudioEngine = new GvrAudioEngine(context, GvrAudioEngine.RenderingMode.BINAURAL_HIGH_QUALITY);
         visualizerActivity = (MainActivity) context;
@@ -98,6 +101,11 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
         GdxVr.app.getGvrView().setNeckModelFactor(1f);
     }
 
+    @Override
+    public void hide() {
+
+    }
+
     private void prepareMedia(Context context, Uri uri) {
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
@@ -134,7 +142,6 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
     }
 
     protected void loadGvrAudio(GvrAudioEngine audioEngine) {
-
     }
 
     public void initVisualizer(int audioSession) {

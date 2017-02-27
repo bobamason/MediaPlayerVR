@@ -27,6 +27,8 @@ import net.masonapps.mediaplayervr.media.SongDetails;
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 
+import java.util.List;
+
 
 /**
  * Created by Bob on 12/15/2016.
@@ -46,22 +48,11 @@ public class ParticlesVisualizerScreen extends MusicVisualizerScreen {
     private float[] colors;
     private float[] scaling;
 
-    public ParticlesVisualizerScreen(VrGame game, Context context, SongDetails songDetails) {
-        super(game, context, songDetails);
+    public ParticlesVisualizerScreen(VrGame game, Context context, List<SongDetails> songList, int index) {
+        super(game, context, songList, index);
         particleBatch = new BillboardParticleBatch(ParticleShader.AlignMode.ViewPoint, true, 1000);
         particleBatch.setCamera(getVrCamera());
         loadAsset(PARTICLE_FILE_NAME, Texture.class);
-    }
-
-    @Override
-    public void show() {
-        GdxVr.app.getGvrView().setNeckModelEnabled(true);
-        GdxVr.app.getGvrView().setNeckModelFactor(1f);
-    }
-
-    @Override
-    public void hide() {
-
     }
 
     @Override
