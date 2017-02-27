@@ -29,7 +29,7 @@ public class MainActivity extends VrActivity {
         game = new MediaPlayerGame(this);
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
         initialize(game);
-        getGvrView().setMultisampling(4);
+        getGvrView().setMultisampling(2);
     }
 
     @Override

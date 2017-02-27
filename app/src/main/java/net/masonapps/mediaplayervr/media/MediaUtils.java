@@ -9,8 +9,6 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.badlogic.gdx.graphics.Pixmap;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,27 +45,10 @@ public class MediaUtils {
         return list;
     }
 
-    public static Pixmap getVideoThumbnailPixmap(Context context, long id) {
+    public static Bitmap getVideoThumbnailBitmap(Context context, long id) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 2;
-        final Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Video.Thumbnails.MINI_KIND, options);
-        final int width = bitmap.getWidth();
-        final int height = bitmap.getHeight();
-        final Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (Thread.interrupted()) {
-                    bitmap.recycle();
-                    pixmap.dispose();
-                    return null;
-                }
-                int pixel = bitmap.getPixel(x, y);
-                pixmap.setColor(((pixel & 0x00FF0000) << 8) | ((pixel & 0x0000FF00) << 8) | ((pixel & 0x000000FF) << 8) | ((pixel >> 24) & 0xFF));
-                pixmap.drawPixel(x, y);
-            }
-        }
-        bitmap.recycle();
-        return pixmap;
+        return MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Video.Thumbnails.MINI_KIND, options);
     }
 
     public static List<SongDetails> getSongList(Context context, String selection) {

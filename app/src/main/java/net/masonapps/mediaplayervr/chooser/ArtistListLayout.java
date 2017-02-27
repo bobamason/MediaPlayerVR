@@ -1,8 +1,8 @@
 package net.masonapps.mediaplayervr.chooser;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -29,7 +29,7 @@ public class ArtistListLayout extends GridUiLayout<ArtistDetails> {
     }
 
     @Override
-    protected Pixmap getImagePixmap(Context context, ArtistDetails obj) {
+    protected Bitmap getImageBitmap(Context context, ArtistDetails obj) {
         return null;
     }
 

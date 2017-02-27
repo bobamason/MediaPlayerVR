@@ -122,15 +122,15 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
     }
 
     public void onPauseGLSurfaceView() {
-        if (view != null) {
-            view.onPause();
-        }
+//        if (view != null) {
+//            view.onPause();
+//        }
     }
 
     public void onResumeGLSurfaceView() {
-        if (view != null) {
-            view.onResume();
-        }
+//        if (view != null) {
+//            view.onResume();
+//        }
     }
 
     protected GLSurfaceView.EGLConfigChooser getEglConfigChooser() {

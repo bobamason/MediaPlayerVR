@@ -52,7 +52,8 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
         Renderer[] renderers = new Renderer[2];
         final MediaCodecVideoRendererNoDrop mediaCodecVideoRendererNoDrop = new MediaCodecVideoRendererNoDrop(context, MediaCodecSelector.DEFAULT);
         mediaCodecVideoRendererNoDrop.setDropLateFrames(false);
-        mediaCodecVideoRendererNoDrop.setDropLateMs(100);
+//        mediaCodecVideoRendererNoDrop.setDropLateFrames(true);
+        mediaCodecVideoRendererNoDrop.setDropLateMs(30);
         renderers[0] = mediaCodecVideoRendererNoDrop;
         renderers[1] = new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT);
         exoPlayer = ExoPlayerFactory.newInstance(renderers, trackSelector, loadControl);

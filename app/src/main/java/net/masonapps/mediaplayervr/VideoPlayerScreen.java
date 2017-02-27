@@ -153,7 +153,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoCamera.projection.setToProjection(l / zoom, r / zoom, b / zoom, t / zoom, getVrCamera().near, getVrCamera().far);
 
 //        videoCamera.view.setToTranslation(tempV.set(getForwardVector()).scl((1f - zoom) * 2f));
-        videoCamera.view.set(eye.getEyeView());
+        videoCamera.view.setToLookAt(getForwardVector(), getUpVector());
+//        videoCamera.view.set(eye.getEyeView());
         videoCamera.combined.set(videoCamera.projection);
         Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
 //        this.fov.setAngles(eyeFov.getLeft() * zoom, eyeFov.getRight(), eyeFov.getBottom() * zoom, eyeFov.getTop() * zoom);
@@ -161,10 +162,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         getWorld().render(getModelBatch(), environment);
         getModelBatch().end();
 
-        getModelBatch().begin(videoCamera);
+        getModelBatch().begin((videoPlayer.useFlatRectangle() || !videoPlayer.isStereoscopic()) ? getVrCamera() : videoCamera);
         videoPlayer.render(getModelBatch(), eye.getType());
         getModelBatch().end();
-        render(videoCamera, eye.getType());
+        render(getVrCamera(), eye.getType());
     }
 
     @SuppressLint("MissingSuperCall")

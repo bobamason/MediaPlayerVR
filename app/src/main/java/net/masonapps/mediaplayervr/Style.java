@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 /**
  * Created by Bob on 2/11/2017.
@@ -21,20 +20,24 @@ public class Style {
     public static final Color COLOR_UP_2 = new Color(Color.WHITE);
     public static final Color COLOR_DOWN_2 = new Color(Color.GRAY);
     public static final Color COLOR_OVER_2 = new Color(Color.LIGHT_GRAY);
+    public static final Color COLOR_DISABLED = new Color(Color.GRAY);
     public static final Color COLOR_WINDOW = new Color(Color.DARK_GRAY);
     public static final String DEFAULT = "default";
     public static final String TOGGLE = "toggle";
 
     public static ImageButton.ImageButtonStyle getImageButtonStyle(Skin skin, String name, boolean useBackground) {
-        final Drawable drawableUp = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_UP) : null;
-        final Drawable drawableDown = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DOWN) : null;
-        final Drawable imageUp = skin.newDrawable(name, COLOR_UP_2);
-        final Drawable imageDown = skin.newDrawable(name, COLOR_DOWN_2);
-        return new ImageButton.ImageButtonStyle(drawableUp, drawableDown, null, imageUp, imageDown, null);
+        final ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle();
+        imageButtonStyle.imageUp = skin.newDrawable(name, COLOR_UP_2);
+        imageButtonStyle.imageDown = skin.newDrawable(name, useBackground ? COLOR_UP_2 : COLOR_DOWN_2);
+        imageButtonStyle.up = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_UP) : null;
+        imageButtonStyle.down = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DOWN) : null;
+        imageButtonStyle.over = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DOWN) : null;
+        imageButtonStyle.disabled = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DISABLED) : null;
+        return imageButtonStyle;
     }
 
     public static Image newBackgroundImage(Skin skin) {
-        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+        final Image bg = new Image(skin.newDrawable(Style.Drawables.window));
         bg.setFillParent(true);
         return bg;
     }
@@ -61,6 +64,6 @@ public class Style {
         public static final String slider = "slider";
         public static final String slider_knob = "slider_knob";
         public static final String controller_swipe = "controller_swipe";
-        public static final String loading_spinner = "";
+        public static final String loading_spinner = "loading_spinner";
     }
 }

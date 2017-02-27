@@ -31,7 +31,7 @@ public class SongListLayout extends BaseUiLayout {
 
     private static final float LOADING_SPIN_SPEED = -360f;
     private static final int ITEMS_PER_PAGE = 6;
-    private static final int MAX_TITLE_LENGTH = 40;
+    private static final int MAX_TITLE_LENGTH = 60;
     private static final float PADDING = 10f;
     protected final Skin skin;
     private Label pageLabel;
@@ -48,11 +48,12 @@ public class SongListLayout extends BaseUiLayout {
 
     public SongListLayout(Skin skin, Batch batch) {
         this.skin = skin;
-        stageList = new VirtualStage(batch, 720, 420);
-        stageList.setPosition(0, 0.5f, -3f);
+        stageList = new VirtualStage(batch, 840, 380);
+        stageList.setPosition(0, 0.25f, -2f);
         stagePages = new VirtualStage(batch, 720, 100);
-        stagePages.setPosition(0, -0.5f, -3f);
+        stagePages.setPosition(0, -0.5f, -2f);
         stagePages.addActor(Style.newBackgroundImage(skin));
+        addListTable();
     }
 
     @NonNull
@@ -73,22 +74,30 @@ public class SongListLayout extends BaseUiLayout {
 
     @Override
     public void attach(VrInputMultiplexer inputMultiplexer) {
-        stageList.setPosition(0, 0.5f, -3f);
+        inputMultiplexer.addProcessor(stageList);
+        inputMultiplexer.addProcessor(stagePages);
     }
 
     @Override
     public boolean isVisible() {
-        return false;
+        return stageList.isVisible() || stagePages.isVisible();
     }
 
     @Override
     public void setVisible(boolean visible) {
-
+        stageList.setVisible(visible);
+        stagePages.setVisible(visible);
     }
 
     @Override
     @CallSuper
     public void dispose() {
+        try {
+            stageList.dispose();
+            stagePages.dispose();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void addListTable() {
@@ -163,7 +172,7 @@ public class SongListLayout extends BaseUiLayout {
         for (int i = 0; i < ITEMS_PER_PAGE; i++) {
             final int index = i + ITEMS_PER_PAGE * currentPage;
 
-            final SongDetails songDetails = list.get(i);
+            final SongDetails songDetails = list.get(index);
             final TextButton textButton = textButtons.get(i);
             textButton.setText(getTruncatedTitle(songDetails.title));
 
@@ -173,7 +182,7 @@ public class SongListLayout extends BaseUiLayout {
                     onListItemClicked(index, songDetails);
                 }
             });
-            tableList.add(textButton).pad(PADDING).expandX().fillX().row();
+            tableList.add(textButton).pad(PADDING * 0.25f).expandX().fillX().row();
         }
     }
 

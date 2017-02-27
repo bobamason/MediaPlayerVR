@@ -135,6 +135,7 @@ public class MediaPlayerGame extends VrGame {
         textButtonStyle.checked = null;
         textButtonStyle.fontColor = Color.WHITE;
         skin.add(Style.DEFAULT, textButtonStyle, TextButton.TextButtonStyle.class);
+
         final TextButton.TextButtonStyle toggleStyle = new TextButton.TextButtonStyle();
         toggleStyle.font = skin.getFont(Style.DEFAULT);
         toggleStyle.up = skin.newDrawable(Style.Drawables.button, Style.COLOR_UP);

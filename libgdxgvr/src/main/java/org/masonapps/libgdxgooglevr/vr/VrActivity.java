@@ -223,6 +223,7 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
 
     @Override
     protected void onResume() {
+        super.onResume();
         Gdx.app = this;
         Gdx.input = this.getInput();
         Gdx.audio = this.getAudio();
@@ -247,7 +248,6 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
 //            this.audio.resume();
             this.isWaitingForAudio = false;
         }
-        super.onResume();
     }
 
     @Override

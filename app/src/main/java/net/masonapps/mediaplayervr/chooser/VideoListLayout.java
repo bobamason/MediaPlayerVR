@@ -1,8 +1,8 @@
 package net.masonapps.mediaplayervr.chooser;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -33,8 +33,8 @@ public class VideoListLayout extends GridUiLayout<VideoDetails> {
     }
 
     @Override
-    protected Pixmap getImagePixmap(Context context, VideoDetails obj) {
-        return MediaUtils.getVideoThumbnailPixmap(context, obj.id);
+    protected Bitmap getImageBitmap(Context context, VideoDetails obj) {
+        return MediaUtils.getVideoThumbnailBitmap(context, obj.id);
     }
 
     private class VideoItemHolder extends GridItemHolder<VideoDetails> {

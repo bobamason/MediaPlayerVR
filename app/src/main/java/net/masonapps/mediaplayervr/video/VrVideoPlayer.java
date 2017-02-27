@@ -28,7 +28,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public static final String TAG = VrVideoPlayer.class.getSimpleName();
     protected static Handler handler;
     protected final ModelInstance rectModelInstance;
-    protected final ModelInstance halfSphereModelInstance;
+    //    protected final ModelInstance halfSphereModelInstance;
     protected final ModelInstance sphereModelInstance;
     protected final Object lock = new Object();
     protected ModelInstance modelInstance;
@@ -73,9 +73,9 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         rectModelInstance = new ModelInstance(rect);
         final int divisionsU = 64;
         final int divisionsV = 64;
-        final Model halfSphere = ModelGenerator.createHalfSphere(modelBuilder, 0.5f, divisionsU, divisionsV);
-        disposables.add(halfSphere);
-        halfSphereModelInstance = new ModelInstance(halfSphere);
+//        final Model halfSphere = ModelGenerator.createHalfSphere(modelBuilder, 0.5f, divisionsU, divisionsV);
+//        disposables.add(halfSphere);
+//        halfSphereModelInstance = new ModelInstance(halfSphere);
         final Model sphere = ModelGenerator.createSphere(modelBuilder, 0.5f, divisionsU * 2, divisionsV);
         disposables.add(sphere);
         sphereModelInstance = new ModelInstance(sphere);
@@ -122,12 +122,16 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         }
         aspectRatio = w / h;
 
-        if (use180Sphere()) {
-            srcRect.set(0, 0, 1, 1);
-            dstRect.set(0.25f, 0, 0.5f, 1);
-        } else {
+        if (useFlatRectangle()) {
             srcRect.set(0, 0, 1, 1);
             dstRect.set(0, 0, 1, 1);
+        } else if (use180Sphere()) {
+            srcRect.set(0, 0, 1, 1);
+            final float invAspect = 1f / aspectRatio;
+            dstRect.set(0.25f - stretch.x * 0.5f, (1f - invAspect) * 0.5f - stretch.y * 0.5f, 0.5f + stretch.x, invAspect + stretch.y);
+        } else {
+            srcRect.set(0, 0, 1, 1);
+            dstRect.set(stretch.x * 0.5f, stretch.y * 0.5f, 1 + stretch.x, 1 + stretch.y);
         }
     }
 
@@ -415,8 +419,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     public void setStretch(Vector2 stretch) {
         this.stretch.set(stretch);
-        if (!useFlatRectangle())
-            updateAspectRatio();
+        updateAspectRatio();
     }
 
     public interface VideoSizeListener {

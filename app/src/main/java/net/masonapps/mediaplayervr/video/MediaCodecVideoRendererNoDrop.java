@@ -70,6 +70,7 @@ public class MediaCodecVideoRendererNoDrop extends MediaCodecRenderer {
     private int lastReportedUnappliedRotationDegrees;
     private float lastReportedPixelWidthHeightRatio;
     private int dropLateMs = 30;
+    //    private long fCount = 0L;
     private boolean dropLateFrames = true;
 
     /**
@@ -531,6 +532,12 @@ public class MediaCodecVideoRendererNoDrop extends MediaCodecRenderer {
                 bufferPresentationTimeUs, unadjustedFrameReleaseTimeNs);
         earlyUs = (adjustedReleaseTimeNs - systemTimeNs) / 1000;
 
+//        fCount ++;
+//        if (fCount % 2L == 0L) {
+//            // We're more than 30ms late rendering the frame.
+//            dropOutputBuffer(codec, bufferIndex);
+//            return true;
+//        }
         if (dropLateFrames && earlyUs < dropLateMs * -1000) {
             // We're more than 30ms late rendering the frame.
             dropOutputBuffer(codec, bufferIndex);

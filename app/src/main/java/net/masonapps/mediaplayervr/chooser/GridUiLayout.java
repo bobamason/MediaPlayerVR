@@ -1,10 +1,14 @@
 package net.masonapps.mediaplayervr.chooser;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -53,7 +57,6 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     private final Object lock = new Object();
     private final Actor loadingSpinner;
     private final WeakReference<Context> contextRef;
-    private final ExecutorService executor;
     private Label pageLabel;
     private ImageButton prevPageButon;
     private ImageButton nextPageButton;
@@ -67,20 +70,24 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     private List<GridItemHolder<T>> holders = new CopyOnWriteArrayList<>();
     private boolean loading;
     private OnGridItemClickedListener<T> listener = null;
+    private ExecutorService executor;
 
     public GridUiLayout(Context context, Skin skin, Batch batch) {
         contextRef = new WeakReference<>(context);
-        executor = Executors.newCachedThreadPool();
         this.skin = skin;
-        stageList = new VirtualStage(batch, 720, 420);
-        stageList.setPosition(0, 0.5f, -3f);
+        executor = Executors.newCachedThreadPool();
+        stageList = new VirtualStage(batch, 840, 480);
+        stageList.setPosition(0, 0.25f, -2f);
         stagePages = new VirtualStage(batch, 720, 100);
-        stagePages.setPosition(0, -0.5f, -3f);
+        stagePages.setPosition(0, -0.5f, -2f);
         stagePages.addActor(Style.newBackgroundImage(skin));
-        loadingSpinner = new Image(skin.newDrawable(Style.Drawables.loading_spinner));
+        addListTable();
+//        loadingSpinner = new Image(skin.newDrawable(Style.Drawables.loading_spinner));
+        loadingSpinner = new Image(new Texture("loading.png"));
         stageList.addActor(loadingSpinner);
         loadingSpinner.setZIndex(Integer.MAX_VALUE);
         loadingSpinner.setPosition(stageList.getWidth() / 2, stageList.getHeight() / 2, center);
+        loadingSpinner.setVisible(false);
     }
 
     @NonNull
@@ -108,24 +115,32 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
 
     @Override
     public void attach(VrInputMultiplexer inputMultiplexer) {
-        stageList.setPosition(0, 0.5f, -3f);
+        inputMultiplexer.addProcessor(stageList);
+        inputMultiplexer.addProcessor(stagePages);
     }
 
     @Override
     public boolean isVisible() {
-        return false;
+        return stageList.isVisible() || stagePages.isVisible();
     }
 
     @Override
     public void setVisible(boolean visible) {
-
+        stageList.setVisible(visible);
+        stagePages.setVisible(visible);
     }
 
     @Override
     @CallSuper
     public void dispose() {
         try {
-            executor.shutdown();
+            executor.shutdownNow();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            stageList.dispose();
+            stagePages.dispose();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -149,7 +164,8 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
             image.setScaling(Scaling.fit);
             image.setAlign(Align.center);
             table.add(image).width(stageList.getWidth() / 3f - PADDING * 6f).height(stageList.getHeight() / 2f - label.getStyle().font.getLineHeight() * 2 - PADDING * 4f).center().row();
-            table.setBackground(skin.newDrawable(Style.Drawables.window, Style.COLOR_WINDOW));
+//            table.add(image).center().row();
+            table.setBackground(skin.newDrawable(Style.Drawables.window));
 
             table.add(label).center();
 
@@ -169,10 +185,10 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
                 prevPagePressed();
             }
         });
-        tablePages.add(prevPageButon).left().pad(PADDING);
+        tablePages.add(prevPageButon).pad(PADDING);
 
         pageLabel = new Label("page 0/0", skin);
-        tablePages.add(pageLabel).center().expandX().fillX();
+        tablePages.add(pageLabel).expandX().center();
 
         nextPageButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.addListener(new ClickListener() {
@@ -181,7 +197,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
                 nextPagePressed();
             }
         });
-        tablePages.add(nextPageButton).right().pad(PADDING);
+        tablePages.add(nextPageButton).pad(PADDING);
     }
 
     protected abstract GridItemHolder<T> createHolder(Table table, Image image, Label label);
@@ -209,45 +225,46 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     }
 
     public void displayList(int page) {
-        synchronized (lock) {
-            loading = true;
-            disposeTextures();
+//        synchronized (lock) {
+        loading = true;
+        disposeTextures();
 
-            thumbnailTextures.clear();
-            tableList.clear();
+        thumbnailTextures.clear();
+        tableList.clear();
 
-            currentPage = page;
+        currentPage = page;
 
-            numPages = getTotalPages(ITEMS_PER_PAGE, list);
-            pageLabel.setText("page " + (page + 1) + "/" + numPages);
+        numPages = getTotalPages(ITEMS_PER_PAGE, list);
+        pageLabel.setText("page " + (page + 1) + "/" + numPages);
 
-            if (currentPage == 0) prevPageButon.setDisabled(true);
-            else prevPageButon.setDisabled(false);
+        if (currentPage == 0) prevPageButon.setDisabled(true);
+        else prevPageButon.setDisabled(false);
 
-            if (currentPage >= numPages - 1) nextPageButton.setDisabled(true);
-            else nextPageButton.setDisabled(false);
+        if (currentPage >= numPages - 1) nextPageButton.setDisabled(true);
+        else nextPageButton.setDisabled(false);
 
-            for (int i = 0; i < ITEMS_PER_PAGE; i++) {
-                final int index = i + ITEMS_PER_PAGE * currentPage;
+        for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+            final int index = i + ITEMS_PER_PAGE * currentPage;
 
-                final GridItemHolder<T> holder = holders.get(i);
-                if (index >= list.size()) {
-                    holder.reset();
-                    break;
-                }
+            final GridItemHolder<T> holder = holders.get(i);
+            holder.reset();
 
-                holder.bind(list.get(i));
-
-                holder.table.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        onListItemClicked(index, holder.obj);
-                    }
-                });
-                final Cell<Table> cell = tableList.add(holder.table).pad(PADDING).fill();
-                if (i % 3 == 2) cell.row();
+            if (index >= list.size()) {
+                break;
             }
+
+            holder.bind(list.get(index));
+
+            holder.table.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    onListItemClicked(index, holder.obj);
+                }
+            });
+            final Cell<Table> cell = tableList.add(holder.table).pad(PADDING).fill();
+            if (i % 3 == 2) cell.row();
         }
+//        }
         loadThumbnailTextures();
     }
 
@@ -258,11 +275,11 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
 
     private void loadThumbnailTextures() {
         for (GridItemHolder<T> holder : holders) {
-            executor.execute(new ThumbnailTask<>(this, holder));
+            executor.submit(new ThumbnailTask<>(this, holder));
         }
     }
 
-    protected abstract Pixmap getImagePixmap(Context context, T obj);
+    protected abstract Bitmap getImageBitmap(Context context, T obj);
 
     public boolean isLoading() {
         return loading;
@@ -305,9 +322,9 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         public Table table;
         public Image image;
         public Label label;
+        public Drawable defaultDrawable;
         @Nullable
         public T obj = null;
-        public Drawable defaultDrawable;
 
         GridItemHolder(Table table, Image image, Label label, Drawable defaultDrawable) {
             this.table = table;
@@ -338,18 +355,33 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
             this.gridUiLayout = gridUiLayout;
             this.holder = holder;
         }
-        
+
         @Override
         public void run() {
             final Context context = gridUiLayout.contextRef.get();
-            if (holder.obj == null) return;
-            final Pixmap pixmap = gridUiLayout.getImagePixmap(context, holder.obj);
-            if (pixmap == null) return;
+            if (context == null || Thread.interrupted()) {
+                gridUiLayout.loading = false;
+                return;
+            }
+            gridUiLayout.loading = true;
+            if (holder.obj == null) {
+                gridUiLayout.loading = false;
+                return;
+            }
+            final Bitmap bitmap = gridUiLayout.getImageBitmap(context, holder.obj);
+            if (bitmap == null) {
+                gridUiLayout.loading = false;
+                return;
+            }
             try {
                 GdxVr.app.postRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        final Texture texture = new Texture(pixmap);
+                        final Texture texture = new Texture(bitmap.getWidth(), bitmap.getHeight(), Pixmap.Format.RGBA8888);
+                        Gdx.gl.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getTextureObjectHandle());
+                        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+                        Gdx.gl.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+                        bitmap.recycle();
                         gridUiLayout.thumbnailTextures.add(texture);
                         holder.image.setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
                     }
@@ -357,6 +389,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            gridUiLayout.loading = false;
         }
     }
 }
