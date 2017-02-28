@@ -171,9 +171,13 @@ public class SongListLayout extends BaseUiLayout {
 
         for (int i = 0; i < ITEMS_PER_PAGE; i++) {
             final int index = i + ITEMS_PER_PAGE * currentPage;
+            final TextButton textButton = textButtons.get(i);
+            if (index >= list.size()) {
+                textButton.setText("");
+                continue;
+            }
 
             final SongDetails songDetails = list.get(index);
-            final TextButton textButton = textButtons.get(i);
             textButton.setText(getTruncatedTitle(songDetails.title));
 
             textButton.addListener(new ClickListener() {

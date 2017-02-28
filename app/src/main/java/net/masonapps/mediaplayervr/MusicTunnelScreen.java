@@ -28,11 +28,11 @@ import java.util.List;
 
 public class MusicTunnelScreen extends MusicVisualizerScreen {
     public static final int FLOATS_PER_FACE = 3 * 3;
-    private static final int MAX_VERTICES = 40;
     private static final int MAX_INDICES = 40;
-    private static final float DELAY = 0.5f;
+    private static final int MAX_VERTICES = MAX_INDICES * 3;
+    private static final float DELAY = 0.25f;
     private final Entity entity;
-    private float[] vertices = new float[MAX_VERTICES * 4];
+    private float[] vertices = new float[MAX_VERTICES];
     private short[] indices = new short[MAX_INDICES];
     private int index = 0;
     private float time = 0f;
@@ -46,11 +46,21 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
     public MusicTunnelScreen(VrGame game, Context context, List<SongDetails> songList, int index) {
         super(game, context, songList, index);
         final Mesh mesh = new Mesh(false, MAX_VERTICES, MAX_INDICES, VertexAttribute.Position());
-        mesh.setVertices(vertices);
-        for (int i = 0; i < MAX_INDICES; i++) {
-            indices[i] = (short) i;
-        }
-        mesh.setIndices(indices);
+//        mesh.setVertices(vertices);
+//        for (int i = 0; i < MAX_INDICES; i++) {
+//            indices[i] = (short) i;
+//        }
+//        mesh.setIndices(indices);
+        mesh.setVertices(new float[]{
+                -1, -1, -3,
+                1, 1, -3,
+                -1, 1, -3,
+
+                -1, -1, -3,
+                1, -1, -3,
+                1, 1, -3
+        });
+        mesh.setIndices(new short[]{0, 1, 2, 3, 4, 5});
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.begin();
         modelBuilder.part("", mesh, GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.RED), ColorAttribute.createAmbient(Color.RED)));
@@ -79,11 +89,11 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
         time += GdxVr.graphics.getDeltaTime();
         if (time > DELAY) {
             index += FLOATS_PER_FACE;
-            index %= MAX_VERTICES - FLOATS_PER_FACE;
+            index %= 10;
             tmp.set(getControllerRay().origin).sub(vec).nor();
             tmp2.set(lastVec).sub(vec).nor();
             vec2.set(lastVec);
-            vec3.set(tmp.crs(tmp2)).scl(0.1f).add(vec);
+            vec3.set(tmp2.crs(tmp)).scl(0.1f).add(vec);
             setTriangle(vertices, index, vec, vec2, vec3);
             mesh.updateVertices(index, vertices, index, FLOATS_PER_FACE);
             lastVec.set(vec);
