@@ -19,8 +19,6 @@ import com.badlogic.gdx.math.Vector3;
 import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
 import net.masonapps.mediaplayervr.media.SongDetails;
 
-import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 
 import java.util.ArrayList;
@@ -37,7 +35,7 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
     private static final float DELAY = 0.125f;
     private static final Vector3 tmp = new Vector3();
     private static final Color tmpColor = new Color();
-    private final Entity entity;
+    private final ModelInstance modelInstance;
     private float z = 0;
     private short[] indices = new short[MAX_INDICES];
     private Mesh mesh;
@@ -50,6 +48,7 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
 
     public MusicTunnelScreen(VrGame game, Context context, List<SongDetails> songList, int index) {
         super(game, context, songList, index);
+        setUiVisible(false);
         fillVertexList(shape, 12);
         fillVertexList(lastShape, 12);
         final float aStep = MathUtils.PI2 / lastShape.size();
@@ -71,8 +70,7 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
         final ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.begin();
         modelBuilder.part("mesh", mesh, GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.WHITE)));
-        entity = getWorld().add(new Entity(new ModelInstance(modelBuilder.end())));
-        entity.setLightingEnabled(false);
+        modelInstance = new ModelInstance(modelBuilder.end());
     }
 
     private static void makeRectFace(float[] vertices, int start, MeshPartBuilder.VertexInfo v1a, MeshPartBuilder.VertexInfo v2a, MeshPartBuilder.VertexInfo v1b, MeshPartBuilder.VertexInfo v2b) {
@@ -131,9 +129,10 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
         super.update();
         t += Math.min(Gdx.graphics.getDeltaTime(), 0.03333f);
         getVrCamera().position.z -= Math.min(Gdx.graphics.getDeltaTime(), 0.03333f) * 10;
+        tmpColor.set(1f - intensityValues[0], intensityValues[1], intensityValues[2], 1f);
+        setBackgroundColor(tmpColor);
         if (t > DELAY) {
             z = getVrCamera().position.z - 30;
-            tmpColor.set(1f - intensityValues[0], intensityValues[1], intensityValues[2] * 0.5f + 0.5f, 1f);
             extrude(lastShape, tmp.set(0, 0, z - lastZ), shape);
             rotate(shape, Vector3.Z, 30 * DELAY);
             setColors(shape, tmpColor);
@@ -159,7 +158,8 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
     @Override
     public void render(Camera camera, int whichEye) {
         super.render(camera, whichEye);
-        if (GdxVr.input.isControllerConnected()) {
-        }
+        getModelBatch().begin(camera);
+        getModelBatch().render(modelInstance);
+        getModelBatch().end();
     }
 }
