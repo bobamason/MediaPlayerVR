@@ -1,4 +1,4 @@
-package net.masonapps.mediaplayervr;
+package net.masonapps.mediaplayervr.audiovisualization;
 
 import android.content.Context;
 
@@ -21,7 +21,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.google.vr.sdk.controller.Controller;
 
-import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
 import net.masonapps.mediaplayervr.media.SongDetails;
 
 import org.masonapps.libgdxgooglevr.GdxVr;

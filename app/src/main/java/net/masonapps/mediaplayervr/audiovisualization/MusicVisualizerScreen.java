@@ -17,13 +17,15 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.Ray;
 import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.Eye;
+import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.MainActivity;
-import net.masonapps.mediaplayervr.MediaPlayerScreen;
+import net.masonapps.mediaplayervr.MediaPlayerGame;
 import net.masonapps.mediaplayervr.media.SongDetails;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
+import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +33,7 @@ import java.util.List;
 /**
  * Created by Bob on 5/5/2016.
  */
-public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements Visualizer.OnDataCaptureListener {
+public abstract class MusicVisualizerScreen extends VrWorldScreen implements Visualizer.OnDataCaptureListener {
 
     private static final String TAG = MusicVisualizerScreen.class.getSimpleName();
     private static final float ALPHA = 0.5f;
@@ -161,7 +163,7 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
         Log.d(TAG, "SpectrumAnalyzer octaves: " + spectrumAnalyzer.getNumOctaves());
         Log.d(TAG, "SpectrumAnalyzer bandwidth: " + spectrumAnalyzer.getBandwidth());
         Log.d(TAG, "SpectrumAnalyzer sampling rate: " + spectrumAnalyzer.getSamplingRate());
-        visualizer.setDataCaptureListener(this, Math.min(Visualizer.getMaxCaptureRate(), visualizer.getSamplingRate() / captureSize), false, true);
+        visualizer.setDataCaptureListener(this, Math.min(Visualizer.getMaxCaptureRate(), visualizer.getSamplingRate() / captureSize), true, false);
         visualizer.setEnabled(true);
         hasAudioPermissions = true;
         Gdx.app.postRunnable(new Runnable() {
@@ -302,6 +304,17 @@ public abstract class MusicVisualizerScreen extends MediaPlayerScreen implements
 
     @Override
     public void onCardboardTrigger() {
+    }
+
+    @Override
+    public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
+        super.onDaydreamControllerUpdate(controller, connectionState);
+        if (GdxVr.input.isControllerConnected()) {
+            if (controller.appButtonState) {
+                pause();
+                ((MediaPlayerGame) game).goToSelectionScreen();
+            }
+        }
     }
 
     public void processMotionEvent(MotionEvent event, int historyPos) {

@@ -23,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.google.vr.sdk.controller.Controller;
 
+import net.masonapps.mediaplayervr.audiovisualization.AudioWaveformScreen;
 import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
@@ -192,7 +193,7 @@ public class MediaPlayerGame extends VrGame {
     }
 
     public void playMusic(List<SongDetails> songList, int index) {
-        setScreen(new MusicTunnelScreen(this, context, songList, index));
+        setScreen(new AudioWaveformScreen(this, context, songList, index));
     }
 
     @Override

@@ -10,6 +10,13 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.SphereShapeBuilder;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
@@ -58,6 +65,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private float yRatio = 1f;
     private boolean doRatioCalc = true;
     private VrInputMultiplexer inputMultiplexer;
+    private ModelInstance sphereOutlineInstance;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -78,6 +86,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         getVrCamera().near = 0.25f;
         getVrCamera().far = 100f;
         controllerEntity = getWorld().add(((MediaPlayerGame) game).getControllerEntity());
+        final ModelBuilder modelBuilder = new ModelBuilder();
+        modelBuilder.begin();
+        final MeshPartBuilder part = modelBuilder.part("outline", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material(ColorAttribute.createDiffuse(Color.YELLOW)));
+        SphereShapeBuilder.build(part, 1, 1, 1, 12, 12);
+        sphereOutlineInstance = new ModelInstance(modelBuilder.end());
     }
 
     @Override
@@ -164,6 +177,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
         getModelBatch().begin((videoPlayer.useFlatRectangle() || !videoPlayer.isStereoscopic()) ? getVrCamera() : videoCamera);
         videoPlayer.render(getModelBatch(), eye.getType());
+        if (isUiVisible()) {
+            final float s = videoPlayer.getModelSize();
+            sphereOutlineInstance.transform.idt().scale(s, s, s);
+            getModelBatch().render(sphereOutlineInstance);
+        }
         getModelBatch().end();
         render(getVrCamera(), eye.getType());
     }

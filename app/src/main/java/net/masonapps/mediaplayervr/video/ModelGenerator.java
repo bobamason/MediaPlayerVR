@@ -64,18 +64,17 @@ public class ModelGenerator {
                 angleU = auo + stepU * iu + MathUtils.PI;
                 u = us * iu;
                 curr1.position.set(MathUtils.cos(angleU) * radius * t, h, MathUtils.sin(angleU) * radius * t);
-                curr1.normal.set(curr1.position).nor();
+                curr1.normal.set(curr1.position).scl(-1).nor();
                 curr1.uv.set(u, v);
                 tmpIndices.set(tempOffset, builder.vertex(curr1));
                 final int o = tempOffset + s;
-                if ((iv > 0) && (iu > 0)) // FIXME don't duplicate lines and points
+                if ((iv > 0) && (iu > 0)) 
                     builder.rect(tmpIndices.get(tempOffset), tmpIndices.get((o - 1) % s), tmpIndices.get((o - (divisionsU + 2)) % s),
                             tmpIndices.get((o - (divisionsU + 1)) % s));
                 tempOffset = (tempOffset + 1) % tmpIndices.size;
             }
         }
-        final Model model = modelBuilder.end();
-        return model;
+        return modelBuilder.end();
     }
 
     public static Model createRectScreen(ModelBuilder modelBuilder, float distance, float radius) {

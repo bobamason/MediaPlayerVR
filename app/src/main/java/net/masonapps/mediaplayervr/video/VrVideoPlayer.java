@@ -127,11 +127,12 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             dstRect.set(0, 0, 1, 1);
         } else if (use180Sphere()) {
             srcRect.set(0, 0, 1, 1);
-            final float invAspect = 1f / aspectRatio;
-            dstRect.set(0.25f - stretch.x * 0.5f, (1f - invAspect) * 0.5f - stretch.y * 0.5f, 0.5f + stretch.x, invAspect + stretch.y);
+//            final float invAspect = 1f / aspectRatio;
+//            dstRect.set(0.25f + stretch.x * 0.5f, (1f - invAspect) * 0.5f - stretch.y * 0.5f, 0.5f + stretch.x, invAspect + stretch.y);
+            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1 + stretch.x, 1 + stretch.y);
         } else {
             srcRect.set(0, 0, 1, 1);
-            dstRect.set(stretch.x * 0.5f, stretch.y * 0.5f, 1 + stretch.x, 1 + stretch.y);
+            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1 + stretch.x, 1 + stretch.y);
         }
     }
 
@@ -321,10 +322,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         return prepared;
     }
 
-    public void setModelSize(float modelSize) {
-        this.modelSize = modelSize;
-    }
-
     public boolean useFlatRectangle() {
         return videoMode == VideoMode.Mono || videoMode == VideoMode.LR3D || videoMode == VideoMode.TB3D;
     }
@@ -420,6 +417,14 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public void setStretch(Vector2 stretch) {
         this.stretch.set(stretch);
         updateAspectRatio();
+    }
+
+    public float getModelSize() {
+        return modelSize;
+    }
+
+    public void setModelSize(float modelSize) {
+        this.modelSize = modelSize;
     }
 
     public interface VideoSizeListener {
