@@ -30,6 +30,15 @@ public class MainActivity extends VrActivity {
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
         initialize(game);
         getGvrView().setMultisampling(2);
+
+////        getGvrView().enableCardboardTriggerEmulation();
+//        getGvrView().setAsyncReprojectionEnabled(false);
+//        if (getGvrView().setAsyncReprojectionEnabled(true)) {
+////            // Async reprojection decouples the app framerate from the display framerate,
+////            // allowing immersive interaction even at the throttled clockrates set by
+////            // sustained performance mode.
+//            AndroidCompat.setSustainedPerformanceMode(this, true);
+//        }
     }
 
     @Override

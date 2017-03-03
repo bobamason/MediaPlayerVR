@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
+import net.masonapps.mediaplayervr.R;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
@@ -59,6 +60,10 @@ public class AspectRatioLayout extends BaseUiLayout {
         for (int i = 0; i < ratioLabels.length; i++) {
             final TextButton textButton = new TextButton(ratioLabels[i], skin);
             final Cell<TextButton> cell = table.add(textButton).expandX().fill().center().pad(padding);
+            if (i == videoPlayerGUI.getVideoOptions().aspectRatioSelection) {
+                textButton.setChecked(true);
+                videoPlayer.setAspectRatio(ratios[i]);
+            }
             if (i % 3 == 2) cell.row();
             final int index = i;
             textButton.addListener(new ClickListener() {
@@ -71,6 +76,15 @@ public class AspectRatioLayout extends BaseUiLayout {
             textButtons.add(textButton);
         }
         setVisible(false);
+
+        final TextButton customButton = new TextButton(videoPlayerGUI.getVideoPlayerScreen().getStringResource(R.string.custom), skin);
+        customButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                videoPlayerGUI.switchToPlaybackSettingsLayout();
+            }
+        });
+        table.add(customButton).expandX().fill().center().pad(padding);
     }
 
     @Override

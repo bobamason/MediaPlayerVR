@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
 import net.masonapps.mediaplayervr.Style;
+import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
@@ -31,7 +32,6 @@ public class PlaybackSettingsLayout extends BaseUiLayout {
     private VirtualStage stage;
     private Vector2 stretch = new Vector2();
     private float s = 10f;
-    private float ipd = 0f;
     private DecimalFormat df = new DecimalFormat("0.00");
 
     public PlaybackSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
@@ -62,13 +62,17 @@ public class PlaybackSettingsLayout extends BaseUiLayout {
         final ImageButton.ImageButtonStyle leftButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
         final ImageButton.ImageButtonStyle rightButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false);
 
+        final VideoOptions videoOptions = videoPlayerGUI.getVideoOptions();
+        stretch.set(videoOptions.textureStretch);
+        player.setStretch(stretch);
+        
         final ImageButton xLeft = new ImageButton(leftButtonStyle);
         xLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stretch.x += STEP;
+                stretch.x -= STEP;
                 player.setStretch(stretch);
-                videoPlayerGUI.getVideoOptions().textureStretch.set(stretch);
+                videoOptions.textureStretch.set(stretch);
             }
         });
         table.add(xLeft).pad(padding);
@@ -78,9 +82,9 @@ public class PlaybackSettingsLayout extends BaseUiLayout {
         xRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stretch.x -= STEP;
+                stretch.x += STEP;
                 player.setStretch(stretch);
-                videoPlayerGUI.getVideoOptions().textureStretch.set(stretch);
+                videoOptions.textureStretch.set(stretch);
             }
         });
         table.add(xRight).pad(padding).row();
@@ -89,9 +93,9 @@ public class PlaybackSettingsLayout extends BaseUiLayout {
         yLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stretch.y += STEP;
+                stretch.y -= STEP;
                 player.setStretch(stretch);
-                videoPlayerGUI.getVideoOptions().textureStretch.set(stretch);
+                videoOptions.textureStretch.set(stretch);
             }
         });
         table.add(yLeft).pad(padding);
@@ -102,35 +106,12 @@ public class PlaybackSettingsLayout extends BaseUiLayout {
         yRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                stretch.y -= STEP;
+                stretch.y += STEP;
                 player.setStretch(stretch);
-                videoPlayerGUI.getVideoOptions().textureStretch.set(stretch);
+                videoOptions.textureStretch.set(stretch);
             }
         });
         table.add(yRight).pad(padding).row();
-
-        final Label sLabel = new Label("Size", skin);
-        final ImageButton sLeft = new ImageButton(leftButtonStyle);
-        sLeft.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                s = Math.max(s - 1f, 1f);
-                player.setModelSize(s);
-            }
-        });
-        table.add(sLeft).pad(padding);
-
-        table.add(sLabel).pad(padding);
-
-        final ImageButton sRight = new ImageButton(rightButtonStyle);
-        sRight.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                s = Math.min(s + 1f, 25f);
-                player.setModelSize(s);
-            }
-        });
-        table.add(sRight).pad(padding).row();
         setVisible(false);
     }
 

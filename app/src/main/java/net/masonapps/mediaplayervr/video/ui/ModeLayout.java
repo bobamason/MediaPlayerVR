@@ -103,8 +103,10 @@ public class ModeLayout extends BaseUiLayout {
             if (i % 3 == 2 && i < modes.size - 1) cell.row();
             textButtons.add(textButton);
             final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
-            final VideoMode type = videoPlayer.getVideoMode();
-            textButton.setChecked(type == nameModeMap.get(textButton.getText().toString()));
+            if (videoPlayerGUI.getVideoOptions().modeSelection == i) {
+                videoPlayer.setVideoMode(nameModeMap.get(textButton.getText().toString()));
+                textButton.setChecked(true);
+            }
             final int index = i;
             textButton.addListener(new ClickListener() {
                 @Override

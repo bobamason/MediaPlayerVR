@@ -2,7 +2,6 @@ package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -10,7 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
@@ -21,6 +19,8 @@ import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+
+import java.util.Locale;
 
 /**
  * Created by Bob on 2/8/2017.
@@ -37,6 +37,7 @@ public class MainLayout extends BaseUiLayout {
     private VirtualStage videoStage;
     private VirtualStage optionsStage;
     private ImageButton playButton;
+    private boolean isSliderDragging = false;
 
     public MainLayout(final VideoPlayerGUI videoPlayerGUI) {
         this.videoPlayerGUI = videoPlayerGUI;
@@ -104,14 +105,6 @@ public class MainLayout extends BaseUiLayout {
         videoTable.add(playButton).pad(padding);
 
         slider = new Slider(0f, videoPlayerGUI.getVideoPlayerScreen().getVideoDetails().duration, 1f, false, skin);
-        slider.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (videoPlayer.isPrepared()) {
-                    videoPlayer.seekTo(Math.round(slider.getValue()));
-                }
-            }
-        });
         videoTable.add(slider).expandX().fillX().pad(padding);
 
         timeLabel = new Label("0:00:00 / 0:00:00", skin);
@@ -130,7 +123,10 @@ public class MainLayout extends BaseUiLayout {
         aspectBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.switchToAspectRatioLayout();
+                if (videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer().useFlatRectangle())
+                    videoPlayerGUI.switchToAspectRatioLayout();
+                else
+                    videoPlayerGUI.switchToPlaybackSettingsLayout();
             }
         });
         optionsTable.add(aspectBtn).padTop(padding).padBottom(padding).padRight(padding).row();
@@ -143,26 +139,43 @@ public class MainLayout extends BaseUiLayout {
             }
         });
         optionsTable.add(cameraBtn).padTop(padding).padBottom(padding).padRight(padding);
+    }
 
-        final TextButton playbackBtn = new TextButton("Playback", skin);
-        playbackBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.switchToPlaybackSettingsLayout();
-            }
-        });
-        optionsTable.add(playbackBtn).padLeft(padding).padBottom(padding).padRight(padding).row();
-
-        optionsTable.add(videoTable).colspan(3).fillX().expandX().pad(padding);
+    private static String getTimeLabelString(long currentPosition, long duration) {
+        return String.format(Locale.ENGLISH,
+                "%d:%02d:%02d / %d:%02d:%02d",
+                currentPosition / 1000 / (60 * 60),
+                (currentPosition / 1000 / 60) % 60,
+                (currentPosition / 1000) % 60,
+                duration / 1000 / (60 * 60),
+                (duration / 1000 / 60) % 60,
+                (duration / 1000) % 60);
     }
 
     @Override
     public void update() {
         if (videoStage.isVisible()) {
-
+            final VrVideoPlayer player = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
+            if (player.isPrepared()) {
+                updateSeek(player);
+            }
         }
         videoStage.act();
         optionsStage.act();
+    }
+
+    private void updateSeek(VrVideoPlayer player) {
+        if (!slider.isDragging()) {
+            if (isSliderDragging) {
+                player.seekTo(Math.round(slider.getValue()));
+                isSliderDragging = false;
+            } else {
+                slider.setValue(player.getCurrentPosition());
+            }
+        } else {
+            isSliderDragging = true;
+        }
+        timeLabel.setText(getTimeLabelString(player.getCurrentPosition(), player.getDuration()));
     }
 
     @Override

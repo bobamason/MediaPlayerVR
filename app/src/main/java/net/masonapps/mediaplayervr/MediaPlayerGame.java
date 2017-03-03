@@ -157,7 +157,7 @@ public class MediaPlayerGame extends VrGame {
         listBtnStyle.down = skin.newDrawable(Style.Drawables.button, Style.COLOR_DOWN);
         listBtnStyle.checked = null;
         listBtnStyle.fontColor = Color.WHITE;
-        skin.add(Style.LIST_ITEM, textButtonStyle, TextButton.TextButtonStyle.class);
+        skin.add(Style.LIST_ITEM, listBtnStyle, TextButton.TextButtonStyle.class);
     }
 
     private void addLabelStyle() {

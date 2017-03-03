@@ -24,8 +24,8 @@ public class VideoOptions {
         title = null;
         id = -1;
         useCustomCamera = false;
-        modeSelection = -1;
-        aspectRatioSelection = -1;
+        modeSelection = 0;
+        aspectRatioSelection = 0;
         textureStretch = new Vector2();
         ipd = 0.0639f;
         zoom = 1f;

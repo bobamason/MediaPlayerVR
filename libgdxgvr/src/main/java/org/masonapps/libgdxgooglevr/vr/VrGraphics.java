@@ -101,7 +101,6 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
 
     public VrGraphics(AndroidApplicationBase application, GvrView view, AndroidApplicationConfiguration config) {
         this(application, view, config, true);
-        init(application);
     }
 
     public VrGraphics(AndroidApplicationBase application, GvrView view, AndroidApplicationConfiguration config, boolean focusableView) {
@@ -114,23 +113,6 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
             this.view.setFocusable(true);
             this.view.setFocusableInTouchMode(true);
         }
-        init(application);
-    }
-
-    private void init(AndroidApplicationBase application) {
-        this.app = application;
-    }
-
-    public void onPauseGLSurfaceView() {
-//        if (view != null) {
-//            view.onPause();
-//        }
-    }
-
-    public void onResumeGLSurfaceView() {
-//        if (view != null) {
-//            view.onResume();
-//        }
     }
 
     protected GLSurfaceView.EGLConfigChooser getEglConfigChooser() {
@@ -555,7 +537,7 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
         }
 
         if (lresume) {
-            Array<LifecycleListener> listeners = app.getLifecycleListeners();
+            final Array<LifecycleListener> listeners = app.getLifecycleListeners();
             synchronized (listeners) {
                 for (LifecycleListener listener : listeners) {
                     listener.resume();
@@ -606,8 +588,8 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
                     listener.dispose();
                 }
             }
-            app.getApplicationListener().dispose();
-            Gdx.app.log(LOG_TAG, "destroyed");
+//            app.getApplicationListener().dispose();
+//            Gdx.app.log(LOG_TAG, "destroyed");
         }
 
         if (time - frameStart > 1000000000) {
@@ -662,7 +644,6 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
         this.width = width;
         this.height = height;
         updatePpi();
-        Gdx.gl.glViewport(0, 0, this.width, this.height);
         if (!created) {
             app.getApplicationListener().create();
             created = true;
@@ -693,12 +674,12 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
         this.height = display.getHeight();
         this.mean = new WindowedMean(5);
         this.lastFrameTime = System.nanoTime();
-
-        Gdx.gl.glViewport(0, 0, this.width, this.height);
     }
 
     @Override
     public void onRendererShutdown() {
+        app.getApplicationListener().dispose();
+        Gdx.app.log(LOG_TAG, "destroyed");
     }
 
     public Vector3 getForward() {

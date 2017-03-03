@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.Align;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
+import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
@@ -54,6 +55,8 @@ public class CameraSettingsLayout extends BaseUiLayout {
         table.setFillParent(true);
         table.center();
 
+        final VideoOptions videoOptions = videoPlayerGUI.getVideoOptions();
+        z = videoOptions.zoom;
         final Label zoomLabel = new Label("Zoom " + Math.round(z * 100f) + "%", skin);
 
         final ImageButton.ImageButtonStyle leftButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
@@ -63,9 +66,9 @@ public class CameraSettingsLayout extends BaseUiLayout {
         zLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                z += STEP;
+                z -= STEP;
                 videoPlayerGUI.getVideoPlayerScreen().setZ(z);
-                videoPlayerGUI.getVideoOptions().zoom = z;
+                videoOptions.zoom = z;
                 zoomLabel.setText("Zoom " + Math.round(z * 100f) + "%");
             }
         });
@@ -77,15 +80,15 @@ public class CameraSettingsLayout extends BaseUiLayout {
         zRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                z -= STEP;
+                z += STEP;
                 videoPlayerGUI.getVideoPlayerScreen().setZ(z);
-                videoPlayerGUI.getVideoOptions().zoom = z;
+                videoOptions.zoom = z;
                 zoomLabel.setText("Zoom " + Math.round(z * 100f) + "%");
             }
         });
         table.add(zRight).pad(padding).row();
 
-
+        videoPlayerGUI.getVideoPlayerScreen().setIpd(videoOptions.ipd);
         final Label ipdLabel = new Label("IPD " + Math.round(videoPlayerGUI.getVideoPlayerScreen().getIpd() * 1000) + "mm", skin);
 
         final ImageButton ipdLeft = new ImageButton(leftButtonStyle);
@@ -96,7 +99,7 @@ public class CameraSettingsLayout extends BaseUiLayout {
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
                 screen.setIpd(ipd);
                 ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 1000) + "mm");
-                videoPlayerGUI.getVideoOptions().ipd = screen.getIpd();
+                videoOptions.ipd = screen.getIpd();
             }
         });
         table.add(ipdLeft).pad(padding);
@@ -110,7 +113,7 @@ public class CameraSettingsLayout extends BaseUiLayout {
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
                 screen.setIpd(ipd);
                 ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 1000) + "mm");
-                videoPlayerGUI.getVideoOptions().ipd = screen.getIpd();
+                videoOptions.ipd = screen.getIpd();
             }
         });
         table.add(ipdRight).pad(padding).row();

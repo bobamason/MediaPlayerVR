@@ -10,8 +10,6 @@ import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
-import java.util.Locale;
-
 /**
  * Created by Bob on 2/8/2017.
  */
@@ -44,17 +42,6 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
-    }
-
-    private static String getTimeLabelString(long currentPosition, long duration) {
-        return String.format(Locale.ENGLISH,
-                "%d:%02d:%02d / %d:%02d:%02d",
-                currentPosition / 1000 / (60 * 60),
-                (currentPosition / 1000 / 60) % 60,
-                (currentPosition / 1000) % 60,
-                duration / 1000 / (60 * 60),
-                (duration / 1000 / 60) % 60,
-                (duration / 1000) % 60);
     }
 
     @Override

@@ -53,6 +53,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private final Entity controllerEntity;
     private final VideoPlayerGUI ui;
     private final PerspectiveCamera videoCamera;
+    private VideoOptions videoOptions;
     //    private final FieldOfView fov = new FieldOfView();
 //    private final float[] proj = new float[16];
     private Context context;
@@ -71,17 +72,19 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
+        this.videoOptions = videoOptions;
+        if (this.videoOptions == null) {
+            this.videoOptions = new VideoOptions();
+            this.videoOptions.title = videoDetails.title;
+        }
         ipd = 0;
         videoCamera = new PerspectiveCamera();
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
         setBackgroundColor(Color.BLACK);
-        if (videoOptions == null) {
-            videoOptions = new VideoOptions();
-        }
         inputMultiplexer = new VrInputMultiplexer();
-        ui = new VideoPlayerGUI(this, ((MediaPlayerGame) game).getSkin(), videoOptions);
+        ui = new VideoPlayerGUI(this, ((MediaPlayerGame) game).getSkin(), this.videoOptions);
         ui.attach(inputMultiplexer);
         getVrCamera().near = 0.25f;
         getVrCamera().far = 100f;
@@ -104,6 +107,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     @Override
     public void pause() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ((MediaPlayerGame) game).getVideoOptionsDatabaseHelper().saveVideoOptions(videoOptions);
+            }
+        }).start();
         videoPlayer.pause();
     }
 
@@ -118,13 +127,19 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     @Override
     public void hide() {
-        if (videoPlayer != null) {
-            videoPlayer.stop();
-            videoPlayer.dispose();
-        }
-        videoPlayer = null;
+        pause();
         GdxVr.input.getDaydreamControllerHandler().removeListener(this);
         GdxVr.input.setProcessor(null);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        try {
+            videoPlayer.stop();
+            videoPlayer.dispose();
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
@@ -267,6 +282,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void onError(String error) {
 
+    }
+
+    public String getStringResource(int resId) {
+        return context.getString(resId);
     }
 
     public VrVideoPlayer getVideoPlayer() {

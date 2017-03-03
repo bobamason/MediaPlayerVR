@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Audio;
@@ -23,7 +22,6 @@ import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.backends.android.AndroidApplicationBase;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.badlogic.gdx.backends.android.AndroidAudio;
 import com.badlogic.gdx.backends.android.AndroidClipboard;
 import com.badlogic.gdx.backends.android.AndroidEventListener;
 import com.badlogic.gdx.backends.android.AndroidFiles;
@@ -39,6 +37,8 @@ import com.google.vr.sdk.base.GvrActivity;
 import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
+
+import org.masonapps.libgdxgooglevr.GdxVr;
 
 import java.lang.reflect.Method;
 
@@ -58,19 +58,17 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     public Handler handler;
     protected VrGraphics graphics;
     protected VrAndroidInput input;
-    protected AndroidAudio audio;
+    //    protected AndroidAudio audio;
     protected AndroidFiles files;
     protected AndroidNet net;
     protected VrApplicationAdapter vrApplicationAdapter;
     protected boolean firstResume = true;
     protected int logLevel = LOG_INFO;
-    //    protected boolean useImmersiveMode = false;
-//    protected boolean hideStatusBar = false;
     protected ControllerManager controllerManager;
     protected Controller controller;
     AndroidClipboard clipboard;
-    private int wasFocusChanged = -1;
-    private boolean isWaitingForAudio = false;
+//    private int wasFocusChanged = -1;
+//    private boolean isWaitingForAudio = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +76,10 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
         GvrView gvrView = new GvrView(this);
         setContentView(gvrView);
         setGvrView(gvrView);
+        final EventListener listener = new EventListener();
+        controllerManager = new ControllerManager(this, listener);
+        controller = controllerManager.getController();
+        controller.setEventListener(listener);
     }
 
     public void initialize(VrApplicationAdapter adapter) {
@@ -97,34 +99,12 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
         graphics = new VrGraphics(this, getGvrView(), config);
         input = VrAndroidInput.newInstance(this);
         input.setController(controller);
-        audio = new AndroidAudio(this, config);
-        this.getFilesDir(); // workaround for Android bug #10515463
+//        audio = new AndroidAudio(this, config);
+        this.getFilesDir();
         files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
         net = new AndroidNet(this);
         this.vrApplicationAdapter = adapter;
         this.handler = new Handler();
-//        this.useImmersiveMode = config.useImmersiveMode;
-//        this.hideStatusBar = config.hideStatusBar;
-
-        // Add a specialized audio lifecycle vrApplicationAdapter
-        addLifecycleListener(new LifecycleListener() {
-
-            @Override
-            public void resume() {
-                // No need to resume audio here
-            }
-
-            @Override
-            public void pause() {
-                // TODO: 10/11/2016 fix audio 
-//                audio.pause();
-            }
-
-            @Override
-            public void dispose() {
-                audio.dispose();
-            }
-        });
 
         Gdx.app = this;
         Gdx.input = this.getInput();
@@ -132,27 +112,6 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
         Gdx.files = this.getFiles();
         Gdx.graphics = this.getGraphics();
         Gdx.net = this.getNet();
-
-        createWakeLock(config.useWakelock);
-
-//        gvrView.enableCardboardTriggerEmulation();
-//        gvrView.setAsyncReprojectionEnabled(false);
-//        if (gvrView.setAsyncReprojectionEnabled(true)) {
-////            // Async reprojection decouples the app framerate from the display framerate,
-////            // allowing immersive interaction even at the throttled clockrates set by
-////            // sustained performance mode.
-//            AndroidCompat.setSustainedPerformanceMode(this, true);
-//        }
-        final EventListener listener = new EventListener();
-        controllerManager = new ControllerManager(this, listener);
-        controller = controllerManager.getController();
-        controller.setEventListener(listener);
-    }
-
-    protected void createWakeLock(boolean use) {
-        if (use) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
     }
 
 //    protected void hideStatusBar(boolean hide) {
@@ -172,8 +131,6 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-//        useImmersiveMode(this.useImmersiveMode);
-//        hideStatusBar(this.hideStatusBar);
 //        if (hasFocus) {
 //            this.wasFocusChanged = 1;
 //            if (this.isWaitingForAudio) {
@@ -211,12 +168,10 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
 
         input.onPause();
 
-        if (isFinishing()) {
-            graphics.clearManagedCaches();
-            graphics.destroy();
-        }
-
-        graphics.onPauseGLSurfaceView();
+//        if (isFinishing()) {
+//            graphics.clearManagedCaches();
+//            graphics.destroy();
+//        }
 
         super.onPause();
     }
@@ -224,6 +179,9 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     @Override
     protected void onResume() {
         super.onResume();
+
+        assert getGvrView() != null;
+        
         Gdx.app = this;
         Gdx.input = this.getInput();
         Gdx.audio = this.getAudio();
@@ -231,28 +189,30 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
         Gdx.graphics = this.getGraphics();
         Gdx.net = this.getNet();
 
-        input.onResume();
+        assert GdxVr.app != null;
 
-        if (graphics != null) {
-            graphics.onResumeGLSurfaceView();
-        }
+        input.onResume();
 
         if (!firstResume) {
             graphics.resume();
         } else
             firstResume = false;
 
-        this.isWaitingForAudio = true;
-        if (this.wasFocusChanged == 1 || this.wasFocusChanged == -1) {
-            // TODO: 10/11/2016 fix audio 
-//            this.audio.resume();
-            this.isWaitingForAudio = false;
-        }
+//        this.isWaitingForAudio = true;
+//        if (this.wasFocusChanged == 1 || this.wasFocusChanged == -1) {
+//            // TODO: 10/11/2016 fix audio 
+////            this.audio.resume();
+//            this.isWaitingForAudio = false;
+//        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (graphics != null) {
+            graphics.clearManagedCaches();
+            graphics.destroy();
+        }
     }
 
     @Override
@@ -278,7 +238,8 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
 
     @Override
     public Audio getAudio() {
-        return audio;
+        // TODO: 10/11/2016 fix audio 
+        return null;
     }
 
     @Override
@@ -350,9 +311,9 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     @Override
     public void onConfigurationChanged(Configuration config) {
         super.onConfigurationChanged(config);
-        boolean keyboardAvailable = false;
-        if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO)
-            keyboardAvailable = true;
+//        boolean keyboardAvailable = false;
+//        if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO)
+//            keyboardAvailable = true;
         // TODO: 10/11/2016 fix input 
 //        input.keyboardAvailable = keyboardAvailable;
     }
