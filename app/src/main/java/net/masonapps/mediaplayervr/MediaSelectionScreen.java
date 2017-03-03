@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -253,10 +252,10 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 }
             }
         });
-        videosButton.clear();
-        videosButton.add(new Image(skin.getDrawable(Style.Drawables.ic_movie_white_48dp))).row();
-        videosButton.add(videosButton.getLabel()).expandX().fillX();
-        videosButton.setSize(videosButton.getPrefWidth(), videosButton.getPrefHeight());
+//        videosButton.clear();
+//        videosButton.add(new Image(skin.getDrawable(Style.Drawables.ic_movie_white_48dp))).row();
+//        videosButton.add(videosButton.getLabel()).expandX().fillX();
+//        videosButton.setSize(videosButton.getPrefWidth(), videosButton.getPrefHeight());
         tableStart.add(videosButton).center().pad(6);
 
         final TextButton musicButton = new TextButton(context.getString(R.string.music), skin);
@@ -284,10 +283,10 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 }
             }
         });
-        musicButton.clear();
-        musicButton.add(new Image(skin.getDrawable(Style.Drawables.ic_album_white_48dp))).row();
-        musicButton.add(musicButton.getLabel()).expandX().fillX();
-        musicButton.setSize(musicButton.getPrefWidth(), musicButton.getPrefHeight());
+//        musicButton.clear();
+//        musicButton.add(new Image(skin.getDrawable(Style.Drawables.ic_album_white_48dp))).row();
+//        musicButton.add(musicButton.getLabel()).expandX().fillX();
+//        musicButton.setSize(musicButton.getPrefWidth(), musicButton.getPrefHeight());
         tableStart.add(musicButton).center().pad(6);
     }
 

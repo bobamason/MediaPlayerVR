@@ -129,10 +129,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             srcRect.set(0, 0, 1, 1);
 //            final float invAspect = 1f / aspectRatio;
 //            dstRect.set(0.25f + stretch.x * 0.5f, (1f - invAspect) * 0.5f - stretch.y * 0.5f, 0.5f + stretch.x, invAspect + stretch.y);
-            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1 + stretch.x, 1 + stretch.y);
+            dstRect.set(0.25f - stretch.x * 0.5f, -stretch.y * 0.5f, 0.5f + stretch.x, 1f + stretch.y);
         } else {
             srcRect.set(0, 0, 1, 1);
-            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1 + stretch.x, 1 + stretch.y);
+            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1f + stretch.x, 1f + stretch.y);
         }
     }
 

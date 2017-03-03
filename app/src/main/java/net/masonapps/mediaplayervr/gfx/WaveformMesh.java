@@ -37,7 +37,7 @@ public class WaveformMesh extends DynamicMesh {
     @Override
     public void update(float deltaTime) {
         final int step = 2 * FLOATS_PER_VERTEX;
-        final float stepX = 1f / sampleCount * 10f;
+        final float stepX = 1f / sampleCount * 20f;
         final float startX = -sampleCount * stepX / 2f;
         for (int i = 0; i < sampleCount; i++) {
             vertices[i * step] = startX + i * stepX;

@@ -76,8 +76,9 @@ public class SpectrumAnalyzer {
     public void updateWaveform(byte[] waveform, float volume) {
         synchronized (this.waveform) {
             for (int i = 0; i < waveform.length; i++) {
-                final float s = volume == 0f ? 1f : 1f / volume;
-                this.waveform[i] = ((float) waveform[i]) / 127f * s;
+//                final float s = volume == 0f ? 1f : 1f / volume;
+//                this.waveform[i] = ((float) waveform[i]) / 127f * s;
+                this.waveform[i] = ((float) waveform[i]) / 255f;
             }
         }
     }
