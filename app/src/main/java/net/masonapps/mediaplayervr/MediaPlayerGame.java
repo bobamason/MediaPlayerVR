@@ -23,8 +23,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.google.vr.sdk.controller.Controller;
 
-import net.masonapps.mediaplayervr.audiovisualization.AudioWaveformScreen;
 import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
+import net.masonapps.mediaplayervr.audiovisualization.tests.OptimizedModelsVisualizer;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.media.SongDetails;
@@ -80,6 +80,15 @@ public class MediaPlayerGame extends VrGame {
         assets.load(FLOOR_FILENAME, Model.class);
         assets.load(CONTROLLER_FILENAME, Model.class);
         loading = true;
+    }
+
+    @Override
+    public void pause() {
+        if (getScreen() instanceof VideoPlayerScreen) {
+            final VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
+            getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
+        }
+        super.pause();
     }
 
     @Override
@@ -165,7 +174,7 @@ public class MediaPlayerGame extends VrGame {
     }
 
     private void addImageButtons() {
-        
+
     }
 
     @Override
@@ -180,6 +189,7 @@ public class MediaPlayerGame extends VrGame {
                 @Override
                 public void run() {
                     final VideoOptions videoOptions = getVideoOptionsDatabaseHelper().getVideoOptionsByTitle(videoDetails.title);
+                    Log.d(MediaPlayerGame.class.getSimpleName(), (videoOptions == null ? "no save video options found for " : "video options loaded for ") + videoDetails.title);
                     GdxVr.app.postRunnable(new Runnable() {
                         @Override
                         public void run() {
@@ -193,7 +203,7 @@ public class MediaPlayerGame extends VrGame {
     }
 
     public void playMusic(List<SongDetails> songList, int index) {
-        setScreen(new AudioWaveformScreen(this, context, songList, index));
+        setScreen(new OptimizedModelsVisualizer(this, context, songList, index));
     }
 
     @Override
@@ -210,7 +220,14 @@ public class MediaPlayerGame extends VrGame {
             musicVisualizerScreen.dispose();
             Log.d(MediaPlayerGame.class.getSimpleName(), "MusicVisualizerScreen disposed");
         } else if (getScreen() instanceof VideoPlayerScreen) {
-            VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
+            final VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
+            getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
+//                }
+//            }).start();
             setScreen(mediaSelectionScreen);
             videoPlayerScreen.dispose();
             Log.d(MediaPlayerGame.class.getSimpleName(), "VideoPlayerScreen disposed");

@@ -1,4 +1,4 @@
-package net.masonapps.mediaplayervr.audiovisualization;
+package net.masonapps.mediaplayervr.audiovisualization.tests;
 
 import android.content.Context;
 
@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
 
+import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
+import net.masonapps.mediaplayervr.audiovisualization.SpectrumAnalyzer;
 import net.masonapps.mediaplayervr.gfx.WaveformMesh;
 import net.masonapps.mediaplayervr.media.SongDetails;
 

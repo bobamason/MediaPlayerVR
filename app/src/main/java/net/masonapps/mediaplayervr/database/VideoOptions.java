@@ -27,8 +27,20 @@ public class VideoOptions {
         modeSelection = 0;
         aspectRatioSelection = 0;
         textureStretch = new Vector2();
-        ipd = 0.0639f;
+        ipd = 0f;
         zoom = 1f;
+    }
+
+    @Override
+    public String toString() {
+        return "title = " + (title == null ? "null" : title.replace('.', ',')) + "\n" +
+                "id = " + id + "\n" +
+                "useCustomCamera = " + useCustomCamera + "\n" +
+                "modeSelection = " + modeSelection + "\n" +
+                "aspectRatioSelection = " + aspectRatioSelection + "\n" +
+                "textureStretch = " + textureStretch.toString() + "\n" +
+                "zoom = " + zoom + "\n" +
+                "ipd = " + ipd + "\n";
     }
 
     public static class Columns implements BaseColumns {

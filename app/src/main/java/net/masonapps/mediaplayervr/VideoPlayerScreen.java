@@ -107,12 +107,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     @Override
     public void pause() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ((MediaPlayerGame) game).getVideoOptionsDatabaseHelper().saveVideoOptions(videoOptions);
-            }
-        }).start();
         videoPlayer.pause();
     }
 
@@ -316,5 +310,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     public VideoDetails getVideoDetails() {
         return videoDetails;
+    }
+
+    public VideoOptions getVideoOptions() {
+        return videoOptions;
     }
 }

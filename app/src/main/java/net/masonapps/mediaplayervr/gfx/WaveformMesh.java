@@ -40,9 +40,11 @@ public class WaveformMesh extends DynamicMesh {
         final float stepX = 1f / sampleCount * 20f;
         final float startX = -sampleCount * stepX / 2f;
         for (int i = 0; i < sampleCount; i++) {
+
             vertices[i * step] = startX + i * stepX;
             vertices[i * step + 1] = -waveform[i];
-            vertices[i * step + 2] = 0;
+            vertices[i * step + 2] = waveform[i] * (i % 2 == 0 ? 0 : 1);
+            
             vertices[i * step + 3] = 1f - waveform[i];
             vertices[i * step + 4] = waveform[i];
             vertices[i * step + 5] = waveform[i];
@@ -50,7 +52,8 @@ public class WaveformMesh extends DynamicMesh {
 
             vertices[i * step + 7] = startX + i * stepX;
             vertices[i * step + 8] = waveform[i];
-            vertices[i * step + 9] = 0;
+            vertices[i * step + 9] = waveform[i] * (i % 2 == 0 ? 1 : 0);
+            
             vertices[i * step + 10] = 1f - waveform[i];
             vertices[i * step + 11] = waveform[i];
             vertices[i * step + 12] = waveform[i];

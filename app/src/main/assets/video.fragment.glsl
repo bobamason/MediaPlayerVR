@@ -15,7 +15,7 @@ uniform vec4 u_clip;
 
 void main(){
     if(v_texCoord.x < u_clip[0] || v_texCoord.x > u_clip[2] || v_texCoord.y < u_clip[1] || v_texCoord.y > u_clip[3]){
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        discard;
     } else {
         gl_FragColor = texture2D(textureOES, v_texCoord);
     }
