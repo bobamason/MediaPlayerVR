@@ -2,11 +2,14 @@ package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
@@ -117,6 +120,17 @@ public class CameraSettingsLayout extends BaseUiLayout {
             }
         });
         table.add(ipdRight).pad(padding).row();
+
+        final TextButton camButton = new TextButton("Use Custom Camera", skin, Style.TOGGLE);
+        camButton.setChecked(videoOptions.useCustomCamera);
+        camButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                videoPlayerGUI.getVideoPlayerScreen().setUseCustomCamera(camButton.isChecked());
+                videoOptions.useCustomCamera = camButton.isChecked();
+            }
+        });
+        table.add(camButton).pad(padding).row();
         setVisible(false);
     }
 
