@@ -78,7 +78,7 @@ public abstract class VrWorldScreen extends VrScreen {
     }
 
     protected ModelBatch createModelBatch() {
-        return new ModelBatch();
+        return new ModelBatch(new PhongShaderProvider());
     }
 
     protected World createWorld() {

@@ -29,7 +29,6 @@ import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
-import net.masonapps.mediaplayervr.shaders.BasicPhongShader;
 import net.masonapps.mediaplayervr.shaders.HighlightShader;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -103,8 +102,7 @@ public class MediaPlayerGame extends VrGame {
                 final Model model = assets.get(ROOM_FILENAME, Model.class);
                 model.materials.get(0).set(ColorAttribute.createDiffuse(Color.BLACK), ColorAttribute.createSpecular(Color.WHITE), FloatAttribute.createShininess(8f));
                 roomEntity = new Entity(new ModelInstance(model, worldOffset));
-                roomEntity.setLightingEnabled(false);
-                roomEntity.setShader(new BasicPhongShader());
+                roomEntity.setLightingEnabled(true);
 
                 final Model highlightModel = assets.get(HIGHLIGHT_FILENAME, Model.class);
                 final Texture highlightTexture = assets.get(HIGHLIGHT_TEXTURE_FILENAME, Texture.class);
