@@ -162,8 +162,8 @@ public class DynamicSpiralMesh extends DynamicMesh {
         if (t > DELAY) {
             float a = z * 0.125f + startAngle;
             pos.set(radius * MathUtils.cos(a), radius * MathUtils.sin(a), z);
-//                tmpColor.set(color);
-            tmpColor.set(MathUtils.cos(a + color.r * MathUtils.PI2) * 0.5f + 0.5f, MathUtils.cos(a + color.g * MathUtils.PI2) * 0.5f + 0.5f, MathUtils.cos(a + color.b * MathUtils.PI2) * 0.5f + 0.5f, 1f);
+            tmpColor.set(color);
+//            tmpColor.set(MathUtils.cos(a + color.r * MathUtils.PI2) * 0.5f + 0.5f, MathUtils.cos(a + color.g * MathUtils.PI2) * 0.5f + 0.5f, MathUtils.cos(a + color.b * MathUtils.PI2) * 0.5f + 0.5f, 1f);
             extrude(lastShape, tmp.set(pos).sub(lastPos), shape);
 //            rotate(shape, Vector3.Z, 30 * DELAY);
             setColors(shape, tmpColor);
@@ -196,6 +196,10 @@ public class DynamicSpiralMesh extends DynamicMesh {
 
     public void setColor(Color color) {
         this.color.set(color);
+    }
+
+    public void setColor(float r, float g, float b) {
+        this.color.set(r, g, b, 1f);
     }
 
     public float getZ() {

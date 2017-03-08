@@ -95,9 +95,17 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
     public void update() {
         super.update();
         final float dT = Math.min(Gdx.graphics.getDeltaTime(), 0.03333f);
+        int i = 0;
         for (DynamicSpiralMesh strip : stripMeshs) {
+            if (i % 3 == 0)
+                strip.setColor(intensityValues[0], 1f - intensityValues[0], 0.5f * intensityValues[0] + 0.5f);
+            else if (i % 2 == 0)
+                strip.setColor(0.5f - intensityValues[1] * 0.5f, intensityValues[1], 1f - intensityValues[1]);
+            else
+                strip.setColor(1f - intensityValues[2], 0.5f * intensityValues[2] + 0.5f, intensityValues[2]);
             strip.update(dT);
             getVrCamera().position.z = strip.getZ() + 50;
+            i++;
         }
         starsInstance.transform.setToTranslation(tmp.set(getVrCamera().position).scl(0.5f));
     }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g3d.environment.BaseLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.Array;
 import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -39,12 +40,12 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     }
 
     @Override
-    protected BaseLight createLight() {
+    protected void addLights(Array<BaseLight> lights) {
         final PointLight pointLight = new PointLight();
         pointLight.setColor(Color.WHITE);
         pointLight.setPosition(0f, 2f, 0f);
         pointLight.setIntensity(12f);
-        return pointLight;
+        lights.add(pointLight);
     }
 
     @Override

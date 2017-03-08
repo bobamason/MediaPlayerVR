@@ -52,7 +52,9 @@ public abstract class VrWorldScreen extends VrScreen {
         super(game);
         assets = new AssetManager();
         environment = createEnvironment();
-        environment.add(createLight());
+        final Array<BaseLight> lights = new Array<>();
+        addLights(lights);
+        environment.add(lights);
         world = createWorld();
         cursor = new VrCursor();
         cursor.setDeactivatedDiameter(0.02f);
@@ -71,10 +73,10 @@ public abstract class VrWorldScreen extends VrScreen {
         return environment;
     }
 
-    protected BaseLight createLight() {
+    protected void addLights(Array<BaseLight> lights) {
         final DirectionalLight light = new DirectionalLight();
         light.set(Color.DARK_GRAY, 0.0f, -1.0f, 0.0f);
-        return light;
+        lights.add(light);
     }
 
     protected ModelBatch createModelBatch() {
