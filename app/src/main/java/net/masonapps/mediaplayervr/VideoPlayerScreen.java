@@ -179,24 +179,25 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 //        videoCamera.view.setToTranslation(tempV.set(getForwardVector()).scl((1f - zoom) * 2f));
             videoCamera.view.setToLookAt(getForwardVector(), getUpVector());
 //        videoCamera.view.set(eye.getEyeView());
-            videoCamera.combined.set(videoCamera.projection);
-            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
 //        this.fov.setAngles(eyeFov.getLeft() * zoom, eyeFov.getRight(), eyeFov.getBottom() * zoom, eyeFov.getTop() * zoom);
         } else {
             videoCamera.view.set(getVrCamera().view);
             videoCamera.projection.set(getVrCamera().projection);
         }
+        videoCamera.combined.set(videoCamera.projection);
+        Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
+        
         getModelBatch().begin(getVrCamera());
         getWorld().render(getModelBatch(), environment);
         getModelBatch().end();
 
         getModelBatch().begin((videoPlayer.useFlatRectangle() || !videoPlayer.isStereoscopic()) ? getVrCamera() : videoCamera);
         videoPlayer.render(getModelBatch(), eye.getType());
-        if (isUiVisible()) {
-            final float s = videoPlayer.getModelSize();
-            sphereOutlineInstance.transform.idt().scale(s, s, s);
-            getModelBatch().render(sphereOutlineInstance);
-        }
+//        if (isUiVisible()) {
+//            final float s = videoPlayer.getModelSize();
+//            sphereOutlineInstance.transform.idt().scale(s, s, s);
+//            getModelBatch().render(sphereOutlineInstance);
+//        }
         getModelBatch().end();
         render(getVrCamera(), eye.getType());
     }

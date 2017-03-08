@@ -130,7 +130,7 @@ public class CameraSettingsLayout extends BaseUiLayout {
                 videoOptions.useCustomCamera = camButton.isChecked();
             }
         });
-        table.add(camButton).pad(padding).row();
+        table.add(camButton).colspan(3).pad(padding).row();
         setVisible(false);
     }
 
