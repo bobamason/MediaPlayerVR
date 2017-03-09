@@ -7,15 +7,20 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -29,7 +34,6 @@ import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
-import net.masonapps.mediaplayervr.shaders.HighlightShader;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
@@ -43,14 +47,12 @@ import java.util.List;
 
 public class MediaPlayerGame extends VrGame {
     public static final String ROOM_FILENAME = "room/dome_room.g3db";
-    public static final String HIGHLIGHT_FILENAME = "room/dome_highlight.g3db";
+    //    public static final String HIGHLIGHT_FILENAME = "room/dome_highlight.g3db";
     public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
-    private static final String HIGHLIGHT_TEXTURE_FILENAME = "room/tiled_bg.png";
     private final Context context;
     private Skin skin;
     private Entity roomEntity;
-    private Entity highlightEntity;
     private Entity floorEntity;
     private Entity controllerEntity;
     private AssetManager assets;
@@ -74,10 +76,8 @@ public class MediaPlayerGame extends VrGame {
         skin = new Skin();
         assets = new AssetManager();
         assets.load(Style.ATLAS_FILE, TextureAtlas.class);
-        assets.load(HIGHLIGHT_TEXTURE_FILENAME, Texture.class);
-        assets.load(ROOM_FILENAME, Model.class);
-        assets.load(HIGHLIGHT_FILENAME, Model.class);
-        assets.load(FLOOR_FILENAME, Model.class);
+//        assets.load(ROOM_FILENAME, Model.class);
+//        assets.load(FLOOR_FILENAME, Model.class);
         assets.load(CONTROLLER_FILENAME, Model.class);
         loading = true;
     }
@@ -99,21 +99,13 @@ public class MediaPlayerGame extends VrGame {
                 skin.addRegions(assets.get(Style.ATLAS_FILE, TextureAtlas.class));
                 setupSkin();
 
-                final Model model = assets.get(ROOM_FILENAME, Model.class);
-                model.materials.get(0).set(ColorAttribute.createDiffuse(Color.BLACK), ColorAttribute.createSpecular(Color.WHITE), FloatAttribute.createShininess(8f));
-                roomEntity = new Entity(new ModelInstance(model, worldOffset));
+                final ModelBuilder modelBuilder = new ModelBuilder();
+
+                roomEntity = new Entity(new ModelInstance(createWorldModel(modelBuilder), worldOffset));
                 roomEntity.setLightingEnabled(true);
 
-                final Model highlightModel = assets.get(HIGHLIGHT_FILENAME, Model.class);
-                final Texture highlightTexture = assets.get(HIGHLIGHT_TEXTURE_FILENAME, Texture.class);
-                highlightTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-                highlightModel.materials.get(0).set(ColorAttribute.createDiffuse(Color.CYAN), TextureAttribute.createDiffuse(highlightTexture));
-                highlightEntity = new Entity(new ModelInstance(highlightModel, worldOffset));
-                highlightEntity.setLightingEnabled(false);
-                highlightEntity.setShader(new HighlightShader());
-
-                floorEntity = new Entity(new ModelInstance(assets.get(FLOOR_FILENAME, Model.class), worldOffset));
-                floorEntity.setLightingEnabled(false);
+                floorEntity = new Entity(new ModelInstance(createFloorModel(modelBuilder), worldOffset));
+                floorEntity.setLightingEnabled(true);
 
                 controllerEntity = new Entity(new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class)));
                 controllerEntity.setLightingEnabled(false);
@@ -122,6 +114,26 @@ public class MediaPlayerGame extends VrGame {
                 loading = false;
             }
         }
+    }
+
+    private Model createWorldModel(ModelBuilder modelBuilder) {
+        final Matrix4 transform = new Matrix4();
+        final Vector3 axis = new Vector3();
+        final Material material = new Material(ColorAttribute.createDiffuse(Color.CYAN), ColorAttribute.createAmbient(Color.CYAN), ColorAttribute.createSpecular(Color.WHITE));
+        final MeshPartBuilder builder = modelBuilder.part("box", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal, material);
+        for (int i = 0; i < 100; i++) {
+            final float r = MathUtils.random(5f, 20f);
+            final float a = MathUtils.random(MathUtils.PI2);
+            final float s = 0.25f;
+            transform.idt().translate(r * MathUtils.cos(a), MathUtils.random(-10f, 10f), -r * MathUtils.sin(a)).rotate(axis, MathUtils.random(360f)).scale(s, s, s);
+            BoxShapeBuilder.build(builder, transform);
+        }
+        return modelBuilder.end();
+    }
+
+    private Model createFloorModel(ModelBuilder modelBuilder) {
+        final Material material = new Material(ColorAttribute.createDiffuse(Color.DARK_GRAY), ColorAttribute.createAmbient(Color.DARK_GRAY), ColorAttribute.createSpecular(Color.GRAY));
+        return modelBuilder.createBox(4f, 0.2f, 4f, material, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
     }
 
     private void setupSkin() {
@@ -259,10 +271,6 @@ public class MediaPlayerGame extends VrGame {
 
     public Entity getRoomEntity() {
         return roomEntity;
-    }
-
-    public Entity getHighlightEntity() {
-        return highlightEntity;
     }
 
     public Entity getFloorEntity() {

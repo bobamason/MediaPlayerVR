@@ -24,7 +24,6 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     private static final Vector3 tempV = new Vector3();
     protected final MediaPlayerGame mediaPlayerGame;
     protected final Entity controllerEntity;
-    protected final Entity highlightEntity;
     protected final Entity roomEntity;
     protected final Entity floorEntity;
     protected final Skin skin;
@@ -36,7 +35,6 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
         skin = mediaPlayerGame.getSkin();
         roomEntity = getWorld().add(mediaPlayerGame.getRoomEntity());
         floorEntity = getWorld().add(mediaPlayerGame.getFloorEntity());
-        highlightEntity = getWorld().add(mediaPlayerGame.getHighlightEntity());
         controllerEntity = getWorld().add(mediaPlayerGame.getControllerEntity());
     }
 
