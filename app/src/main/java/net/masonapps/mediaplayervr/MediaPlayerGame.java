@@ -7,7 +7,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -16,11 +15,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -52,7 +47,7 @@ public class MediaPlayerGame extends VrGame {
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private final Context context;
     private Skin skin;
-    private Entity roomEntity;
+    //    private Entity roomEntity;
     private Entity floorEntity;
     private Entity controllerEntity;
     private AssetManager assets;
@@ -101,8 +96,8 @@ public class MediaPlayerGame extends VrGame {
 
                 final ModelBuilder modelBuilder = new ModelBuilder();
 
-                roomEntity = new Entity(new ModelInstance(createWorldModel(modelBuilder), worldOffset));
-                roomEntity.setLightingEnabled(true);
+//                roomEntity = new Entity(new ModelInstance(createWorldModel(modelBuilder), worldOffset));
+//                roomEntity.setLightingEnabled(true);
 
                 floorEntity = new Entity(new ModelInstance(createFloorModel(modelBuilder), worldOffset));
                 floorEntity.setLightingEnabled(true);
@@ -114,21 +109,6 @@ public class MediaPlayerGame extends VrGame {
                 loading = false;
             }
         }
-    }
-
-    private Model createWorldModel(ModelBuilder modelBuilder) {
-        final Matrix4 transform = new Matrix4();
-        final Vector3 axis = new Vector3();
-        final Material material = new Material(ColorAttribute.createDiffuse(Color.CYAN), ColorAttribute.createAmbient(Color.CYAN), ColorAttribute.createSpecular(Color.WHITE));
-        final MeshPartBuilder builder = modelBuilder.part("box", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal, material);
-        for (int i = 0; i < 100; i++) {
-            final float r = MathUtils.random(5f, 20f);
-            final float a = MathUtils.random(MathUtils.PI2);
-            final float s = 0.25f;
-            transform.idt().translate(r * MathUtils.cos(a), MathUtils.random(-10f, 10f), -r * MathUtils.sin(a)).rotate(axis, MathUtils.random(360f)).scale(s, s, s);
-            BoxShapeBuilder.build(builder, transform);
-        }
-        return modelBuilder.end();
     }
 
     private Model createFloorModel(ModelBuilder modelBuilder) {
@@ -254,9 +234,9 @@ public class MediaPlayerGame extends VrGame {
         if (skin != null)
             skin.dispose();
         skin = null;
-        if (roomEntity != null)
-            roomEntity.dispose();
-        roomEntity = null;
+//        if (roomEntity != null)
+//            roomEntity.dispose();
+//        roomEntity = null;
         if (controllerEntity != null)
             controllerEntity.dispose();
         controllerEntity = null;
@@ -269,9 +249,9 @@ public class MediaPlayerGame extends VrGame {
         return skin;
     }
 
-    public Entity getRoomEntity() {
-        return roomEntity;
-    }
+//    public Entity getRoomEntity() {
+//        return roomEntity;
+//    }
 
     public Entity getFloorEntity() {
         return floorEntity;

@@ -112,7 +112,7 @@ public class OptimizedModelsVisualizer extends MusicVisualizerScreen {
         getModelBatch().begin(camera);
         getModelBatch().render(starsInstance);
         getModelBatch().render(modelInstance, shader);
-//        getModelBatch().render(instances, enviroment);
+//        getModelBatch().render(boxes, enviroment);
         getModelBatch().end();
     }
 
