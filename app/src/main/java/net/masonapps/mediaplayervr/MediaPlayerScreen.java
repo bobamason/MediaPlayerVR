@@ -2,6 +2,7 @@ package net.masonapps.mediaplayervr;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.BaseLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
@@ -40,11 +41,16 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     }
 
     @Override
+    protected ModelBatch createModelBatch() {
+        return super.createModelBatch();
+    }
+
+    @Override
     protected void addLights(Array<BaseLight> lights) {
         final PointLight pointLight = new PointLight();
         pointLight.setColor(Color.WHITE);
-        pointLight.setPosition(0f, 2f, 0f);
-        pointLight.setIntensity(12f);
+        pointLight.setPosition(0f, 3f, 0f);
+        pointLight.setIntensity(6f);
         lights.add(pointLight);
     }
 

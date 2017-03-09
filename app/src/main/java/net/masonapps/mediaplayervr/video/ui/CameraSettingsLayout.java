@@ -60,6 +60,7 @@ public class CameraSettingsLayout extends BaseUiLayout {
 
         final VideoOptions videoOptions = videoPlayerGUI.getVideoOptions();
         z = videoOptions.zoom;
+        videoPlayerGUI.getVideoPlayerScreen().setZoom(z);
         final Label zoomLabel = new Label("Zoom " + Math.round(z * 100f) + "%", skin);
 
         final ImageButton.ImageButtonStyle leftButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
@@ -92,16 +93,16 @@ public class CameraSettingsLayout extends BaseUiLayout {
         table.add(zRight).pad(padding).row();
 
         videoPlayerGUI.getVideoPlayerScreen().setIpd(videoOptions.ipd);
-        final Label ipdLabel = new Label("IPD " + Math.round(videoPlayerGUI.getVideoPlayerScreen().getIpd() * 1000) + "mm", skin);
+        final Label ipdLabel = new Label("IPD " + Math.round(videoPlayerGUI.getVideoPlayerScreen().getIpd() * 100) + "%", skin);
 
         final ImageButton ipdLeft = new ImageButton(leftButtonStyle);
         ipdLeft.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ipd -= STEP * 0.5f;
+                ipd -= STEP * 5f;
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
                 screen.setIpd(ipd);
-                ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 1000) + "mm");
+                ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 100) + "%");
                 videoOptions.ipd = screen.getIpd();
             }
         });
@@ -112,10 +113,10 @@ public class CameraSettingsLayout extends BaseUiLayout {
         ipdRight.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ipd += STEP * 0.5f;
+                ipd += STEP * 5f;
                 final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
                 screen.setIpd(ipd);
-                ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 1000) + "mm");
+                ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 100) + "%");
                 videoOptions.ipd = screen.getIpd();
             }
         });
