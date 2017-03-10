@@ -20,17 +20,20 @@ public class BulletConstructor extends World.Constructor<BulletEntity> {
     public btCollisionShape shape = null;
 
     public BulletConstructor(final Model model, final float mass, final btCollisionShape shape) {
-        create(model, mass, shape);
+        super(model);
+        create(mass, shape);
     }
 
     public BulletConstructor(final Model model, final float mass, final float width, final float height, final float depth) {
-        create(model, mass, width, height, depth);
+        super(model);
+        create(mass, width, height, depth);
     }
 
     public BulletConstructor(final Model model, final float mass) {
+        super(model);
         final BoundingBox boundingBox = new BoundingBox();
         model.calculateBoundingBox(boundingBox);
-        create(model, mass, boundingBox.getWidth(), boundingBox.getHeight(), boundingBox.getDepth());
+        create(mass, boundingBox.getWidth(), boundingBox.getHeight(), boundingBox.getDepth());
     }
 
     public BulletConstructor(final Model model, final btCollisionShape shape) {
@@ -45,12 +48,11 @@ public class BulletConstructor extends World.Constructor<BulletEntity> {
         this(model, -1);
     }
 
-    private void create(final Model model, final float mass, final float width, final float height, final float depth) {
-        create(model, mass, new btBoxShape(tmpV.set(width * 0.5f, height * 0.5f, depth * 0.5f)));
+    private void create(final float mass, final float width, final float height, final float depth) {
+        create(mass, new btBoxShape(tmpV.set(width * 0.5f, height * 0.5f, depth * 0.5f)));
     }
 
-    private void create(final Model model, final float mass, final btCollisionShape shape) {
-        this.model = model;
+    private void create(final float mass, final btCollisionShape shape) {
         this.shape = shape;
         if (shape != null && mass >= 0) {
             Vector3 localInertia;

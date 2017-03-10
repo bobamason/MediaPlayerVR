@@ -3,6 +3,7 @@ package org.masonapps.libgdxgooglevr.gfx;
 import android.support.annotation.Nullable;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.math.Matrix4;
@@ -67,5 +68,27 @@ public class Entity implements Disposable {
         if (shader != null)
             shader.dispose();
         shader = null;
+    }
+
+    public static class EntityConstructor extends World.Constructor<Entity> {
+
+        public EntityConstructor(Model model) {
+            super(model);
+        }
+
+        @Override
+        public Entity construct(float x, float y, float z) {
+            return new Entity(new ModelInstance(model, x, y, z));
+        }
+
+        @Override
+        public Entity construct(Matrix4 transform) {
+            return new Entity(new ModelInstance(model, transform));
+        }
+
+        @Override
+        public void dispose() {
+            model.dispose();
+        }
     }
 }

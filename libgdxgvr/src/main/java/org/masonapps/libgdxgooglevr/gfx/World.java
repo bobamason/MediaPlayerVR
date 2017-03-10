@@ -91,7 +91,11 @@ public class World implements Disposable {
     }
 
     public static abstract class Constructor<T extends Entity> implements Disposable {
-        public Model model = null;
+        public final Model model;
+
+        public Constructor(Model model) {
+            this.model = model;
+        }
 
         public abstract T construct(final float x, final float y, final float z);
 
