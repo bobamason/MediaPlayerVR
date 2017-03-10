@@ -60,6 +60,7 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
 
             final Transform transform = new Transform();
             transform.position.set(r * MathUtils.cos(a), MathUtils.random(-10f, 10f), -r * MathUtils.sin(a));
+            transform.axis.set(axis);
             transform.rotation.set(axis, MathUtils.random(360f));
             transform.scale.set(MathUtils.random(0.1f, 1f), MathUtils.random(0.1f, 1f), MathUtils.random(0.1f, 1f));
 
@@ -81,7 +82,7 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
         final PointLight pointLight = new PointLight();
         pointLight.setColor(Color.WHITE);
         pointLight.setPosition(0f, 3f, 0f);
-        pointLight.setIntensity(6f);
+        pointLight.setIntensity(10f);
         lights.add(pointLight);
     }
 
@@ -111,7 +112,7 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
 
         for (Entity entity : boxes) {
             final Transform transform = (Transform) entity.modelInstance.userData;
-            tempQ.set(tempV.set(MathUtils.random(), MathUtils.random(), MathUtils.random()), Gdx.graphics.getDeltaTime() * 90f);
+            tempQ.set(transform.axis, Gdx.graphics.getDeltaTime() * 90f);
             transform.rotation.mul(tempQ);
             entity.transform.set(transform.position, transform.rotation, transform.scale);
         }
@@ -123,6 +124,7 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
 
     private static class Transform {
         public final Vector3 position = new Vector3();
+        public final Vector3 axis = new Vector3();
         public final Quaternion rotation = new Quaternion();
         public final Vector3 scale = new Vector3();
     }
