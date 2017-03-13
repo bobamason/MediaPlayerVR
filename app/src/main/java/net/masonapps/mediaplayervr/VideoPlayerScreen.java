@@ -3,13 +3,13 @@ package net.masonapps.mediaplayervr;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
@@ -19,14 +19,15 @@ import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.SphereShapeBuilder;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.google.vr.sdk.base.Eye;
-import com.google.vr.sdk.base.FieldOfView;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
+import net.masonapps.mediaplayervr.video.ui.ThumbSeekbarLayout;
 import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -53,6 +54,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private final Entity controllerEntity;
     private final VideoPlayerGUI ui;
     private final VrCamera videoCamera;
+    private final ThumbSeekbarLayout thumbSeekbarLayout;
     private VideoOptions videoOptions;
     //    private final FieldOfView fov = new FieldOfView();
 //    private final float[] proj = new float[16];
@@ -84,8 +86,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
         setBackgroundColor(Color.BLACK);
+        final SpriteBatch spriteBatch = new SpriteBatch();
+        manageDisposable(spriteBatch);
         inputMultiplexer = new VrInputMultiplexer();
-        ui = new VideoPlayerGUI(this, ((MediaPlayerGame) game).getSkin(), this.videoOptions);
+        final Skin skin = ((MediaPlayerGame) game).getSkin();
+        thumbSeekbarLayout = new ThumbSeekbarLayout(spriteBatch, skin);
+        ui = new VideoPlayerGUI(this, spriteBatch, skin, this.videoOptions);
         ui.attach(inputMultiplexer);
         getVrCamera().near = 0.25f;
         getVrCamera().far = 100f;
@@ -149,15 +155,15 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         getVrCamera().onDrawEye(eye);
         Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        if (useCustomCamera) {
-            if (doRatioCalc) {
-                final FieldOfView eyeFov = eye.getFov();
-                Log.i(VideoPlayerScreen.class.getSimpleName(), eyeFov.toString());
-                final float t1 = (float) Math.tan(Math.toRadians(eyeFov.getTop())) * getVrCamera().near;
-                final float b1 = (float) Math.tan(Math.toRadians(eyeFov.getBottom())) * getVrCamera().near;
-                yRatio = Math.abs(b1 / t1);
-                doRatioCalc = false;
-            }
+//        if (useCustomCamera) {
+//            if (doRatioCalc) {
+//                final FieldOfView eyeFov = eye.getFov();
+//                Log.i(VideoPlayerScreen.class.getSimpleName(), eyeFov.toString());
+//                final float t1 = (float) Math.tan(Math.toRadians(eyeFov.getTop())) * getVrCamera().near;
+//                final float b1 = (float) Math.tan(Math.toRadians(eyeFov.getBottom())) * getVrCamera().near;
+//                yRatio = Math.abs(b1 / t1);
+//                doRatioCalc = false;
+//            }
 
 
             final float defaultIpd = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f;
@@ -167,12 +173,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             videoCamera.projection.set(eye.getPerspective(videoCamera.near, videoCamera.far));
             videoCamera.combined.set(videoCamera.projection);
             Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
-        } else {
-            videoCamera.view.set(getVrCamera().view);
-            videoCamera.projection.set(getVrCamera().projection);
-            videoCamera.combined.set(videoCamera.projection);
-            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
-        }
+//        } else {
+//            videoCamera.view.set(getVrCamera().view);
+//            videoCamera.projection.set(getVrCamera().projection);
+//            videoCamera.combined.set(videoCamera.projection);
+//            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
+//        }
         
         getModelBatch().begin(getVrCamera());
         getWorld().render(getModelBatch(), environment);
@@ -259,6 +265,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void onTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
         if (!isButtonClicked) {
+            thumbSeekbarLayout.onTouchPadEvent(event);
             switch (event.action) {
                 case DaydreamTouchEvent.ACTION_DOWN:
                     break;

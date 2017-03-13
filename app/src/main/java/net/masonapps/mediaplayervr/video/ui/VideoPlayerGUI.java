@@ -22,14 +22,14 @@ public class VideoPlayerGUI extends BaseUiLayout {
     private final AspectRatioLayout aspectRatioLayout;
     private final CameraSettingsLayout cameraSettingsLayout;
     private final PlaybackSettingsLayout playbackSettingsLayout;
+    private final SpriteBatch spriteBatch;
     private VideoOptions videoOptions;
-    private SpriteBatch spriteBatch;
 
-    public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, Skin skin, VideoOptions videoOptions) {
+    public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, SpriteBatch spriteBatch, Skin skin, VideoOptions videoOptions) {
         this.videoPlayerScreen = videoPlayerScreen;
         this.skin = skin;
         this.videoOptions = videoOptions;
-        spriteBatch = new SpriteBatch();
+        this.spriteBatch = spriteBatch;
 
         mainLayout = new MainLayout(this);
         modeLayout = new ModeLayout(this);
@@ -117,10 +117,6 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.dispose();
         cameraSettingsLayout.dispose();
         playbackSettingsLayout.dispose();
-        if (spriteBatch != null) {
-            spriteBatch.dispose();
-            spriteBatch = null;
-        }
     }
 
     public void switchToMainLayout() {
