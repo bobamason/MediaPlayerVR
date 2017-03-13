@@ -9,7 +9,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -38,6 +37,7 @@ import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
 /**
  * Created by Bob on 12/24/2016.
@@ -52,7 +52,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private final VideoDetails videoDetails;
     private final Entity controllerEntity;
     private final VideoPlayerGUI ui;
-    private final PerspectiveCamera videoCamera;
+    private final VrCamera videoCamera;
     private VideoOptions videoOptions;
     //    private final FieldOfView fov = new FieldOfView();
 //    private final float[] proj = new float[16];
@@ -79,7 +79,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             this.videoOptions = new VideoOptions();
             this.videoOptions.title = videoDetails.title;
         }
-        videoCamera = new PerspectiveCamera();
+        videoCamera = new VrCamera();
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
@@ -117,7 +117,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         GdxVr.app.getGvrView().setNeckModelFactor(0f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setProcessor(inputMultiplexer);
-        Log.i(VideoPlayerScreen.class.getSimpleName(), "default IPD = " + ipd);
     }
 
     @Override
@@ -160,21 +159,20 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 doRatioCalc = false;
             }
 
-//            setCameraProjectionZoom(eye);
-            
-            videoCamera.projection.set(getVrCamera().projection);
 
-            translation.set(Vector3.Zero).mul(tempM.set(eye.getEyeView()));
-            translation.scl(1f + ipd);
-            translation.add(tempV.set(getForwardVector()).scl((1f - zoom) * 5f));
-            Log.d(VideoPlayerScreen.class.getSimpleName(), (eye.getType() == Eye.Type.LEFT ? "left" : "right") + " eye position: " + translation.toString());
+            final float defaultIpd = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f;
+            translation.set(getRightVector()).scl(defaultIpd * (1f + ipd)).scl(eye.getType() == Eye.Type.LEFT ? -1f : 1f);
+            translation.add(tempV.set(getForwardVector()).scl((1f - zoom) * -4f));
             videoCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+            videoCamera.projection.set(eye.getPerspective(videoCamera.near, videoCamera.far));
+            videoCamera.combined.set(videoCamera.projection);
+            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
         } else {
             videoCamera.view.set(getVrCamera().view);
             videoCamera.projection.set(getVrCamera().projection);
+            videoCamera.combined.set(videoCamera.projection);
+            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
         }
-        videoCamera.combined.set(videoCamera.projection);
-        Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
         
         getModelBatch().begin(getVrCamera());
         getWorld().render(getModelBatch(), environment);
@@ -304,7 +302,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     public void setIpd(float ipd) {
-        this.ipd = MathUtils.clamp(ipd, -1f, 2f);
+        this.ipd = MathUtils.clamp(ipd, 0f, 1f);
 //        videoPlayer.set3dShift(ipd);
     }
 

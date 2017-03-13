@@ -88,7 +88,10 @@ public class Entity implements Disposable {
 
         @Override
         public void dispose() {
-            model.dispose();
+            try {
+                model.dispose();
+            } catch (Exception ignored) {
+            }
         }
     }
 }

@@ -58,7 +58,6 @@ public class OpenWorldVisualizerScreen extends MusicVisualizerScreen {
         starsInstance = new ModelInstance(starsModel);
 
         final Model boxModel = createBox(modelBuilder);
-        manageDisposable(boxModel);
         getWorld().addConstructor(BOX, new Entity.EntityConstructor(boxModel));
         getVrCamera().far = 100f;
     }

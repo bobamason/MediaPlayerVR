@@ -78,7 +78,7 @@ public class VrCamera extends Camera {
     public void onDrawEye(Eye eye, Matrix4 parentMat, boolean updateFrustum) {
         viewportWidth = eye.getViewport().width;
         viewportHeight = eye.getViewport().height;
-        view.setToTranslation(-position.x, -position.y, -position.z);
+        android.opengl.Matrix.setLookAtM(view.getValues(), 0, position.x, position.y, position.z, position.x, position.y, position.z - 0.01f, 0f, 1f, 0f);
         view.mulLeft(tempM.set(eye.getEyeView()));
         if (parentMat != null) {
             view.mulLeft(parentMat);

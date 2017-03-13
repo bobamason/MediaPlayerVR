@@ -122,6 +122,7 @@ public class CameraSettingsLayout extends BaseUiLayout {
         });
         table.add(ipdRight).pad(padding).row();
 
+        final Label camLabel = new Label("default camera", skin);
         final TextButton camButton = new TextButton("Use Custom Camera", skin, Style.TOGGLE);
         camButton.setChecked(videoOptions.useCustomCamera);
         camButton.addListener(new ChangeListener() {
@@ -129,9 +130,11 @@ public class CameraSettingsLayout extends BaseUiLayout {
             public void changed(ChangeEvent event, Actor actor) {
                 videoPlayerGUI.getVideoPlayerScreen().setUseCustomCamera(camButton.isChecked());
                 videoOptions.useCustomCamera = camButton.isChecked();
+                camLabel.setText(camButton.isChecked() ? "custom camera" : "default camera");
             }
         });
         table.add(camButton).colspan(3).pad(padding).row();
+        table.add(camLabel).colspan(3).center().pad(padding).row();
         setVisible(false);
     }
 
