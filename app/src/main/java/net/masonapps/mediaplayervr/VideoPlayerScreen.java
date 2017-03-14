@@ -91,6 +91,18 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         inputMultiplexer = new VrInputMultiplexer();
         final Skin skin = ((MediaPlayerGame) game).getSkin();
         thumbSeekbarLayout = new ThumbSeekbarLayout(spriteBatch, skin);
+        thumbSeekbarLayout.attach(inputMultiplexer);
+        thumbSeekbarLayout.stage.setPosition(0, -1f, -2f);
+        thumbSeekbarLayout.stage.recalculateTransform();
+        thumbSeekbarLayout.setVisible(false);
+        thumbSeekbarLayout.setListener(new ThumbSeekbarLayout.OnThumbSeekListener() {
+            @Override
+            public void onSeekChanged(float value) {
+                final float z = MathUtils.lerp(0f, 2f, value);
+                thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
+                setZoom(z);
+            }
+        });
         ui = new VideoPlayerGUI(this, spriteBatch, skin, this.videoOptions);
         ui.attach(inputMultiplexer);
         getVrCamera().near = 0.25f;
@@ -242,6 +254,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 if (event.action == DaydreamButtonEvent.ACTION_DOWN) {
                     isButtonClicked = true;
                     if (videoPlayer.isPrepared()) {
+//                        thumbSeekbarLayout.setVisible(false);
                         if (isUiVisible()) {
                             if (!inputMultiplexer.isCursorOver()) {
                                 setUiVisible(false);
@@ -256,7 +269,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 break;
             case DaydreamButtonEvent.BUTTON_APP:
                 if (event.action == DaydreamButtonEvent.ACTION_UP) {
-                    ui.backButtonClicked();
+                    if (thumbSeekbarLayout.isVisible())
+                        thumbSeekbarLayout.setVisible(false);
+                    else
+                        ui.backButtonClicked();
                 }
                 break;
         }
@@ -265,7 +281,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void onTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
         if (!isButtonClicked) {
-            thumbSeekbarLayout.onTouchPadEvent(event);
+            if (thumbSeekbarLayout.isVisible())
+                thumbSeekbarLayout.onTouchPadEvent(event);
             switch (event.action) {
                 case DaydreamTouchEvent.ACTION_DOWN:
                     break;
@@ -301,7 +318,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     public void setZoom(float zoom) {
-        this.zoom = MathUtils.clamp(zoom, 0.1f, 2f);
+        this.zoom = zoom;
     }
 
     public float getIpd() {
@@ -327,5 +344,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     public void setUseCustomCamera(boolean useCustomCamera) {
         this.useCustomCamera = useCustomCamera;
+    }
+
+    public void showThumbSeekbarLayout() {
+        setUiVisible(false);
+        thumbSeekbarLayout.setVisible(true);
     }
 }

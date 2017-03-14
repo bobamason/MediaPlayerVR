@@ -2,14 +2,12 @@ package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
@@ -122,19 +120,16 @@ public class CameraSettingsLayout extends BaseUiLayout {
         });
         table.add(ipdRight).pad(padding).row();
 
-        final Label camLabel = new Label("default camera", skin);
-        final TextButton camButton = new TextButton("Use Custom Camera", skin, Style.TOGGLE);
+        final TextButton camButton = new TextButton("Zoom", skin);
         camButton.setChecked(videoOptions.useCustomCamera);
-        camButton.addListener(new ChangeListener() {
+        camButton.addListener(new ClickListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                videoPlayerGUI.getVideoPlayerScreen().setUseCustomCamera(camButton.isChecked());
-                videoOptions.useCustomCamera = camButton.isChecked();
-                camLabel.setText(camButton.isChecked() ? "custom camera" : "default camera");
+            public void clicked(InputEvent event, float x, float y) {
+                setVisible(false);
+                videoPlayerGUI.getVideoPlayerScreen().showThumbSeekbarLayout();
             }
         });
         table.add(camButton).colspan(3).pad(padding).row();
-        table.add(camLabel).colspan(3).center().pad(padding).row();
         setVisible(false);
     }
 

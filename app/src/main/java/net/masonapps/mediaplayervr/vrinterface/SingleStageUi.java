@@ -2,6 +2,7 @@ package net.masonapps.mediaplayervr.vrinterface;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
@@ -13,7 +14,8 @@ import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 public class SingleStageUi extends BaseUiLayout {
 
     public final VirtualStage stage;
-    protected final Skin skin;
+    public final Skin skin;
+    public final Table table;
 
     public SingleStageUi(Batch spriteBatch, Skin skin) {
         this(new VirtualStage(spriteBatch, 512, 512), skin);
@@ -22,10 +24,12 @@ public class SingleStageUi extends BaseUiLayout {
     public SingleStageUi(VirtualStage stage, Skin skin) {
         this.stage = stage;
         this.skin = skin;
+        table = new Table(skin);
     }
 
     @Override
     public void attach(VrInputMultiplexer inputMultiplexer) {
+        stage.addActor(table);
         inputMultiplexer.addProcessor(stage);
     }
 
