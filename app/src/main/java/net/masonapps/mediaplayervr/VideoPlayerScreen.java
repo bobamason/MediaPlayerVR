@@ -91,8 +91,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         inputMultiplexer = new VrInputMultiplexer();
         final Skin skin = ((MediaPlayerGame) game).getSkin();
         thumbSeekbarLayout = new ThumbSeekbarLayout(spriteBatch, skin);
-        thumbSeekbarLayout.attach(inputMultiplexer);
-        thumbSeekbarLayout.stage.setPosition(0, -1f, -2f);
+        thumbSeekbarLayout.stage.setPosition(0, -1f, -1.5f);
         thumbSeekbarLayout.stage.recalculateTransform();
         thumbSeekbarLayout.setVisible(false);
         thumbSeekbarLayout.setListener(new ThumbSeekbarLayout.OnThumbSeekListener() {
@@ -105,6 +104,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         });
         ui = new VideoPlayerGUI(this, spriteBatch, skin, this.videoOptions);
         ui.attach(inputMultiplexer);
+        thumbSeekbarLayout.attach(inputMultiplexer);
         getVrCamera().near = 0.25f;
         getVrCamera().far = 100f;
         controllerEntity = getWorld().add(((MediaPlayerGame) game).getControllerEntity());
@@ -157,6 +157,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void update() {
         super.update();
+        thumbSeekbarLayout.update();
         ui.update();
         videoPlayer.update();
     }
@@ -218,6 +219,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @SuppressLint("MissingSuperCall")
     @Override
     public void render(Camera camera, int whichEye) {
+        thumbSeekbarLayout.draw(camera);
         if (isUiVisible()) {
             ui.draw(camera);
             renderCursor(camera);

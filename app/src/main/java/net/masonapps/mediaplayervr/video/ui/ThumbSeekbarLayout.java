@@ -28,11 +28,11 @@ public class ThumbSeekbarLayout extends SingleStageUi {
     private OnThumbSeekListener listener = null;
 
     public ThumbSeekbarLayout(Batch spriteBatch, Skin skin) {
-        super(new VirtualStage(spriteBatch, 720, 180), skin);
+        super(new VirtualStage(spriteBatch, 720, 200), skin);
         stage.setTouchable(false);
 
         label = new Label("Value 100%", skin);
-        table.add(label).center().pad(padding);
+        table.add(label).center().pad(padding).row();
 
         slider = new Slider(0f, 1f, 1f / 10000f, false, skin);
         slider.setValue(0.5f);

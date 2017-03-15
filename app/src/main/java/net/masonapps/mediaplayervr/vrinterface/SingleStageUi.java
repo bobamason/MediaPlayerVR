@@ -1,5 +1,6 @@
 package net.masonapps.mediaplayervr.vrinterface;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -24,13 +25,25 @@ public class SingleStageUi extends BaseUiLayout {
     public SingleStageUi(VirtualStage stage, Skin skin) {
         this.stage = stage;
         this.skin = skin;
-        table = new Table(skin);
+        table = new Table();
+        table.setFillParent(true);
+        table.center();
     }
 
     @Override
     public void attach(VrInputMultiplexer inputMultiplexer) {
         stage.addActor(table);
         inputMultiplexer.addProcessor(stage);
+    }
+
+    @Override
+    public void update() {
+        stage.act();
+    }
+
+    @Override
+    public void draw(Camera camera) {
+        stage.draw(camera);
     }
 
     @Override
