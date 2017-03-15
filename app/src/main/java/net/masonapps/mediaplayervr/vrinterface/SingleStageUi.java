@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 /**
  * Created by Bob on 3/13/2017.
@@ -31,9 +31,9 @@ public class SingleStageUi extends BaseUiLayout {
     }
 
     @Override
-    public void attach(VrInputMultiplexer inputMultiplexer) {
+    public void attach(VrUiContainer container) {
         stage.addActor(table);
-        inputMultiplexer.addProcessor(stage);
+        container.addProcessor(stage);
     }
 
     @Override

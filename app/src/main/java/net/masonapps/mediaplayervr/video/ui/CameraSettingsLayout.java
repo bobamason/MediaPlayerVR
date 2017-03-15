@@ -5,7 +5,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -14,16 +13,16 @@ import com.badlogic.gdx.utils.Align;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
-import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
+import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 /**
  * Created by Bob on 2/8/2017.
  */
 
-public class CameraSettingsLayout extends BaseUiLayout {
+public class CameraSettingsLayout extends SingleStageUi {
 
     private static final float STEP = 0.01f;
     private final Table table;
@@ -35,9 +34,8 @@ public class CameraSettingsLayout extends BaseUiLayout {
     private float ipd = 0f;
 
     public CameraSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
+        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
-        final Skin skin = videoPlayerGUI.getSkin();
-        stage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360);
         stage.setPosition(0, 0, -2.5f);
         stage.addActor(Style.newBackgroundImage(skin));
 
@@ -125,8 +123,7 @@ public class CameraSettingsLayout extends BaseUiLayout {
         camButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                setVisible(false);
-                videoPlayerGUI.getVideoPlayerScreen().showThumbSeekbarLayout();
+                videoPlayerGUI.showThumbSeekbarLayout();
             }
         });
         table.add(camButton).colspan(3).pad(padding).row();
@@ -144,9 +141,9 @@ public class CameraSettingsLayout extends BaseUiLayout {
     }
 
     @Override
-    public void attach(VrInputMultiplexer inputMultiplexer) {
+    public void attach(VrUiContainer container) {
         stage.addActor(table);
-        inputMultiplexer.addProcessor(stage);
+        container.addProcessor(stage);
     }
 
     @Override

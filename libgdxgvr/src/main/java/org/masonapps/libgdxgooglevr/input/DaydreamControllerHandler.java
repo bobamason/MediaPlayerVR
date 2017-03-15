@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class DaydreamControllerHandler {
 
     private ArrayList<DaydreamControllerInputListener> listeners;
-    private int currentConnectionState = Controller.ConnectionStates.DISCONNECTED;
+    private int currentConnectionState = Controller.ConnectionStates.CONNECTED;
     private boolean clickButtonState = false;
     private boolean appButtonState = false;
     private boolean volumeUpButtonState = false;

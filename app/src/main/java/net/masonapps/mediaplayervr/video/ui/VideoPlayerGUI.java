@@ -1,20 +1,21 @@
 package net.masonapps.mediaplayervr.video.ui;
 
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 /**
  * Created by Bob on 2/8/2017.
  */
 
 public class VideoPlayerGUI extends BaseUiLayout {
+    public final ThumbSeekbarLayout thumbSeekbarLayout;
     private final MainLayout mainLayout;
     private final ModeLayout modeLayout;
     private final VideoPlayerScreen videoPlayerScreen;
@@ -42,15 +43,28 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
+        thumbSeekbarLayout = new ThumbSeekbarLayout(spriteBatch, skin);
+        thumbSeekbarLayout.stage.setPosition(0, -1f, -1.5f);
+        thumbSeekbarLayout.stage.recalculateTransform();
+        thumbSeekbarLayout.setVisible(false);
+        thumbSeekbarLayout.setListener(new ThumbSeekbarLayout.OnThumbSeekListener() {
+            @Override
+            public void onSeekChanged(float value) {
+                final float z = MathUtils.lerp(0f, 2f, value);
+                thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
+                VideoPlayerGUI.this.videoPlayerScreen.setZoom(z);
+            }
+        });
     }
 
     @Override
-    public void attach(VrInputMultiplexer inputMultiplexer) {
-        mainLayout.attach(inputMultiplexer);
-        modeLayout.attach(inputMultiplexer);
-        aspectRatioLayout.attach(inputMultiplexer);
-        cameraSettingsLayout.attach(inputMultiplexer);
-        playbackSettingsLayout.attach(inputMultiplexer);
+    public void attach(VrUiContainer container) {
+        mainLayout.attach(container);
+        modeLayout.attach(container);
+        aspectRatioLayout.attach(container);
+        cameraSettingsLayout.attach(container);
+        playbackSettingsLayout.attach(container);
+        thumbSeekbarLayout.attach(container);
     }
 
     @Override
@@ -68,6 +82,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
             aspectRatioLayout.setVisible(false);
             cameraSettingsLayout.setVisible(false);
             playbackSettingsLayout.setVisible(false);
+            thumbSeekbarLayout.setVisible(false);
         }
     }
 
@@ -80,22 +95,6 @@ public class VideoPlayerGUI extends BaseUiLayout {
         } else {
             videoPlayerScreen.exit();
         }
-    }
-
-    public void draw(Camera camera) {
-        mainLayout.draw(camera);
-        modeLayout.draw(camera);
-        aspectRatioLayout.draw(camera);
-        cameraSettingsLayout.draw(camera);
-        playbackSettingsLayout.draw(camera);
-    }
-
-    public void update() {
-        mainLayout.update();
-        modeLayout.update();
-        aspectRatioLayout.update();
-        cameraSettingsLayout.update();
-        playbackSettingsLayout.update();
     }
 
     public VideoPlayerScreen getVideoPlayerScreen() {
@@ -117,6 +116,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.dispose();
         cameraSettingsLayout.dispose();
         playbackSettingsLayout.dispose();
+        thumbSeekbarLayout.dispose();
     }
 
     public void switchToMainLayout() {
@@ -125,6 +125,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
+        thumbSeekbarLayout.setVisible(false);
     }
 
     public void switchToModeLayout() {
@@ -133,6 +134,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
+        thumbSeekbarLayout.setVisible(false);
     }
 
     public void switchToAspectRatioLayout() {
@@ -141,6 +143,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.setVisible(true);
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
+        thumbSeekbarLayout.setVisible(false);
     }
 
     public void switchToCameraSettingsLayout() {
@@ -149,6 +152,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(true);
         playbackSettingsLayout.setVisible(false);
+        thumbSeekbarLayout.setVisible(false);
     }
 
     public void switchToPlaybackSettingsLayout() {
@@ -157,6 +161,16 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(true);
+        thumbSeekbarLayout.setVisible(false);
+    }
+
+    public void showThumbSeekbarLayout() {
+        mainLayout.setVisible(false);
+        modeLayout.setVisible(false);
+        aspectRatioLayout.setVisible(false);
+        cameraSettingsLayout.setVisible(false);
+        playbackSettingsLayout.setVisible(false);
+        thumbSeekbarLayout.setVisible(true);
     }
 
     public SpriteBatch getSpriteBatch() {

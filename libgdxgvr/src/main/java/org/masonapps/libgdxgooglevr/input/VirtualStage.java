@@ -30,6 +30,7 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     private static final Matrix4 tmpM = new Matrix4();
     private final Vector3 xaxis = new Vector3();
     private final Vector3 yaxis = new Vector3();
+    private final Vector3 position = new Vector3();
     private final Quaternion rotation = new Quaternion();
     private final Quaternion rotator = new Quaternion();
     private final Matrix4 transform = new Matrix4();
@@ -44,9 +45,9 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     private Vector2 hitPoint2DPixels = new Vector2();
     private Vector3 hitPoint3D = new Vector3();
     private boolean touchable = true;
-    private Vector3 position = new Vector3();
     private float radius;
     private boolean updated = false;
+    private Matrix4 batchTransform = new Matrix4();
 
     public VirtualStage(Batch batch, int virtualPixelWidth, int virtualPixelHeight) {
         super(new ScreenViewport(), batch);
@@ -194,13 +195,20 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     }
 
     public void draw(Camera camera) {
+        draw(camera, null);
+    }
+
+    public void draw(Camera camera, Matrix4 parentTransform) {
         if (!visible) return;
         if (!updated) recalculateTransform();
         Batch batch = this.getBatch();
         getRoot().setTransform(false);
         batch.begin();
         batch.setProjectionMatrix(camera.combined);
-        batch.setTransformMatrix(transform);
+        batchTransform.set(transform);
+        if (parentTransform != null)
+            batchTransform.mulLeft(parentTransform);
+        batch.setTransformMatrix(batchTransform);
         getRoot().draw(batch, 1);
         batch.end();
     }

@@ -1,11 +1,9 @@
 package net.masonapps.mediaplayervr.video.ui;
 
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
@@ -13,10 +11,9 @@ import com.badlogic.gdx.utils.Align;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
-import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
+import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
 import java.text.DecimalFormat;
 
@@ -24,7 +21,7 @@ import java.text.DecimalFormat;
  * Created by Bob on 2/8/2017.
  */
 
-public class PlaybackSettingsLayout extends BaseUiLayout {
+public class PlaybackSettingsLayout extends SingleStageUi {
 
     private static final float STEP = 0.01f;
     private final Table table;
@@ -35,9 +32,8 @@ public class PlaybackSettingsLayout extends BaseUiLayout {
     private DecimalFormat df = new DecimalFormat("0.00");
 
     public PlaybackSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
+        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
-        final Skin skin = videoPlayerGUI.getSkin();
-        stage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360);
         stage.setPosition(0, 0, -2.5f);
         stage.addActor(Style.newBackgroundImage(skin));
 
@@ -113,37 +109,5 @@ public class PlaybackSettingsLayout extends BaseUiLayout {
         });
         table.add(yRight).pad(padding).row();
         setVisible(false);
-    }
-
-    @Override
-    public void update() {
-        stage.act();
-    }
-
-    @Override
-    public void draw(Camera camera) {
-        stage.draw(camera);
-    }
-
-    @Override
-    public void attach(VrInputMultiplexer inputMultiplexer) {
-        stage.addActor(table);
-        inputMultiplexer.addProcessor(stage);
-    }
-
-    @Override
-    public boolean isVisible() {
-        return stage.isVisible();
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        stage.setVisible(visible);
-    }
-
-    @Override
-    public void dispose() {
-        if (stage != null)
-            stage.dispose();
     }
 }

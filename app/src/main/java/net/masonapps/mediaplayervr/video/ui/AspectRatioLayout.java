@@ -1,10 +1,8 @@
 package net.masonapps.mediaplayervr.video.ui;
 
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -13,10 +11,9 @@ import com.badlogic.gdx.utils.Align;
 import net.masonapps.mediaplayervr.R;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
-import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
+import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
 
 import java.util.ArrayList;
 
@@ -24,7 +21,7 @@ import java.util.ArrayList;
  * Created by Bob on 2/10/2017.
  */
 
-public class AspectRatioLayout extends BaseUiLayout {
+public class AspectRatioLayout extends SingleStageUi {
     private static final String[] ratioLabels = {"AUTO", "1:1", "4:3", "16:10", "16:9", "2:1"};
     private static final float[] ratios = new float[]{-1f, 1f, 4f / 3f, 16f / 10f, 16f / 9f, 2f / 1f};
 
@@ -34,9 +31,8 @@ public class AspectRatioLayout extends BaseUiLayout {
     private VirtualStage stage;
 
     public AspectRatioLayout(final VideoPlayerGUI videoPlayerGUI) {
+        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
-        final Skin skin = videoPlayerGUI.getSkin();
-        stage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360);
         stage.setPosition(0, 0, -2.5f);
         stage.addActor(Style.newBackgroundImage(skin));
 
@@ -85,37 +81,5 @@ public class AspectRatioLayout extends BaseUiLayout {
             }
         });
         table.add(customButton).expandX().fill().center().pad(padding);
-    }
-
-    @Override
-    public void update() {
-        stage.act();
-    }
-
-    @Override
-    public void draw(Camera camera) {
-        stage.draw(camera);
-    }
-
-    @Override
-    public void attach(VrInputMultiplexer inputMultiplexer) {
-        stage.addActor(table);
-        inputMultiplexer.addProcessor(stage);
-    }
-
-    @Override
-    public boolean isVisible() {
-        return stage.isVisible();
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        stage.setVisible(visible);
-    }
-
-    @Override
-    public void dispose() {
-        if (stage != null)
-            stage.dispose();
     }
 }

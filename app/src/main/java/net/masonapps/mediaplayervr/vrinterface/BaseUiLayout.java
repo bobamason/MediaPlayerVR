@@ -3,7 +3,7 @@ package net.masonapps.mediaplayervr.vrinterface;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.utils.Disposable;
 
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 /**
  * Created by Bob on 2/8/2017.
@@ -18,7 +18,7 @@ public abstract class BaseUiLayout implements Disposable {
     public void draw(Camera camera) {
     }
 
-    public abstract void attach(VrInputMultiplexer inputMultiplexer);
+    public abstract void attach(VrUiContainer container);
 
     public abstract boolean isVisible();
 

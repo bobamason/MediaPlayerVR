@@ -27,7 +27,6 @@ import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
-import net.masonapps.mediaplayervr.video.ui.ThumbSeekbarLayout;
 import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -37,7 +36,7 @@ import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
 /**
@@ -54,7 +53,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private final Entity controllerEntity;
     private final VideoPlayerGUI ui;
     private final VrCamera videoCamera;
-    private final ThumbSeekbarLayout thumbSeekbarLayout;
     private VideoOptions videoOptions;
     //    private final FieldOfView fov = new FieldOfView();
 //    private final float[] proj = new float[16];
@@ -67,7 +65,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private float projZ = 0.94f;
     private float yRatio = 1f;
     private boolean doRatioCalc = true;
-    private VrInputMultiplexer inputMultiplexer;
+    private VrUiContainer container;
     private ModelInstance sphereOutlineInstance;
     private boolean useCustomCamera = false;
     private Vector3 translation = new Vector3();
@@ -88,23 +86,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         setBackgroundColor(Color.BLACK);
         final SpriteBatch spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);
-        inputMultiplexer = new VrInputMultiplexer();
+        container = new VrUiContainer();
         final Skin skin = ((MediaPlayerGame) game).getSkin();
-        thumbSeekbarLayout = new ThumbSeekbarLayout(spriteBatch, skin);
-        thumbSeekbarLayout.stage.setPosition(0, -1f, -1.5f);
-        thumbSeekbarLayout.stage.recalculateTransform();
-        thumbSeekbarLayout.setVisible(false);
-        thumbSeekbarLayout.setListener(new ThumbSeekbarLayout.OnThumbSeekListener() {
-            @Override
-            public void onSeekChanged(float value) {
-                final float z = MathUtils.lerp(0f, 2f, value);
-                thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
-                setZoom(z);
-            }
-        });
         ui = new VideoPlayerGUI(this, spriteBatch, skin, this.videoOptions);
-        ui.attach(inputMultiplexer);
-        thumbSeekbarLayout.attach(inputMultiplexer);
+        ui.attach(container);
         getVrCamera().near = 0.25f;
         getVrCamera().far = 100f;
         controllerEntity = getWorld().add(((MediaPlayerGame) game).getControllerEntity());
@@ -134,7 +119,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         GdxVr.app.getGvrView().setNeckModelEnabled(false);
         GdxVr.app.getGvrView().setNeckModelFactor(0f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
-        GdxVr.input.setProcessor(inputMultiplexer);
+        GdxVr.input.setProcessor(container);
     }
 
     @Override
@@ -157,8 +142,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void update() {
         super.update();
-        thumbSeekbarLayout.update();
-        ui.update();
+        container.act();
         videoPlayer.update();
     }
 
@@ -219,9 +203,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @SuppressLint("MissingSuperCall")
     @Override
     public void render(Camera camera, int whichEye) {
-        thumbSeekbarLayout.draw(camera);
+        container.draw(camera);
         if (isUiVisible()) {
-            ui.draw(camera);
             renderCursor(camera);
         }
     }
@@ -256,9 +239,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 if (event.action == DaydreamButtonEvent.ACTION_DOWN) {
                     isButtonClicked = true;
                     if (videoPlayer.isPrepared()) {
-//                        thumbSeekbarLayout.setVisible(false);
                         if (isUiVisible()) {
-                            if (!inputMultiplexer.isCursorOver()) {
+                            if (!container.isCursorOver()) {
                                 setUiVisible(false);
                             }
                         } else {
@@ -271,8 +253,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 break;
             case DaydreamButtonEvent.BUTTON_APP:
                 if (event.action == DaydreamButtonEvent.ACTION_UP) {
-                    if (thumbSeekbarLayout.isVisible())
-                        thumbSeekbarLayout.setVisible(false);
+                    if (ui.thumbSeekbarLayout.isVisible())
+                        ui.thumbSeekbarLayout.setVisible(false);
                     else
                         ui.backButtonClicked();
                 }
@@ -283,8 +265,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void onTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
         if (!isButtonClicked) {
-            if (thumbSeekbarLayout.isVisible())
-                thumbSeekbarLayout.onTouchPadEvent(event);
+            if (ui.thumbSeekbarLayout.isVisible())
+                ui.thumbSeekbarLayout.onTouchPadEvent(event);
             switch (event.action) {
                 case DaydreamTouchEvent.ACTION_DOWN:
                     break;
@@ -346,10 +328,5 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     public void setUseCustomCamera(boolean useCustomCamera) {
         this.useCustomCamera = useCustomCamera;
-    }
-
-    public void showThumbSeekbarLayout() {
-        setUiVisible(false);
-        thumbSeekbarLayout.setVisible(true);
     }
 }

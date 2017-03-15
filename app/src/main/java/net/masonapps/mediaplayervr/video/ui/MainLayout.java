@@ -18,7 +18,7 @@ import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 import java.util.Locale;
 
@@ -185,11 +185,11 @@ public class MainLayout extends BaseUiLayout {
     }
 
     @Override
-    public void attach(VrInputMultiplexer inputMultiplexer) {
+    public void attach(VrUiContainer container) {
         videoStage.addActor(videoTable);
         optionsStage.addActor(optionsTable);
-        inputMultiplexer.addProcessor(videoStage);
-        inputMultiplexer.addProcessor(optionsStage);
+        container.addProcessor(videoStage);
+        container.addProcessor(optionsStage);
     }
 
     @Override

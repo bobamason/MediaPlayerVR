@@ -50,7 +50,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by Bob on 10/9/2016.
  */
 
-public class VrGraphics implements Graphics, GvrView.StereoRenderer {
+public class VrGraphics implements Graphics, GvrView.Renderer {
 
     private static final String LOG_TAG = VrGraphics.class.getSimpleName();
 
@@ -498,6 +498,12 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
     }
 
     @Override
+    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+        onNewFrame(headTransform);
+        onDrawEye(eye);
+        onDrawEye(eye1);
+    }
+    
     public void onNewFrame(HeadTransform headTransform) {
         long time = System.nanoTime();
         deltaTime = (time - lastFrameTime) / 1000000000.0f;
@@ -588,8 +594,8 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
                     listener.dispose();
                 }
             }
-//            app.getApplicationListener().dispose();
-//            Gdx.app.log(LOG_TAG, "destroyed");
+            app.getApplicationListener().dispose();
+            Gdx.app.log(LOG_TAG, "destroyed");
         }
 
         if (time - frameStart > 1000000000) {
@@ -614,7 +620,6 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
         headMatrix.set(headTransform.getHeadView());
     }
 
-    @Override
     public void onDrawEye(Eye eye) {
 
         boolean lrunning = false;
@@ -678,8 +683,7 @@ public class VrGraphics implements Graphics, GvrView.StereoRenderer {
 
     @Override
     public void onRendererShutdown() {
-        app.getApplicationListener().dispose();
-        Gdx.app.log(LOG_TAG, "destroyed");
+        Gdx.app.log(LOG_TAG, "onRendererShutdown");
     }
 
     public Vector3 getForward() {
