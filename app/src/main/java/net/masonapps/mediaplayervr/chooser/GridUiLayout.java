@@ -33,7 +33,7 @@ import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -114,9 +114,9 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     }
 
     @Override
-    public void attach(VrInputMultiplexer inputMultiplexer) {
-        inputMultiplexer.addProcessor(stageList);
-        inputMultiplexer.addProcessor(stagePages);
+    public void attach(VrUiContainer container) {
+        container.addProcessor(stageList);
+        container.addProcessor(stagePages);
     }
 
     @Override

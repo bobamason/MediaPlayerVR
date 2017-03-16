@@ -68,7 +68,6 @@ public class ModeLayout extends SingleStageUi {
     private final Table table;
     private final VideoPlayerGUI videoPlayerGUI;
     private ArrayList<TextButton> textButtons = new ArrayList<>();
-    private VirtualStage stage;
 
     public ModeLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());

@@ -34,7 +34,7 @@ import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-import org.masonapps.libgdxgooglevr.input.VrInputMultiplexer;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 import java.util.List;
 
@@ -54,7 +54,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private Table tableStart;
     private VirtualStage stageStart;
     private VirtualStage stageBack;
-    private VrInputMultiplexer inputMultiplexer;
+    private VrUiContainer container;
     private volatile int currentState = STATE_NO_LIST;
     private volatile int lastState = STATE_NO_LIST;
     private Table tablePermissions;
@@ -73,7 +73,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 //        label3d.setPosition(-2f, 2f, -4f);
 //        label3d.setAlignment(Align.center);
         setBackgroundColor(Color.DARK_GRAY);
-        inputMultiplexer = new VrInputMultiplexer();
+        container = new VrUiContainer();
         initStage();
         switchToStartScreen();
     }
@@ -82,13 +82,13 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         final SpriteBatch batch = new SpriteBatch();
         manageDisposable(batch);
         stageStart = new VirtualStage(batch, 720, 540);
-        inputMultiplexer.addProcessor(stageStart);
+        container.addProcessor(stageStart);
 //        stageSongList = new VirtualStage(batch, 720, 420);
         stageBack = new VirtualStage(batch, 100, 100);
-        inputMultiplexer.addProcessor(stageBack);
+        container.addProcessor(stageBack);
 
         layoutVideoList = new VideoListLayout(context, skin, spriteBatch);
-        layoutVideoList.attach(inputMultiplexer);
+        layoutVideoList.attach(container);
         layoutVideoList.setOnItemClickedListener(new GridUiLayout.OnGridItemClickedListener<VideoDetails>() {
             @Override
             public void onItemClicked(int index, VideoDetails obj) {
@@ -97,7 +97,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         });
 
         layoutAlbumList = new AlbumListLayout(context, skin, spriteBatch);
-        layoutAlbumList.attach(inputMultiplexer);
+        layoutAlbumList.attach(container);
         layoutAlbumList.setOnItemClickedListener(new GridUiLayout.OnGridItemClickedListener<AlbumDetails>() {
             @Override
             public void onItemClicked(int index, AlbumDetails obj) {
@@ -125,7 +125,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         });
 
         layoutArtistList = new ArtistListLayout(context, skin, spriteBatch);
-        layoutArtistList.attach(inputMultiplexer);
+        layoutArtistList.attach(container);
         layoutArtistList.setOnItemClickedListener(new GridUiLayout.OnGridItemClickedListener<ArtistDetails>() {
             @Override
             public void onItemClicked(int index, ArtistDetails obj) {
@@ -153,7 +153,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         });
 
         layoutSongList = new SongListLayout(skin, spriteBatch);
-        layoutSongList.attach(inputMultiplexer);
+        layoutSongList.attach(container);
         layoutSongList.setOnItemClickedListener(new SongListLayout.OnSongItemClickedListener() {
             @Override
             public void onItemClicked(int index, SongDetails obj) {
@@ -306,7 +306,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         GdxVr.app.getGvrView().setNeckModelEnabled(true);
         GdxVr.app.getGvrView().setNeckModelFactor(1f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
-        GdxVr.input.setProcessor(inputMultiplexer);
+        GdxVr.input.setProcessor(container);
         getVrCamera().position.set(Vector3.Zero);
     }
 
@@ -320,7 +320,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     public void update() {
         super.update();
 //        label3d.rotateY(GdxVr.graphics.getDeltaTime() * LOADING_SPIN_SPEED);
-        inputMultiplexer.act();
+        container.act();
         layoutVideoList.update();
         layoutAlbumList.update();
         layoutArtistList.update();
@@ -330,7 +330,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     @Override
     public void render(Camera camera, int whichEye) {
         super.render(camera, whichEye);
-        inputMultiplexer.draw(camera);
+        container.draw(camera);
         spriteBatch.begin();
         spriteBatch.setProjectionMatrix(camera.combined);
 //        label3d.draw(spriteBatch);
