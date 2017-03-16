@@ -30,6 +30,9 @@ public abstract class VrApplicationAdapter implements ApplicationListener {
     public void create() {
     }
 
+    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+    }
+
     @CallSuper
     public void onNewFrame(HeadTransform headTransform) {
         update();

@@ -1,6 +1,8 @@
 package net.masonapps.mediaplayervr;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
@@ -68,6 +70,12 @@ public class MediaPlayerGame extends VrGame {
         super.create();
         loadingScreen = new LoadingScreen(this);
         setScreen(loadingScreen);
+        final GlobalSettings globalSettings = GlobalSettings.getInstance();
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        globalSettings.tint = sharedPreferences.getFloat(GlobalSettings.KEY_TINT, globalSettings.tint);
+        globalSettings.brightness = sharedPreferences.getFloat(GlobalSettings.KEY_BRIGHTNESS, globalSettings.brightness);
+        globalSettings.contrast = sharedPreferences.getFloat(GlobalSettings.KEY_CONTRAST, globalSettings.contrast);
+        globalSettings.saturation = sharedPreferences.getFloat(GlobalSettings.KEY_SATURATION, globalSettings.saturation);
         skin = new Skin();
         assets = new AssetManager();
         assets.load(Style.ATLAS_FILE, TextureAtlas.class);
@@ -83,6 +91,13 @@ public class MediaPlayerGame extends VrGame {
             final VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
             getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
         }
+        final GlobalSettings globalSettings = GlobalSettings.getInstance();
+        final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        editor.putFloat(GlobalSettings.KEY_TINT, globalSettings.tint);
+        editor.putFloat(GlobalSettings.KEY_BRIGHTNESS, globalSettings.brightness);
+        editor.putFloat(GlobalSettings.KEY_CONTRAST, globalSettings.contrast);
+        editor.putFloat(GlobalSettings.KEY_SATURATION, globalSettings.saturation);
+        editor.apply();
         super.pause();
     }
 

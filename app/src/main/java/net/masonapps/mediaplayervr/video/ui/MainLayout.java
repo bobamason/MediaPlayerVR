@@ -51,7 +51,7 @@ public class MainLayout extends BaseUiLayout {
         videoStage.addActor(Style.newBackgroundImage(skin));
         optionsStage.addActor(Style.newBackgroundImage(skin));
 
-        final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
+        final ImageButton backButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -61,7 +61,7 @@ public class MainLayout extends BaseUiLayout {
         optionsStage.addActor(backButton);
         backButton.setPosition(padding, optionsStage.getHeight() - padding, Align.topLeft);
 
-//        final ImageButton closeButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
+//        final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
 //        closeButton.addListener(new ClickListener() {
 //            @Override
 //            public void clicked(InputEvent event, float x, float y) {

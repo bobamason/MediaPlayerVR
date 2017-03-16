@@ -50,7 +50,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by Bob on 10/9/2016.
  */
 
-public class VrGraphics implements Graphics, GvrView.Renderer {
+public class VrGraphics implements Graphics, GvrView.StereoRenderer {
 
     private static final String LOG_TAG = VrGraphics.class.getSimpleName();
 
@@ -497,13 +497,15 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
     public void setSystemCursor(Cursor.SystemCursor systemCursor) {
     }
 
+//    @Override
+//    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+//        onNewFrame(headTransform);
+//        onDrawEye(eye);
+//        onDrawEye(eye1);
+//        ((VrApplicationAdapter)GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, eye, eye1);
+//    }
+
     @Override
-    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
-        onNewFrame(headTransform);
-        onDrawEye(eye);
-        onDrawEye(eye1);
-    }
-    
     public void onNewFrame(HeadTransform headTransform) {
         long time = System.nanoTime();
         deltaTime = (time - lastFrameTime) / 1000000000.0f;
@@ -620,6 +622,7 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
         headMatrix.set(headTransform.getHeadView());
     }
 
+    @Override
     public void onDrawEye(Eye eye) {
 
         boolean lrunning = false;

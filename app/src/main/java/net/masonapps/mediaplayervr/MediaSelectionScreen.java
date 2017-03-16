@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -181,7 +182,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         addPermissionsTable();
         addStartTable();
 
-        final ImageButton backButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, true));
+        final ImageButton backButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, true));
         stageBack.addActor(backButton);
         backButton.setPosition(0, 0, Align.bottomLeft);
         backButton.addListener(new ClickListener() {
@@ -228,7 +229,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         tableStart.setFillParent(true);
         stageStart.addActor(tableStart);
 
-        final TextButton videosButton = new TextButton(context.getString(R.string.videos), skin);
+        final ImageTextButton videosButton = new ImageTextButton(context.getString(R.string.videos), Style.createImageTextButtonStyle(skin, Style.Drawables.ic_movie_white_48dp));
         videosButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -253,42 +254,34 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 }
             }
         });
-//        videosButton.clear();
-//        videosButton.add(new Image(skin.getDrawable(Style.Drawables.ic_movie_white_48dp))).row();
-//        videosButton.add(videosButton.getLabel()).expandX().fillX();
-//        videosButton.setSize(videosButton.getPrefWidth(), videosButton.getPrefHeight());
         tableStart.add(videosButton).center().pad(6);
 
-        final TextButton musicButton = new TextButton(context.getString(R.string.music), skin);
-        musicButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                if (!isLoading()) {
-                    setLoading(true);
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final List<AlbumDetails> list = MediaUtils.getAlbumList(context);
-                            Gdx.app.postRunnable(new Runnable() {
-                                @Override
-                                public void run() {
-                                    layoutAlbumList.clear();
-                                    layoutAlbumList.getList().addAll(list);
-                                    layoutAlbumList.displayList(0);
-                                    switchToAlbumScreen();
-                                    setLoading(false);
-                                }
-                            });
-                        }
-                    }).start();
-                }
-            }
-        });
-//        musicButton.clear();
-//        musicButton.add(new Image(skin.getDrawable(Style.Drawables.ic_album_white_48dp))).row();
-//        musicButton.add(musicButton.getLabel()).expandX().fillX();
-//        musicButton.setSize(musicButton.getPrefWidth(), musicButton.getPrefHeight());
-        tableStart.add(musicButton).center().pad(6);
+//        final TextButton musicButton = new TextButton(context.getString(R.string.music), skin);
+//        musicButton.addListener(new ClickListener() {
+//            @Override
+//            public void clicked(InputEvent event, float x, float y) {
+//                if (!isLoading()) {
+//                    setLoading(true);
+//                    new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            final List<AlbumDetails> list = MediaUtils.getAlbumList(context);
+//                            Gdx.app.postRunnable(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    layoutAlbumList.clear();
+//                                    layoutAlbumList.getList().addAll(list);
+//                                    layoutAlbumList.displayList(0);
+//                                    switchToAlbumScreen();
+//                                    setLoading(false);
+//                                }
+//                            });
+//                        }
+//                    }).start();
+//                }
+//            }
+//        });
+//        tableStart.add(musicButton).center().pad(6);
     }
 
     @Override

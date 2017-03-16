@@ -3,6 +3,7 @@ package net.masonapps.mediaplayervr;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 /**
@@ -26,7 +27,7 @@ public class Style {
     public static final String TOGGLE = "toggle";
     public static final String LIST_ITEM = "list_item";
 
-    public static ImageButton.ImageButtonStyle getImageButtonStyle(Skin skin, String name, boolean useBackground) {
+    public static ImageButton.ImageButtonStyle createImageButtonStyle(Skin skin, String name, boolean useBackground) {
         final ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle();
         imageButtonStyle.imageUp = skin.newDrawable(name, COLOR_UP_2);
         imageButtonStyle.imageDown = skin.newDrawable(name, useBackground ? COLOR_UP_2 : COLOR_DOWN_2);
@@ -35,6 +36,18 @@ public class Style {
         imageButtonStyle.over = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DOWN) : null;
         imageButtonStyle.disabled = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DISABLED) : null;
         return imageButtonStyle;
+    }
+
+    public static ImageTextButton.ImageTextButtonStyle createImageTextButtonStyle(Skin skin, String name) {
+        final ImageTextButton.ImageTextButtonStyle imageTextButtonStyle = new ImageTextButton.ImageTextButtonStyle();
+        imageTextButtonStyle.font = skin.getFont(Style.DEFAULT);
+        imageTextButtonStyle.up = skin.newDrawable(Style.Drawables.button, Style.COLOR_UP);
+        imageTextButtonStyle.over = skin.newDrawable(Style.Drawables.button, Style.COLOR_OVER);
+        imageTextButtonStyle.down = skin.newDrawable(Style.Drawables.button, Style.COLOR_DOWN);
+        imageTextButtonStyle.checked = null;
+        imageTextButtonStyle.fontColor = Color.WHITE;
+        imageTextButtonStyle.imageUp = skin.newDrawable(name, Style.COLOR_UP_2);
+        return imageTextButtonStyle;
     }
 
     public static Image newBackgroundImage(Skin skin) {

@@ -113,7 +113,7 @@ public class SongListLayout extends BaseUiLayout {
         tablePages.setFillParent(true);
         stagePages.addActor(tablePages);
 
-        prevPageButon = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, true));
+        prevPageButon = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, true));
         prevPageButon.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -125,7 +125,7 @@ public class SongListLayout extends BaseUiLayout {
         pageLabel = new Label("page 0/0", skin);
         tablePages.add(pageLabel).expandX().center();
 
-        nextPageButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
+        nextPageButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

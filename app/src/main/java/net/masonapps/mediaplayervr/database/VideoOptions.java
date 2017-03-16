@@ -10,6 +10,13 @@ import com.badlogic.gdx.math.Vector2;
  */
 
 public class VideoOptions {
+    public static final float MIN_ZOOM = 0.1f;
+    public static final float MAX_ZOOM = 2f;
+    public static final int DEFAULT_MODE_SELECTION = 0;
+    public static final int DEFAULT_ASPECT_SELECTION = 0;
+    public static final float DEFAULT_IPD = 0f;
+    public static final float DEFAULT_ZOOM = 1f;
+    private static final Vector2 DEFAULT_TEXTURE_STRETCH = new Vector2();
     @Nullable
     public String title;
     public long id;
@@ -17,23 +24,31 @@ public class VideoOptions {
     public int modeSelection;
     public int aspectRatioSelection;
     public Vector2 textureStretch;
-    public float ipd;
     public float zoom;
+    public float ipd;
 
     public VideoOptions() {
         title = null;
         id = -1;
         useCustomCamera = false;
-        modeSelection = 0;
-        aspectRatioSelection = 0;
-        textureStretch = new Vector2();
-        ipd = 0f;
-        zoom = 1f;
+        modeSelection = DEFAULT_MODE_SELECTION;
+        aspectRatioSelection = DEFAULT_ASPECT_SELECTION;
+        textureStretch = new Vector2(DEFAULT_TEXTURE_STRETCH);
+        ipd = DEFAULT_IPD;
+        zoom = DEFAULT_ZOOM;
+    }
+
+    public void restoreDefaults() {
+        useCustomCamera = false;
+        aspectRatioSelection = DEFAULT_ASPECT_SELECTION;
+        textureStretch = new Vector2(DEFAULT_TEXTURE_STRETCH);
+        ipd = DEFAULT_IPD;
+        zoom = DEFAULT_ZOOM;
     }
 
     @Override
     public String toString() {
-        return "title = " + (title == null ? "null" : title.replace('.', ',')) + "\n" +
+        return "title = " + (title == null ? "null" : title.replace('.', '_')) + "\n" +
                 "id = " + id + "\n" +
                 "useCustomCamera = " + useCustomCamera + "\n" +
                 "modeSelection = " + modeSelection + "\n" +

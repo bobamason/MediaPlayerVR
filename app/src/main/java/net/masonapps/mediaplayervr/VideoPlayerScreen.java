@@ -253,8 +253,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 break;
             case DaydreamButtonEvent.BUTTON_APP:
                 if (event.action == DaydreamButtonEvent.ACTION_UP) {
-                    if (ui.thumbSeekbarLayout.isVisible())
-                        ui.thumbSeekbarLayout.setVisible(false);
+                    if (ui.thumbSeekbarLayout.isVisible()) {
+                        setUiVisible(false);
+                        ui.hideThumbSeekbarLayout();
+                    }
                     else
                         ui.backButtonClicked();
                 }
@@ -324,6 +326,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     public VideoOptions getVideoOptions() {
         return videoOptions;
+    }
+
+    public void restoreDefaultVideoOptions() {
+        videoOptions.restoreDefaults();
+    }
+
+    public void restoreDefaultGlobalSettings() {
+        GlobalSettings.getInstance().restoreDefault();
     }
 
     public void setUseCustomCamera(boolean useCustomCamera) {

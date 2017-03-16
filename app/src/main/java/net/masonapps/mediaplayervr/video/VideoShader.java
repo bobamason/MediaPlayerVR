@@ -27,9 +27,17 @@ public class VideoShader extends BaseShader {
     private final int u_srcRect = register(new Uniform("u_srcRect"));
     private final int u_dstRect = register(new Uniform("u_dstRect"));
     private final int u_clip = register(new Uniform("u_clip"));
+    private final int u_tint = register(new Uniform("u_tint"));
+    private final int u_brightness = register(new Uniform("u_brightness"));
+    private final int u_contrast = register(new Uniform("u_contrast"));
+    private final int u_saturation = register(new Uniform("u_saturation"));
     private final ShaderProgram program;
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
+    private float tint = 0f;
+    private float brightness = 0f;
+    private float contrast = 1f;
+    private float saturation = 1f;
     private int textureId = -1;
 
     public VideoShader() {
@@ -66,9 +74,7 @@ public class VideoShader extends BaseShader {
 
     @Override
     public boolean canRender(Renderable instance) {
-        return true;
-//        return instance.material.has(ColorAttribute.Diffuse);
-//        & instance.material.has(TimeAttribute.ID);
+        return textureId >= 0;
     }
 
     @Override
@@ -82,12 +88,14 @@ public class VideoShader extends BaseShader {
     @Override
     public void render(Renderable renderable) {
         set(u_worldTrans, renderable.worldTransform);
-        if(textureId >= 0) {
-            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
-        }
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         set(u_srcRect, srcRect.x, srcRect.y, srcRect.width, srcRect.height);
         set(u_dstRect, dstRect.x, dstRect.y, dstRect.width, dstRect.height);
         set(u_clip, srcRect.x, srcRect.y, srcRect.x + srcRect.width, srcRect.y + srcRect.height);
+        set(u_tint, tint);
+        set(u_brightness, brightness);
+        set(u_contrast, contrast);
+        set(u_saturation, saturation);
         renderable.meshPart.render(program);
     }
 
@@ -116,6 +124,38 @@ public class VideoShader extends BaseShader {
 
     public Rectangle getDstRect() {
         return dstRect;
+    }
+
+    public float getTint() {
+        return tint;
+    }
+
+    public void setTint(float tint) {
+        this.tint = tint;
+    }
+
+    public float getBrightness() {
+        return brightness;
+    }
+
+    public void setBrightness(float brightness) {
+        this.brightness = brightness;
+    }
+
+    public float getContrast() {
+        return contrast;
+    }
+
+    public void setContrast(float contrast) {
+        this.contrast = contrast;
+    }
+
+    public float getSaturation() {
+        return saturation;
+    }
+
+    public void setSaturation(float saturation) {
+        this.saturation = saturation;
     }
 
     public void setTextureId(int textureId) {

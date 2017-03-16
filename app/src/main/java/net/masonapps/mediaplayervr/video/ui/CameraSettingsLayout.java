@@ -1,7 +1,5 @@
 package net.masonapps.mediaplayervr.video.ui;
 
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -10,13 +8,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
+import net.masonapps.mediaplayervr.GlobalSettings;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
-import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 /**
  * Created by Bob on 2/8/2017.
@@ -26,10 +24,7 @@ public class CameraSettingsLayout extends SingleStageUi {
 
     private static final float STEP = 0.01f;
     private final Table table;
-    //    private final Window window;
     private final VideoPlayerGUI videoPlayerGUI;
-    private VirtualStage stage;
-    private Vector2 stretch = new Vector2();
     private float z = 1f;
     private float ipd = 0f;
 
@@ -39,7 +34,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         stage.setPosition(0, 0, -2.5f);
         stage.addActor(Style.newBackgroundImage(skin));
 
-        final ImageButton closeButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
+        final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -55,38 +50,9 @@ public class CameraSettingsLayout extends SingleStageUi {
         table.center();
 
         final VideoOptions videoOptions = videoPlayerGUI.getVideoOptions();
-        z = videoOptions.zoom;
-        videoPlayerGUI.getVideoPlayerScreen().setZoom(z);
-        final Label zoomLabel = new Label("Zoom " + Math.round(z * 100f) + "%", skin);
 
-        final ImageButton.ImageButtonStyle leftButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
-        final ImageButton.ImageButtonStyle rightButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false);
-
-        final ImageButton zLeft = new ImageButton(leftButtonStyle);
-        zLeft.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                z -= STEP;
-                videoPlayerGUI.getVideoPlayerScreen().setZ(z);
-                videoOptions.zoom = z;
-                zoomLabel.setText("Zoom " + Math.round(z * 100f) + "%");
-            }
-        });
-        table.add(zLeft).pad(padding);
-
-        table.add(zoomLabel).pad(padding);
-
-        final ImageButton zRight = new ImageButton(rightButtonStyle);
-        zRight.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                z += STEP;
-                videoPlayerGUI.getVideoPlayerScreen().setZ(z);
-                videoOptions.zoom = z;
-                zoomLabel.setText("Zoom " + Math.round(z * 100f) + "%");
-            }
-        });
-        table.add(zRight).pad(padding).row();
+        final ImageButton.ImageButtonStyle leftButtonStyle = Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
+        final ImageButton.ImageButtonStyle rightButtonStyle = Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false);
 
         videoPlayerGUI.getVideoPlayerScreen().setIpd(videoOptions.ipd);
         final Label ipdLabel = new Label("IPD " + Math.round(videoPlayerGUI.getVideoPlayerScreen().getIpd() * 100) + "%", skin);
@@ -118,47 +84,51 @@ public class CameraSettingsLayout extends SingleStageUi {
         });
         table.add(ipdRight).pad(padding).row();
 
-        final TextButton camButton = new TextButton("Zoom", skin);
-        camButton.setChecked(videoOptions.useCustomCamera);
-        camButton.addListener(new ClickListener() {
+        final TextButton zoomButton = new TextButton("Zoom", skin);
+        zoomButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout();
+                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.ZOOM);
             }
         });
-        table.add(camButton).colspan(3).pad(padding).row();
+        table.add(zoomButton).colspan(3).padBottom(padding).row();
+
+        final TextButton tintButton = new TextButton("Tint", skin);
+        tintButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.TINT);
+            }
+        });
+        table.add(tintButton).colspan(3).padBottom(padding).row();
+
+        final TextButton brightnessButton = new TextButton("Brightness", skin);
+        brightnessButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.BRIGHTNESS);
+            }
+        });
+        table.add(brightnessButton).colspan(3).padBottom(padding).row();
+
+        final TextButton contrastButton = new TextButton("Contrast", skin);
+        contrastButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.CONTRAST);
+            }
+        });
+        table.add(contrastButton).colspan(3).padBottom(padding).row();
+
+        final TextButton saturationButton = new TextButton("Saturation", skin);
+        saturationButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.SATURATION);
+            }
+        });
+        table.add(saturationButton).colspan(3).padBottom(padding).row();
+
         setVisible(false);
-    }
-
-    @Override
-    public void update() {
-        stage.act();
-    }
-
-    @Override
-    public void draw(Camera camera) {
-        stage.draw(camera);
-    }
-
-    @Override
-    public void attach(VrUiContainer container) {
-        stage.addActor(table);
-        container.addProcessor(stage);
-    }
-
-    @Override
-    public boolean isVisible() {
-        return stage.isVisible();
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        stage.setVisible(visible);
-    }
-
-    @Override
-    public void dispose() {
-        if (stage != null)
-            stage.dispose();
     }
 }

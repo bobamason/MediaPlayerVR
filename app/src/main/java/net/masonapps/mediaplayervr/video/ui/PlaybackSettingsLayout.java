@@ -37,7 +37,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         stage.setPosition(0, 0, -2.5f);
         stage.addActor(Style.newBackgroundImage(skin));
 
-        final ImageButton closeButton = new ImageButton(Style.getImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
+        final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -55,8 +55,8 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         df.setDecimalSeparatorAlwaysShown(true);
         final VrVideoPlayer player = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
 
-        final ImageButton.ImageButtonStyle leftButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
-        final ImageButton.ImageButtonStyle rightButtonStyle = Style.getImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false);
+        final ImageButton.ImageButtonStyle leftButtonStyle = Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
+        final ImageButton.ImageButtonStyle rightButtonStyle = Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false);
 
         final VideoOptions videoOptions = videoPlayerGUI.getVideoOptions();
         stretch.set(videoOptions.textureStretch);

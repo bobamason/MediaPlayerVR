@@ -427,6 +427,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.modelSize = modelSize;
     }
 
+    public VideoShader getShader() {
+        return shader;
+    }
+
     public interface VideoSizeListener {
         void onVideoSizeChanged(float width, float height);
     }

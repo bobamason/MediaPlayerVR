@@ -42,6 +42,11 @@ public class MainActivity extends VrActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
     protected void onDestroy() {
         if (videoOptionsDatabaseHelper != null)
             videoOptionsDatabaseHelper.close();
