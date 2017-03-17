@@ -75,7 +75,7 @@ public class MediaPlayerGame extends VrGame {
         globalSettings.tint = sharedPreferences.getFloat(GlobalSettings.KEY_TINT, globalSettings.tint);
         globalSettings.brightness = sharedPreferences.getFloat(GlobalSettings.KEY_BRIGHTNESS, globalSettings.brightness);
         globalSettings.contrast = sharedPreferences.getFloat(GlobalSettings.KEY_CONTRAST, globalSettings.contrast);
-        globalSettings.saturation = sharedPreferences.getFloat(GlobalSettings.KEY_SATURATION, globalSettings.saturation);
+        globalSettings.colorTemp = sharedPreferences.getFloat(GlobalSettings.KEY_COLOR_TEMP, globalSettings.colorTemp);
         skin = new Skin();
         assets = new AssetManager();
         assets.load(Style.ATLAS_FILE, TextureAtlas.class);
@@ -96,7 +96,7 @@ public class MediaPlayerGame extends VrGame {
         editor.putFloat(GlobalSettings.KEY_TINT, globalSettings.tint);
         editor.putFloat(GlobalSettings.KEY_BRIGHTNESS, globalSettings.brightness);
         editor.putFloat(GlobalSettings.KEY_CONTRAST, globalSettings.contrast);
-        editor.putFloat(GlobalSettings.KEY_SATURATION, globalSettings.saturation);
+        editor.putFloat(GlobalSettings.KEY_COLOR_TEMP, globalSettings.colorTemp);
         editor.apply();
         super.pause();
     }

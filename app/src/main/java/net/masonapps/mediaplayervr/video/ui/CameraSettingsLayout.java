@@ -27,9 +27,9 @@ public class CameraSettingsLayout extends SingleStageUi {
     private float ipd = 0f;
 
     public CameraSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
-        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());
+        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 480), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
-        stage.setPosition(0, 0, -2.5f);
+        stage.setPosition(0, 0.5f, -2.5f);
         stage.addActor(Style.newBackgroundImage(skin));
 
         final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
@@ -121,7 +121,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         saturationButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.SATURATION);
+                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.COLOR_TEMPERATURE);
             }
         });
         table.add(saturationButton).colspan(3).padBottom(padding).row();

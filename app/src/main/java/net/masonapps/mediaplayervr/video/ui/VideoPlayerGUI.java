@@ -78,11 +78,11 @@ public class VideoPlayerGUI extends BaseUiLayout {
                         thumbSeekbarLayout.label.setText("Contrast");
                         VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setContrast(contrast);
                         break;
-                    case GlobalSettings.SATURATION:
-                        final float saturation = MathUtils.lerp(GlobalSettings.MIN_SATURATION, GlobalSettings.MAX_SATURATION, value);
-                        globalSettings.saturation = saturation;
-                        thumbSeekbarLayout.label.setText("Saturation");
-                        VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setSaturation(saturation);
+                    case GlobalSettings.COLOR_TEMPERATURE:
+                        final float colorTemp = MathUtils.lerp(GlobalSettings.MIN_COLOR_TEMP, GlobalSettings.MAX_COLOR_TEMP, value);
+                        globalSettings.colorTemp = colorTemp;
+                        thumbSeekbarLayout.label.setText("Color Temperature");
+                        VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setColorTemp(colorTemp);
                         break;
                     default:
                         thumbSeekbarLayout.setVisible(false);
@@ -220,23 +220,23 @@ public class VideoPlayerGUI extends BaseUiLayout {
                 break;
             case GlobalSettings.TINT:
                 final float tint = globalSettings.tint;
-                thumbSeekbarLayout.label.setText("Tint");
+//                thumbSeekbarLayout.label.setText("Tint");
                 thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_TINT, GlobalSettings.MAX_TINT, tint));
                 break;
             case GlobalSettings.BRIGHTNESS:
                 final float brightness = globalSettings.brightness;
-                thumbSeekbarLayout.label.setText("Brightness");
+//                thumbSeekbarLayout.label.setText("Brightness");
                 thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_BRIGHTNESS, GlobalSettings.MAX_BRIGHTNESS, brightness));
                 break;
             case GlobalSettings.CONTRAST:
                 final float contrast = globalSettings.contrast;
-                thumbSeekbarLayout.label.setText("Contrast");
+//                thumbSeekbarLayout.label.setText("Contrast");
                 thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_CONTRAST, GlobalSettings.MAX_CONTRAST, contrast));
                 break;
-            case GlobalSettings.SATURATION:
-                final float saturation = globalSettings.saturation;
-                thumbSeekbarLayout.label.setText("Saturation");
-                thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_SATURATION, GlobalSettings.MAX_SATURATION, saturation));
+            case GlobalSettings.COLOR_TEMPERATURE:
+                final float colorTemp = globalSettings.colorTemp;
+//                thumbSeekbarLayout.label.setText("Color Temperature");
+                thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_COLOR_TEMP, GlobalSettings.MAX_COLOR_TEMP, colorTemp));
                 break;
             default:
                 return;

@@ -26,6 +26,7 @@ public class VrUiContainer implements VrInputProcessor {
     private final Quaternion rotation = new Quaternion();
     private final Quaternion rotator = new Quaternion();
     private final Matrix4 transform = new Matrix4();
+    private final Matrix4 invTransform = new Matrix4();
     private final Ray transformedRay = new Ray();
     private boolean isCursorOver = false;
     private Vector2 hitPoint2DPixels = new Vector2();
@@ -172,20 +173,20 @@ public class VrUiContainer implements VrInputProcessor {
 
     public void recalculateTransform() {
         transform.idt().set(position, rotation);
+        invTransform.set(transform).inv();
         updated = true;
     }
 
     @Override
     public boolean performRayTest(Ray ray) {
         if (!updated) recalculateTransform();
-        tmpM.set(transform).inv();
-        transformedRay.origin.set(ray.origin).mul(tmpM);
-        transformedRay.direction.set(ray.direction).mul(tmpM);
+        transformedRay.origin.set(ray.origin).mul(invTransform);
+        transformedRay.direction.set(ray.direction).mul(invTransform);
         for (VrInputProcessor inputProcessor : stages) {
             if (inputProcessor.performRayTest(transformedRay)) {
                 focusedStage = inputProcessor;
                 hitPoint2DPixels.set(inputProcessor.getHitPoint2D());
-                hitPoint3D.set(inputProcessor.getHitPoint3D());
+                hitPoint3D.set(inputProcessor.getHitPoint3D()).mul(transform);
                 isCursorOver = true;
                 return true;
             }

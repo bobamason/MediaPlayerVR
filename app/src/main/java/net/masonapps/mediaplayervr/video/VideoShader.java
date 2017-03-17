@@ -30,14 +30,14 @@ public class VideoShader extends BaseShader {
     private final int u_tint = register(new Uniform("u_tint"));
     private final int u_brightness = register(new Uniform("u_brightness"));
     private final int u_contrast = register(new Uniform("u_contrast"));
-    private final int u_saturation = register(new Uniform("u_saturation"));
+    private final int u_colorTemp = register(new Uniform("u_colorTemp"));
     private final ShaderProgram program;
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
     private float tint = 0f;
     private float brightness = 0f;
     private float contrast = 1f;
-    private float saturation = 1f;
+    private float colorTemp = 1f;
     private int textureId = -1;
 
     public VideoShader() {
@@ -95,7 +95,7 @@ public class VideoShader extends BaseShader {
         set(u_tint, tint);
         set(u_brightness, brightness);
         set(u_contrast, contrast);
-        set(u_saturation, saturation);
+        set(u_colorTemp, colorTemp);
         renderable.meshPart.render(program);
     }
 
@@ -150,12 +150,12 @@ public class VideoShader extends BaseShader {
         this.contrast = contrast;
     }
 
-    public float getSaturation() {
-        return saturation;
+    public float getColorTemp() {
+        return colorTemp;
     }
 
-    public void setSaturation(float saturation) {
-        this.saturation = saturation;
+    public void setColorTemp(float colorTemp) {
+        this.colorTemp = colorTemp;
     }
 
     public void setTextureId(int textureId) {

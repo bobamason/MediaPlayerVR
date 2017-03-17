@@ -72,6 +72,8 @@ public class Style {
         public static final String ic_volume_down_white_48dp = "ic_volume_down_white_48dp";
         public static final String ic_volume_off_white_48dp = "ic_volume_off_white_48dp";
         public static final String ic_volume_up_white_48dp = "ic_volume_up_white_48dp";
+        public static final String ic_brightness_white_48dp = "ic_brightness_white_48dp";
+        public static final String ic_palette_white_48dp = "ic_palette_white_48dp";
         public static final String window = "window";
         public static final String button = "button";
         public static final String round_button = "round_button";
