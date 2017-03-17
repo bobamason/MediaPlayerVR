@@ -14,7 +14,7 @@ public class VideoOptions {
     public static final float MAX_ZOOM = 2f;
     public static final int DEFAULT_MODE_SELECTION = 0;
     public static final int DEFAULT_ASPECT_SELECTION = 0;
-    public static final float DEFAULT_IPD = 0f;
+    public static final float DEFAULT_IPD = 1f;
     public static final float DEFAULT_ZOOM = 1f;
     private static final Vector2 DEFAULT_TEXTURE_STRETCH = new Vector2();
     @Nullable

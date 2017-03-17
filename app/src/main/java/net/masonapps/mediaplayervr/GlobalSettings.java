@@ -12,8 +12,8 @@ public class GlobalSettings {
     public static final int CONTRAST = 4;
     public static final int SATURATION = 5;
 
-    public static final float MIN_TINT = -30f;
-    public static final float MAX_TINT = 30f;
+    public static final float MIN_TINT = 0f;
+    public static final float MAX_TINT = 1f;
     public static final String KEY_TINT = "tint";
 
     public static final float MIN_BRIGHTNESS = -0.5f;

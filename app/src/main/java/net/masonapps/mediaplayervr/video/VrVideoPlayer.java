@@ -49,7 +49,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     protected VideoMode videoMode;
     protected float aspectRatio = 1f;
     //    protected float targetAspectRatio = 1f;
-    protected float modelSize = 10f;
+    protected float modelSize = 20f;
     protected Context context;
     private int width;
     private int height;

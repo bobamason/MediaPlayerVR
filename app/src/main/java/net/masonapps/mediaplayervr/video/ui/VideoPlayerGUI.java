@@ -97,6 +97,12 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     @Override
+    public void update() {
+        super.update();
+        mainLayout.update();
+    }
+
+    @Override
     public void attach(VrUiContainer container) {
         mainLayout.attach(container);
         modeLayout.attach(container);

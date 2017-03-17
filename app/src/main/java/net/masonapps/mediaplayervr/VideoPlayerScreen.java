@@ -165,7 +165,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
 
             final float defaultIpd = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f;
-            translation.set(getRightVector()).scl(defaultIpd * (1f + ipd)).scl(eye.getType() == Eye.Type.LEFT ? -1f : 1f);
+        translation.set(getRightVector()).scl(defaultIpd * ipd).scl(eye.getType() == Eye.Type.LEFT ? -1f : 1f);
             translation.add(tempV.set(getForwardVector()).scl((1f - zoom) * -4f));
             videoCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
             videoCamera.projection.set(eye.getPerspective(videoCamera.near, videoCamera.far));
@@ -313,7 +313,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     public void setIpd(float ipd) {
-        this.ipd = MathUtils.clamp(ipd, 0f, 1f);
+        this.ipd = MathUtils.clamp(ipd, -1f, 2f);
 //        videoPlayer.set3dShift(ipd);
     }
 

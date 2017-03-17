@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
+import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VirtualStage;
 
@@ -47,7 +48,7 @@ public class ThumbSeekbarLayout extends SingleStageUi {
         switch (event.action) {
             case DaydreamTouchEvent.ACTION_DOWN:
                 activated = false;
-                downX = lastX = currentX = event.x;
+                downX = currentX = event.x;
                 break;
             case DaydreamTouchEvent.ACTION_MOVE:
                 currentX = event.x;
@@ -57,7 +58,7 @@ public class ThumbSeekbarLayout extends SingleStageUi {
                     }
                 } else {
                     if (listener != null) {
-                        slider.setValue(MathUtils.clamp(slider.getValue() + (currentX - lastX) * SENSITIVITY, 0f, 1f));
+                        slider.setValue(MathUtils.clamp(slider.getValue() + (currentX - downX) * GdxVr.graphics.getDeltaTime() * SENSITIVITY, 0f, 1f));
                         listener.onSeekChanged(slider.getValue());
                     }
                 }
