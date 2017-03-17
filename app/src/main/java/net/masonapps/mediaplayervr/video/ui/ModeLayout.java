@@ -3,7 +3,6 @@ package net.masonapps.mediaplayervr.video.ui;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
@@ -65,7 +64,6 @@ public class ModeLayout extends SingleStageUi {
         modeNameMap.put(VideoMode.TB360, modes.get(8));
     }
 
-    private final Table table;
     private final VideoPlayerGUI videoPlayerGUI;
     private ArrayList<TextButton> textButtons = new ArrayList<>();
 
@@ -85,7 +83,6 @@ public class ModeLayout extends SingleStageUi {
         stage.addActor(closeButton);
 
         closeButton.setPosition(stage.getWidth() - padding, stage.getHeight() - padding, Align.topRight);
-        table = new Table(skin);
         table.padTop(closeButton.getHeight());
         table.setFillParent(true);
         table.center();

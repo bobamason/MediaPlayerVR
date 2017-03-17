@@ -3,7 +3,6 @@ package net.masonapps.mediaplayervr.video.ui;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
@@ -25,10 +24,8 @@ public class AspectRatioLayout extends SingleStageUi {
     private static final String[] ratioLabels = {"AUTO", "1:1", "4:3", "16:10", "16:9", "2:1"};
     private static final float[] ratios = new float[]{-1f, 1f, 4f / 3f, 16f / 10f, 16f / 9f, 2f / 1f};
 
-    private final Table table;
     private final VideoPlayerGUI videoPlayerGUI;
     private ArrayList<TextButton> textButtons = new ArrayList<>();
-    private VirtualStage stage;
 
     public AspectRatioLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());
@@ -46,7 +43,6 @@ public class AspectRatioLayout extends SingleStageUi {
         stage.addActor(closeButton);
 
         closeButton.setPosition(stage.getWidth() - padding, stage.getHeight() - padding, Align.topRight);
-        table = new Table(skin);
         table.padTop(closeButton.getHeight());
         table.setFillParent(true);
         table.center();

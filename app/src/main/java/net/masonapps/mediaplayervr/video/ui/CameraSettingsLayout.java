@@ -3,7 +3,6 @@ package net.masonapps.mediaplayervr.video.ui;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
@@ -23,7 +22,6 @@ import org.masonapps.libgdxgooglevr.input.VirtualStage;
 public class CameraSettingsLayout extends SingleStageUi {
 
     private static final float STEP = 0.01f;
-    private final Table table;
     private final VideoPlayerGUI videoPlayerGUI;
     private float z = 1f;
     private float ipd = 0f;
@@ -44,7 +42,6 @@ public class CameraSettingsLayout extends SingleStageUi {
         stage.addActor(closeButton);
 
         closeButton.setPosition(stage.getWidth() - padding, stage.getHeight() - padding, Align.topRight);
-        table = new Table(skin);
         table.padTop(closeButton.getHeight());
         table.setFillParent(true);
         table.center();

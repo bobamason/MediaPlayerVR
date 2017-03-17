@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
@@ -24,9 +23,7 @@ import java.text.DecimalFormat;
 public class PlaybackSettingsLayout extends SingleStageUi {
 
     private static final float STEP = 0.01f;
-    private final Table table;
     private final VideoPlayerGUI videoPlayerGUI;
-    private VirtualStage stage;
     private Vector2 stretch = new Vector2();
     private float s = 10f;
     private DecimalFormat df = new DecimalFormat("0.00");
@@ -47,7 +44,6 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         stage.addActor(closeButton);
 
         closeButton.setPosition(stage.getWidth() - padding, stage.getHeight() - padding, Align.topRight);
-        table = new Table(skin);
         table.padTop(closeButton.getHeight());
         table.setFillParent(true);
         table.center();

@@ -143,6 +143,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void update() {
         super.update();
         container.act();
+        ui.update();
         videoPlayer.update();
     }
 
