@@ -73,7 +73,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 //        label3d.setFontSize(0.1f);
 //        label3d.setPosition(-2f, 2f, -4f);
 //        label3d.setAlignment(Align.center);
-        setBackgroundColor(Color.DARK_GRAY);
+        setBackgroundColor(Color.BLACK);
         container = new VrUiContainer();
         initStage();
         switchToStartScreen();
@@ -254,34 +254,34 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                 }
             }
         });
-        tableStart.add(videosButton).center().pad(6);
+        tableStart.add(videosButton).center().pad(6).row();
 
-//        final TextButton musicButton = new TextButton(context.getString(R.string.music), skin);
-//        musicButton.addListener(new ClickListener() {
-//            @Override
-//            public void clicked(InputEvent event, float x, float y) {
-//                if (!isLoading()) {
-//                    setLoading(true);
-//                    new Thread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            final List<AlbumDetails> list = MediaUtils.getAlbumList(context);
-//                            Gdx.app.postRunnable(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    layoutAlbumList.clear();
-//                                    layoutAlbumList.getList().addAll(list);
-//                                    layoutAlbumList.displayList(0);
-//                                    switchToAlbumScreen();
-//                                    setLoading(false);
-//                                }
-//                            });
-//                        }
-//                    }).start();
-//                }
-//            }
-//        });
-//        tableStart.add(musicButton).center().pad(6);
+        final ImageTextButton musicButton = new ImageTextButton(context.getString(R.string.music), Style.createImageTextButtonStyle(skin, Style.Drawables.ic_album_white_48dp));
+        musicButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!isLoading()) {
+                    setLoading(true);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final List<AlbumDetails> list = MediaUtils.getAlbumList(context);
+                            Gdx.app.postRunnable(new Runnable() {
+                                @Override
+                                public void run() {
+                                    layoutAlbumList.clear();
+                                    layoutAlbumList.getList().addAll(list);
+                                    layoutAlbumList.displayList(0);
+                                    switchToAlbumScreen();
+                                    setLoading(false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+            }
+        });
+        tableStart.add(musicButton).center().pad(6);
     }
 
     @Override

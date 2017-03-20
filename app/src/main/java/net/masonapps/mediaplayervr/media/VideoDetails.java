@@ -12,4 +12,5 @@ public class VideoDetails extends MediaDetails {
     public int width;
     public int height;
     public int duration;
+    public String tags;
 }

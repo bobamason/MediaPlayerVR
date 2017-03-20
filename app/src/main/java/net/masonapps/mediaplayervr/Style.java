@@ -15,12 +15,12 @@ public class Style {
     public static final String FONT_REGION = "Roboto-hdpi";
     public static final String FONT_FILE = "skin/Roboto-hdpi.fnt";
     public static final String ATLAS_FILE = "skin/uiskin.pack";
-    public static final Color COLOR_UP = new Color(0x0088aaff);
-    public static final Color COLOR_DOWN = new Color(0x00aad4ff);
-    public static final Color COLOR_OVER = new Color(0x2ad4ffff);
+    public static final Color COLOR_UP = new Color(0x00000000);
+    public static final Color COLOR_DOWN = new Color(0xcccccc99);
+    public static final Color COLOR_OVER = new Color(0xcccccc66);
     public static final Color COLOR_UP_2 = new Color(Color.WHITE);
-    public static final Color COLOR_DOWN_2 = new Color(Color.GRAY);
-    public static final Color COLOR_OVER_2 = new Color(Color.LIGHT_GRAY);
+    public static final Color COLOR_DOWN_2 = new Color(Color.LIGHT_GRAY);
+    public static final Color COLOR_OVER_2 = new Color(Color.GRAY);
     public static final Color COLOR_DISABLED = new Color(Color.GRAY);
     public static final Color COLOR_WINDOW = new Color(Color.DARK_GRAY);
     public static final String DEFAULT = "default";
@@ -31,10 +31,12 @@ public class Style {
         final ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle();
         imageButtonStyle.imageUp = skin.newDrawable(name, COLOR_UP_2);
         imageButtonStyle.imageDown = skin.newDrawable(name, useBackground ? COLOR_UP_2 : COLOR_DOWN_2);
+        imageButtonStyle.imageOver = skin.newDrawable(name, useBackground ? COLOR_UP_2 : COLOR_OVER_2);
+        imageButtonStyle.imageDisabled = useBackground ? skin.newDrawable(name, COLOR_DISABLED) : null;
         imageButtonStyle.up = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_UP) : null;
         imageButtonStyle.down = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DOWN) : null;
-        imageButtonStyle.over = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DOWN) : null;
-        imageButtonStyle.disabled = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DISABLED) : null;
+        imageButtonStyle.over = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_OVER) : null;
+        imageButtonStyle.disabled = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_UP) : null;
         return imageButtonStyle;
     }
 

@@ -26,7 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
-import net.masonapps.mediaplayervr.audiovisualization.OpenWorldVisualizerScreen;
+import net.masonapps.mediaplayervr.audiovisualization.tests.MusicTunnelScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.media.SongDetails;
@@ -144,7 +144,7 @@ public class MediaPlayerGame extends VrGame {
     }
 
     private void addSliderStyle() {
-        skin.add("default-horizontal", new Slider.SliderStyle(skin.newDrawable(Style.Drawables.slider, Style.COLOR_UP), skin.newDrawable(Style.Drawables.slider_knob, Style.COLOR_UP)), Slider.SliderStyle.class);
+        skin.add("default-horizontal", new Slider.SliderStyle(skin.newDrawable(Style.Drawables.slider, Style.COLOR_UP_2), skin.newDrawable(Style.Drawables.slider_knob, Style.COLOR_UP_2)), Slider.SliderStyle.class);
     }
 
     private void addButtonStyle() {
@@ -210,7 +210,7 @@ public class MediaPlayerGame extends VrGame {
     }
 
     public void playMusic(List<SongDetails> songList, int index) {
-        setScreen(new OpenWorldVisualizerScreen(this, context, songList, index));
+        setScreen(new MusicTunnelScreen(this, context, songList, index));
     }
 
     @Override

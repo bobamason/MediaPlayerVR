@@ -27,7 +27,7 @@ public class LoadingScreen extends VrWorldScreen {
 
     public LoadingScreen(VrGame game) {
         super(game);
-        setBackgroundColor(Color.DARK_GRAY);
+        setBackgroundColor(Color.BLACK);
         getVrCamera().near = 0.1f;
         final Model rect = ModelGenerator.createRectScreen(new ModelBuilder(), 3f, 0.25f);
         final Texture texture = new Texture("loading.png");

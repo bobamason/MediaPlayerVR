@@ -50,6 +50,9 @@ public abstract class VrApplicationAdapter implements ApplicationListener {
 //        cursor.setActivation(floatAction.getValue());
     }
 
+    public void preRender() {
+    }
+
     public void render(Camera camera, int whichEye) {
     }
 

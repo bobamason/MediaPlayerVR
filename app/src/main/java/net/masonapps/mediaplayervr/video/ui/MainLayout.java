@@ -51,7 +51,7 @@ public class MainLayout extends BaseUiLayout {
         videoStage.addActor(Style.newBackgroundImage(skin));
         optionsStage.addActor(Style.newBackgroundImage(skin));
 
-        final ImageButton backButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, false));
+        final ImageButton backButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_arrow_back_white_48dp, true));
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

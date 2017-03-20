@@ -20,7 +20,7 @@ public class MediaUtils {
 
     public static List<VideoDetails> getVideoList(Context context) {
         ArrayList<VideoDetails> list = new ArrayList<>();
-        final String[] projection = {MediaStore.Video.Media._ID, MediaStore.Video.Media.DATA, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.WIDTH, MediaStore.Video.Media.HEIGHT, MediaStore.Video.Media.DURATION, MediaStore.Video.Media.MINI_THUMB_MAGIC};
+        final String[] projection = {MediaStore.Video.Media._ID, MediaStore.Video.Media.DATA, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.WIDTH, MediaStore.Video.Media.HEIGHT, MediaStore.Video.Media.DURATION, MediaStore.Video.Media.TAGS};
         Cursor c = context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, projection, null, null, MediaStore.Video.Media.DISPLAY_NAME + " ASC");
         if (c != null) {
             try {
@@ -33,6 +33,7 @@ public class MediaUtils {
                         videoDetails.width = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH));
                         videoDetails.height = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT));
                         videoDetails.duration = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
+                        videoDetails.tags = c.getString(c.getColumnIndexOrThrow(MediaStore.Video.Media.TAGS));
                         list.add(videoDetails);
                     } while (c.moveToNext());
                 }

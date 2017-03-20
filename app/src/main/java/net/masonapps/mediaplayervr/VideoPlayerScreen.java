@@ -3,8 +3,8 @@ package net.masonapps.mediaplayervr;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -74,6 +74,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
+        Log.i(VideoPlayerScreen.class.getSimpleName(), videoDetails.title + ": " + videoDetails.tags);
         this.videoOptions = videoOptions;
         if (this.videoOptions == null) {
             this.videoOptions = new VideoOptions();
@@ -83,6 +84,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
+        final GlobalSettings globalSettings = GlobalSettings.getInstance();
+        videoPlayer.getShader().setBrightness(globalSettings.brightness);
+        videoPlayer.getShader().setContrast(globalSettings.contrast);
+        videoPlayer.getShader().setTint(globalSettings.tint);
+        videoPlayer.getShader().setColorTemp(globalSettings.colorTemp);
         setBackgroundColor(Color.BLACK);
         final SpriteBatch spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);
@@ -151,8 +157,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void onDrawEye(Eye eye) {
         getVrCamera().onDrawEye(eye);
-        Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 //        if (useCustomCamera) {
 //            if (doRatioCalc) {
 //                final FieldOfView eyeFov = eye.getFov();
@@ -183,7 +187,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         getModelBatch().end();
 
         getModelBatch().begin((videoPlayer.useFlatRectangle() || !videoPlayer.isStereoscopic()) ? getVrCamera() : videoCamera);
-        videoPlayer.render(getModelBatch(), eye.getType());
+        videoPlayer.render(getModelBatch(), (videoPlayer.isStereoscopic() && isUiVisible) ? Eye.Type.MONOCULAR : eye.getType());
 //        if (isUiVisible()) {
 //            final float s = videoPlayer.getModelSize();
 //            sphereOutlineInstance.transform.idt().scale(s, s, s);

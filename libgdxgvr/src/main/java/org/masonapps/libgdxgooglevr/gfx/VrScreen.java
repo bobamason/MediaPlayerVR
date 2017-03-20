@@ -36,6 +36,8 @@ public abstract class VrScreen implements Disposable {
 
     public abstract void update();
 
+    public abstract void preRender();
+
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
 
     }

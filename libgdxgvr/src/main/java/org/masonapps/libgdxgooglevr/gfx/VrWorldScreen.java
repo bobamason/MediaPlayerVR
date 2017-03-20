@@ -105,11 +105,15 @@ public abstract class VrWorldScreen extends VrScreen {
     @Override
     @CallSuper
     public void render(Camera camera, int whichEye) {
-        Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         getModelBatch().begin(camera);
         world.render(getModelBatch(), environment);
         getModelBatch().end();
+    }
+
+    @Override
+    public void preRender() {
+        Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
     }
 
     @Override

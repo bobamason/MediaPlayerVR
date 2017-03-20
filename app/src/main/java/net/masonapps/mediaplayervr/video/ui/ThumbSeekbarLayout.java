@@ -20,7 +20,7 @@ import org.masonapps.libgdxgooglevr.input.VirtualStage;
 public class ThumbSeekbarLayout extends SingleStageUi {
 
     private static final float MIN_MOVEMENT = 0.1f;
-    private static final float SENSITIVITY = 0.0625f;
+    private static final float SENSITIVITY = 0.125f;
     public Label labelLow;
     public Label label;
     public Label labelHigh;

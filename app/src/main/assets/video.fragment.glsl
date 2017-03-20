@@ -16,7 +16,7 @@ uniform float u_tint;
 uniform float u_brightness;
 uniform float u_contrast;
 uniform float u_colorTemp;
-const vec3 ONE_HALF = vec3(0.5)
+const vec3 ONE_HALF = vec3(0.5);
 
 //vec3 rgb2hsv(vec3 c)
 //{

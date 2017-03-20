@@ -89,6 +89,9 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
             modelBuilder.part("mesh" + i, strip, GL20.GL_TRIANGLES, new Material(ColorAttribute.createDiffuse(Color.WHITE), ColorAttribute.createAmbient(Color.WHITE), ColorAttribute.createSpecular(Color.WHITE)));
             instances.add(new ModelInstance(modelBuilder.end()));
         }
+
+        setBackgroundColor(Color.BLACK);
+//        super.preRender();
     }
 
     @Override
@@ -109,6 +112,11 @@ public class MusicTunnelScreen extends MusicVisualizerScreen {
         }
         starsInstance.transform.setToTranslation(tmp.set(getVrCamera().position).scl(0.5f));
     }
+
+//    @Override
+//    protected void preRender() {
+//        
+//    }
 
     @Override
     public void render(Camera camera, int whichEye) {

@@ -90,15 +90,6 @@ public class CameraSettingsLayout extends SingleStageUi {
         });
         table.add(zoomButton).colspan(3).padBottom(padding).row();
 
-        final TextButton tintButton = new TextButton("Tint", skin);
-        tintButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.TINT);
-            }
-        });
-        table.add(tintButton).colspan(3).padBottom(padding).row();
-
         final TextButton brightnessButton = new TextButton("Brightness", skin);
         brightnessButton.addListener(new ClickListener() {
             @Override
@@ -117,7 +108,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         });
         table.add(contrastButton).colspan(3).padBottom(padding).row();
 
-        final TextButton saturationButton = new TextButton("Saturation", skin);
+        final TextButton saturationButton = new TextButton("Color Temperature", skin);
         saturationButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -125,6 +116,15 @@ public class CameraSettingsLayout extends SingleStageUi {
             }
         });
         table.add(saturationButton).colspan(3).padBottom(padding).row();
+
+        final TextButton tintButton = new TextButton("Tint", skin);
+        tintButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.TINT);
+            }
+        });
+        table.add(tintButton).colspan(3).padBottom(padding).row();
 
         setVisible(false);
     }
