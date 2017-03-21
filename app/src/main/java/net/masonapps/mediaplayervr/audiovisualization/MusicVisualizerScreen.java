@@ -18,11 +18,16 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.collision.Ray;
 import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.Eye;
@@ -42,14 +47,15 @@ import java.util.List;
 /**
  * Created by Bob on 5/5/2016.
  */
-public abstract class MusicVisualizerScreen extends VrWorldScreen implements Visualizer.OnDataCaptureListener, ExtractorMediaSource.EventListener {
+public abstract class MusicVisualizerScreen extends VrWorldScreen implements Visualizer.OnDataCaptureListener, ExtractorMediaSource.EventListener, ExoPlayer.EventListener {
 
     private static final String TAG = MusicVisualizerScreen.class.getSimpleName();
     private static final float ALPHA = 0.5f;
     protected final float[] intensityValues = new float[3];
     protected final SongDetails currentSongDetails;
     protected final List<SongDetails> songList;
-    private final MainActivity visualizerActivity;
+    private final MainActivity context;
+    private final Object lock = new Object();
     protected boolean hasAudioPermissions = false;
     protected Visualizer visualizer;
     protected int captureSize;
@@ -66,15 +72,17 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
     private AudioManager audioManager;
     private boolean prepared = false;
     private SimpleExoPlayer exoPlayer;
+    private Handler handler;
 
     public MusicVisualizerScreen(VrGame game, Context context, List<SongDetails> songList, int index) {
         super(game);
+        this.context = (MainActivity) context;
         this.songList = songList;
         currentSongDetails = songList.get(index);
-        prepareMedia(context, currentSongDetails.uri);
+        initializeMediaPlayer();
+        playSong(currentSongDetails.uri);
         audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 //        gvrAudioEngine = new GvrAudioEngine(context, GvrAudioEngine.RenderingMode.BINAURAL_HIGH_QUALITY);
-        visualizerActivity = (MainActivity) context;
         for (int i = 0; i < maxValues.length; i++) {
             maxValues[i] = 1f;
         }
@@ -105,6 +113,21 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
         return 0;
     }
 
+    private void initializeMediaPlayer() {
+        if (handler == null)
+            handler = new Handler(Looper.getMainLooper());
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (lock) {
+                    exoPlayer = ExoPlayerFactory.newSimpleInstance(context, new DefaultTrackSelector(), new DefaultLoadControl());
+                    lock.notify();
+                }
+            }
+        });
+    }
+
     @Override
     public void show() {
         GdxVr.app.getGvrView().setNeckModelEnabled(true);
@@ -116,30 +139,22 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
 
     }
 
-    private void prepareMedia(Context context, Uri uri) {
-        exoPlayer = ExoPlayerFactory.newSimpleInstance(context, new DefaultTrackSelector(), new DefaultLoadControl());
-        exoPlayer.prepare(new ExtractorMediaSource(uri, new DefaultDataSourceFactory(context, context.getPackageName()), new DefaultExtractorsFactory(), new Handler(Looper.getMainLooper()), this));
+    private void playSong(Uri uri) {
+        if (exoPlayer == null) {
+            synchronized (lock) {
+                while (exoPlayer == null) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        exoPlayer.prepare(new ExtractorMediaSource(uri, new DefaultDataSourceFactory(context, context.getPackageName()), new DefaultExtractorsFactory(), null, this));
+        exoPlayer.addListener(this);
         exoPlayer.setPlayWhenReady(true);
-        initVisualizer(exoPlayer.getAudioSessionId());
-//        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//            @Override
-//            public void onPrepared(MediaPlayer mediaPlayer) {
-//                mediaPlayer.start();
-//            }
-//        });
-//        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-//            @Override
-//            public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-//                return false;
-//            }
-//        });
-//        try {
-//            mediaPlayer.setDataSource(context, uri);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        mediaPlayer.prepareAsync();
-        prepared = true;
+        prepared = false;
     }
 
     @Override
@@ -290,7 +305,7 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.isFromSource(InputDevice.SOURCE_CLASS_JOYSTICK) | event.isFromSource(InputDevice.SOURCE_JOYSTICK)) {
             if (keyCode == KeyEvent.KEYCODE_BUTTON_A || keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_BUTTON_START)
-                visualizerActivity.onCardboardTrigger();
+                context.onCardboardTrigger();
             else if (keyCode == KeyEvent.KEYCODE_BACK) return false;
             return true;
         }
@@ -364,7 +379,7 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
         return intensityValues[i];
     }
 
-    public SimpleExoPlayer getMediaPlayer() {
+    public SimpleExoPlayer getExoPlayer() {
         return exoPlayer;
     }
 
@@ -372,13 +387,46 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
         return audioManager;
     }
 
-    public MainActivity getVisualizerActivity() {
-        return visualizerActivity;
+    public MainActivity getContext() {
+        return context;
     }
 
     @Override
     public void onLoadError(IOException error) {
         Log.e(TAG, error.getMessage());
+    }
+
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+        if (!isLoading && exoPlayer.getPlaybackState() == ExoPlayer.STATE_READY) {
+            initVisualizer(exoPlayer.getAudioSessionId());
+            prepared = true;
+        }
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+
     }
 
 //    public GvrAudioEngine getGvrAudioEngine() {
