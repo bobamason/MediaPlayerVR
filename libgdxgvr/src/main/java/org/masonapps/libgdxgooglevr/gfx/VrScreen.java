@@ -8,8 +8,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
+import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
 /**
@@ -25,7 +27,10 @@ public abstract class VrScreen implements Disposable {
 
     public abstract void resume();
 
-    protected void renderCursor(Camera camera) {
+    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+        onNewFrame(headTransform);
+        onDrawEye(eye);
+        onDrawEye(eye1);
     }
 
     public abstract void pause();
@@ -34,22 +39,33 @@ public abstract class VrScreen implements Disposable {
 
     public abstract void hide();
 
-    public abstract void update();
+    public void update() {
+    }
 
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
-
     }
 
     public void onCardboardTrigger() {
     }
 
     public void onNewFrame(HeadTransform headTransform) {
+        update();
     }
 
     public void onDrawEye(Eye eye) {
+        final Viewport viewport = eye.getViewport();
+        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        getVrCamera().onDrawEye(eye);
+        render(getVrCamera(), eye.getType());
+        renderCursor(getVrCamera());
     }
 
-    public abstract void render(Camera camera, int whichEye);
+    public void render(Camera camera, int whichEye) {
+
+    }
+
+    protected void renderCursor(Camera camera) {
+    }
 
     public Vector3 getForwardVector() {
         return game.getForwardVector();
@@ -80,7 +96,4 @@ public abstract class VrScreen implements Disposable {
     }
 
     protected void doneLoading(AssetManager assets) {}
-
-    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
-    }
 }

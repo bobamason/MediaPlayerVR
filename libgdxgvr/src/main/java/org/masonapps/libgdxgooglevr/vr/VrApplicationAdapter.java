@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -31,6 +32,9 @@ public abstract class VrApplicationAdapter implements ApplicationListener {
     }
 
     public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+        onNewFrame(headTransform);
+        onDrawEye(eye);
+        onDrawEye(eye1);
     }
 
     @CallSuper
@@ -40,14 +44,13 @@ public abstract class VrApplicationAdapter implements ApplicationListener {
 
     @CallSuper
     public void onDrawEye(Eye eye) {
+        final Viewport viewport = eye.getViewport();
+        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         vrCamera.onDrawEye(eye);
         render(vrCamera, eye.getType());
     }
 
-    @CallSuper
     public void update() {
-//        floatAction.act(Gdx.graphics.getDeltaTime());
-//        cursor.setActivation(floatAction.getValue());
     }
 
     public void render(Camera camera, int whichEye) {

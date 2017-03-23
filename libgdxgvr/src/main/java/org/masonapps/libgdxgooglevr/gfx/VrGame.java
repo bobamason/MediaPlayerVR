@@ -1,5 +1,7 @@
 package org.masonapps.libgdxgooglevr.gfx;
 
+import android.annotation.SuppressLint;
+
 import com.badlogic.gdx.graphics.Camera;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
@@ -26,8 +28,6 @@ public abstract class VrGame extends VrApplicationAdapter {
 
     @Override
     public void update() {
-        super.update();
-        if (screen != null) screen.update();
     }
 
     @Override
@@ -42,16 +42,14 @@ public abstract class VrGame extends VrApplicationAdapter {
         if (screen != null) screen.renderCursor(camera);
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onNewFrame(HeadTransform headTransform) {
-        super.onNewFrame(headTransform);
-        if (screen != null) screen.onNewFrame(headTransform);
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawEye(Eye eye) {
-        super.onDrawEye(eye);
-        if (screen != null) screen.onDrawEye(eye);
     }
 
     @Override

@@ -3,7 +3,6 @@ package org.masonapps.libgdxgooglevr.vr;
 import android.opengl.GLSurfaceView;
 import android.support.annotation.CallSuper;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -501,13 +500,6 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
     @Override
     @CallSuper
     public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
-        ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, eye, eye1);
-        onNewFrame(headTransform);
-        onDrawEye(eye);
-        onDrawEye(eye1);
-    }
-    
-    public void onNewFrame(HeadTransform headTransform) {
         long time = System.nanoTime();
         deltaTime = (time - lastFrameTime) / 1000000000.0f;
         lastFrameTime = time;
@@ -575,12 +567,12 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
             if (!input.isControllerConnected())
                 input.updateInputRay(null);
             input.processEvents();
-            ((VrApplicationAdapter) Gdx.app.getApplicationListener()).onNewFrame(headTransform);
+            ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, eye, eye1);
             frameId++;
         }
 
         if (lpause) {
-            Array<LifecycleListener> listeners = app.getLifecycleListeners();
+            final Array<LifecycleListener> listeners = app.getLifecycleListeners();
             synchronized (listeners) {
                 for (LifecycleListener listener : listeners) {
                     listener.pause();
@@ -621,25 +613,6 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
         headTransform.getQuaternion(array, OFFSET_QUATERNION);
         headQuaternion.set(array[OFFSET_QUATERNION], array[OFFSET_QUATERNION + 1], array[OFFSET_QUATERNION + 2], array[OFFSET_QUATERNION + 3]);
         headMatrix.set(headTransform.getHeadView());
-    }
-
-    public void onDrawEye(Eye eye) {
-
-        boolean lrunning = false;
-
-        synchronized (synch) {
-            lrunning = running;
-        }
-
-        if (lrunning) {
-            try {
-                final Viewport viewport = eye.getViewport();
-                Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-                ((VrApplicationAdapter) Gdx.app.getApplicationListener()).onDrawEye(eye);
-            } catch (Exception e) {
-                Log.e(VrGraphics.class.getSimpleName() + ".onDrawEye()", e.getMessage());
-            }
-        }
     }
 
     @Override
