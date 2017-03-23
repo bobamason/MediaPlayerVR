@@ -264,6 +264,7 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
     public void dispose() {
         super.dispose();
         if (exoPlayer != null) {
+            exoPlayer.setPlayWhenReady(false);
             exoPlayer.stop();
             exoPlayer.release();
         }
@@ -408,7 +409,7 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-        if (!isLoading && exoPlayer.getPlaybackState() == ExoPlayer.STATE_READY) {
+        if (visualizer == null && exoPlayer.getPlaybackState() == ExoPlayer.STATE_READY) {
             initVisualizer(exoPlayer.getAudioSessionId());
             prepared = true;
         }

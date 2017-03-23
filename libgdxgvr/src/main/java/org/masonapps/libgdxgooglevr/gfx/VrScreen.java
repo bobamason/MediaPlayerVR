@@ -36,8 +36,6 @@ public abstract class VrScreen implements Disposable {
 
     public abstract void update();
 
-    public abstract void preRender();
-
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
 
     }
@@ -82,4 +80,7 @@ public abstract class VrScreen implements Disposable {
     }
 
     protected void doneLoading(AssetManager assets) {}
+
+    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+    }
 }

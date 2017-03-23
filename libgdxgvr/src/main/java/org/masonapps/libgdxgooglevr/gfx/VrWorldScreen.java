@@ -21,6 +21,7 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.actions.FloatAction;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -88,6 +89,12 @@ public abstract class VrWorldScreen extends VrScreen {
     }
 
     @Override
+    public void onNewFrame(HeadTransform headTransform) {
+        Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+    }
+
+    @Override
     @CallSuper
     public void update() {
         if (loading) {
@@ -108,12 +115,6 @@ public abstract class VrWorldScreen extends VrScreen {
         getModelBatch().begin(camera);
         world.render(getModelBatch(), environment);
         getModelBatch().end();
-    }
-
-    @Override
-    public void preRender() {
-        Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
     }
 
     @Override

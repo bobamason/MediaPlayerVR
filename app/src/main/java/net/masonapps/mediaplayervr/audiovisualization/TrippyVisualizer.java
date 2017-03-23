@@ -1,9 +1,11 @@
 package net.masonapps.mediaplayervr.audiovisualization;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -25,6 +27,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.google.vr.sdk.base.Eye;
+import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.Viewport;
 
 import net.masonapps.mediaplayervr.media.SongDetails;
 
@@ -90,38 +94,33 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
         angle += Gdx.graphics.getDeltaTime() * 30f;
         for (int i = 0; i < instances.size; i++) {
             instances.get(i).transform.idt().translate(MathUtils.cosDeg(angle - i * 45f) * 2f, MathUtils.sinDeg(angle + i * 30f) * 3f, -5f - i).rotate(axis, angle + i * 60f);
         }
-    }
-
-    @Override
-    public void onDrawEye(Eye eye) {
-        super.onDrawEye(eye);
-        if (Gdx.graphics.getFrameId() % 60 == 0)
-            Log.d("FPS", Gdx.graphics.getFramesPerSecond() + "fps");
+        final Viewport viewport = eye.getViewport();
+        final Viewport viewport1 = eye1.getViewport();
 
         fbo.begin();
 
-//        Gdx.gl.glViewport(eye.getViewport().x, eye.getViewport().y, eye.getViewport().width, eye.getViewport().height);
-//        Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);
-////        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
+        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1f);
+//        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-//        spriteBatch.setShader(null);
-        spriteBatch.begin();
-        spriteBatch.setShader(shaderProgram);
-        shaderProgram.setUniformf("u_time", time);
-//        spriteBatch.setColor(color.set(0, 0, 0, 0.05f));
-        spriteBatch.setProjectionMatrix(orthoCamera.combined);
+//        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+////        spriteBatch.setShader(null);
+//        spriteBatch.begin();
+//        spriteBatch.setShader(shaderProgram);
+//        shaderProgram.setUniformf("u_time", time);
+////        spriteBatch.setColor(color.set(0, 0, 0, 0.05f));
+//        spriteBatch.setProjectionMatrix(orthoCamera.combined);
 
         spriteBatch.setColor(color.set(Color.WHITE));
 
-        spriteBatch.draw(fbo.getColorBufferTexture(), eye.getViewport().x - eye.getViewport().width / 2 + 4, eye.getViewport().y - eye.getViewport().height / 2 + 4, eye.getViewport().width - 8, eye.getViewport().height - 8, eye.getViewport().x, eye.getViewport().y, eye.getViewport().width, eye.getViewport().height, false, true);
+//        spriteBatch.draw(fbo.getColorBufferTexture(), viewport.x - viewport.width / 2 + 4, viewport.y - viewport.height / 2 + 4, viewport.width - 8, viewport.height - 8, viewport.x, viewport.y, viewport.width, viewport.height, false, true);
+//        spriteBatch.draw(fbo.getColorBufferTexture(), viewport1.x - viewport1.width / 2 + 4, viewport1.y - viewport1.height / 2 + 4, viewport1.width - 8, viewport1.height - 8, viewport1.x, viewport1.y, viewport1.width, viewport1.height, false, true);
 
 //        spriteBatch.draw(texture, -fbo.getWidth() / 2, -fbo.getHeight() / 2, fbo.getWidth(), fbo.getHeight());
 
@@ -129,18 +128,28 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
 //        spriteBatch.setColor(color.set(MathUtils.random(), MathUtils.random(), MathUtils.random(), 1f));
 //        spriteBatch.draw(texture, Gdx.input.getX() - fbo.getWidth() / 2f - texture.getWidth() / 2f, Gdx.input.getY() - fbo.getHeight() / 2 - texture.getHeight() / 2f, texture.getWidth(), texture.getHeight(), 0, 0, texture.getWidth(), texture.getHeight(), false, true);
 
-        spriteBatch.end();
-        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+//        spriteBatch.end();
+//        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
+        Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        getVrCamera().onDrawEye(eye);
+        getModelBatch().begin(getVrCamera());
+        getModelBatch().render(instances, getEnvironment());
+        getModelBatch().end();
+
+        Gdx.gl.glViewport(viewport1.x, viewport1.y, viewport1.width, viewport1.height);
+        getVrCamera().onDrawEye(eye1);
         getModelBatch().begin(getVrCamera());
         getModelBatch().render(instances, getEnvironment());
         getModelBatch().end();
 
         fbo.end();
+        if (Gdx.graphics.getFrameId() % 60 == 0)
+            Log.d("FPS", Gdx.graphics.getFramesPerSecond() + "fps");
 
 //        Gdx.gl.glViewport(eye.getViewport().x, eye.getViewport().y, eye.getViewport().width, eye.getViewport().height);
-//        Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         time += Gdx.graphics.getDeltaTime();
         time %= MathUtils.PI2;
         spriteBatch.setShader(null);
@@ -148,8 +157,30 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
 //        shaderProgram.setUniformf("u_time", time);
         spriteBatch.setColor(Color.WHITE);
         spriteBatch.setProjectionMatrix(orthoCamera.combined);
-        spriteBatch.draw(fbo.getColorBufferTexture(), eye.getViewport().x - eye.getViewport().width / 2, eye.getViewport().y - eye.getViewport().height / 2, eye.getViewport().width, eye.getViewport().height);
+        spriteBatch.draw(fbo.getColorBufferTexture(), -fbo.getWidth() / 2, -fbo.getHeight() / 2, fbo.getWidth(), fbo.getHeight());
         spriteBatch.end();
+    }
+
+    @Override
+    public void onNewFrame(HeadTransform headTransform) {
+//        super.onNewFrame(headTransform);
+    }
+
+    @Override
+    public void onDrawEye(Eye eye) {
+        super.onDrawEye(eye);
+    }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void update() {
+//        super.update();
+    }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void render(Camera camera, int whichEye) {
+//        super.render(camera, whichEye);
     }
 
     @Override

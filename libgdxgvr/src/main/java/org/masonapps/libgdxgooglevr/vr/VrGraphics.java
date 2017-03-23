@@ -501,11 +501,10 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
     @Override
     @CallSuper
     public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+        ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, eye, eye1);
         onNewFrame(headTransform);
-        ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).preRender();
         onDrawEye(eye);
         onDrawEye(eye1);
-        ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, eye, eye1);
     }
     
     public void onNewFrame(HeadTransform headTransform) {
