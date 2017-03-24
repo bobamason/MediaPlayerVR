@@ -1,5 +1,7 @@
 package org.masonapps.libgdxgooglevr.gfx;
 
+import android.support.annotation.CallSuper;
+
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
@@ -27,6 +29,7 @@ public abstract class VrScreen implements Disposable {
 
     public abstract void resume();
 
+    @CallSuper
     public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
         onNewFrame(headTransform);
         onDrawEye(eye);
@@ -48,16 +51,21 @@ public abstract class VrScreen implements Disposable {
     public void onCardboardTrigger() {
     }
 
+    @CallSuper
     public void onNewFrame(HeadTransform headTransform) {
         update();
     }
 
+    @CallSuper
     public void onDrawEye(Eye eye) {
         final Viewport viewport = eye.getViewport();
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         getVrCamera().onDrawEye(eye);
         render(getVrCamera(), eye.getType());
         renderCursor(getVrCamera());
+    }
+
+    public void onFinishFrame(Viewport viewport) {
     }
 
     public void render(Camera camera, int whichEye) {

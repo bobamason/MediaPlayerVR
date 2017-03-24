@@ -617,7 +617,7 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
 
     @Override
     public void onFinishFrame(Viewport viewport) {
-
+        ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onFinishFrame(viewport);
     }
 
     @Override

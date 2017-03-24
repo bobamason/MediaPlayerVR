@@ -107,4 +107,8 @@ public abstract class VrApplicationAdapter implements ApplicationListener {
     public VrCamera getVrCamera() {
         return vrCamera;
     }
+
+    public void onFinishFrame(Viewport viewport) {
+
+    }
 }

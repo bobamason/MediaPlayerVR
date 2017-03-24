@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import com.badlogic.gdx.graphics.Camera;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.vr.VrApplicationAdapter;
@@ -36,6 +37,11 @@ public abstract class VrGame extends VrApplicationAdapter {
     }
 
     @Override
+    public void onFinishFrame(Viewport viewport) {
+        if (screen != null) screen.onFinishFrame(viewport);
+    }
+
+    @Override
     public void render(Camera camera, int whichEye) {
         if (screen != null) screen.render(camera, whichEye);
         super.render(camera, whichEye);
@@ -45,6 +51,7 @@ public abstract class VrGame extends VrApplicationAdapter {
     @SuppressLint("MissingSuperCall")
     @Override
     public void onNewFrame(HeadTransform headTransform) {
+
     }
 
     @SuppressLint("MissingSuperCall")

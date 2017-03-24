@@ -90,6 +90,7 @@ public abstract class VrWorldScreen extends VrScreen {
 
     @Override
     public void onNewFrame(HeadTransform headTransform) {
+        super.onNewFrame(headTransform);
         Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
     }

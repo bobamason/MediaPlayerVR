@@ -223,11 +223,13 @@ public abstract class MusicVisualizerScreen extends VrWorldScreen implements Vis
             float volume = (float) getAudioManager().getStreamVolume(AudioManager.STREAM_MUSIC) / getAudioManager().getStreamMaxVolume(AudioManager.STREAM_MUSIC);
 //        Log.d(TAG, "volume: " + volume);
             if (isUpdateFftEnabled) {
+                // TODO: 3/23/2017 uncomment 
                 spectrumAnalyzer.update(fft, volume);
 //                onCaptureUpdated(spectrumAnalyzer);
                 Gdx.app.postRunnable(new Runnable() {
                     @Override
                     public void run() {
+                        // TODO: 3/23/2017 uncomment 
                         onCaptureUpdated(spectrumAnalyzer);
                     }
                 });

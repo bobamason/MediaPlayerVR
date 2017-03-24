@@ -1,7 +1,5 @@
 package net.masonapps.mediaplayervr;
 
-import android.util.Log;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -53,7 +51,7 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
         final Model box = createBox(modelBuilder);
         final Matrix4 mat = new Matrix4();
         final Vector3 axis = new Vector3();
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 20; i++) {
             final float r = MathUtils.random(5f, 15f);
             final float a = MathUtils.random(MathUtils.PI2);
             axis.set(MathUtils.random(), MathUtils.random(), MathUtils.random()).nor();
@@ -107,8 +105,6 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     @Override
     public void update() {
         super.update();
-        if (GdxVr.graphics.getFrameId() % 60 == 0)
-            Log.d(MediaPlayerScreen.class.getSimpleName(), "fps" + GdxVr.graphics.getFramesPerSecond());
 
         for (Entity entity : boxes) {
             final Transform transform = (Transform) entity.modelInstance.userData;

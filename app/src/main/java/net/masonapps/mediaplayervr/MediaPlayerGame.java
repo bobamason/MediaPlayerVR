@@ -23,6 +23,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.google.vr.sdk.base.Eye;
+import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
@@ -102,8 +104,8 @@ public class MediaPlayerGame extends VrGame {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+        super.onDrawFrame(headTransform, eye, eye1);
         if (loading) {
             if (assets.update()) {
                 skin.addRegions(assets.get(Style.ATLAS_FILE, TextureAtlas.class));
