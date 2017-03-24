@@ -49,7 +49,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     protected VideoMode videoMode;
     protected float aspectRatio = 1f;
     //    protected float targetAspectRatio = 1f;
-    protected float modelSize = 20f;
+    protected float modelSize = 10f;
     protected Context context;
     private int width;
     private int height;
@@ -68,7 +68,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.height = height;
         shader = new VideoShader();
         final ModelBuilder modelBuilder = new ModelBuilder();
-        final Model rect = ModelGenerator.createRectScreen(modelBuilder, 1f, 0.5f);
+        final Model rect = ModelGenerator.createRectScreen(modelBuilder);
         disposables.add(rect);
         rectModelInstance = new ModelInstance(rect);
         final int divisionsU = 64;
@@ -224,9 +224,9 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     protected void mapDistortModel() {
         if (aspectRatio <= 1f) {
-            modelInstance.transform.idt().scale(aspectRatio * modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
+            modelInstance.transform.idt().translate(0, 0, -4).scale(aspectRatio * modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
         } else {
-            modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize / aspectRatio + stretch.y * modelSize, modelSize);
+            modelInstance.transform.idt().translate(0, 0, -4).scale(modelSize + stretch.x * modelSize, modelSize / aspectRatio + stretch.y * modelSize, modelSize);
         }
     }
 

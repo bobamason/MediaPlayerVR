@@ -499,7 +499,7 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
 
     @Override
     @CallSuper
-    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+    public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         long time = System.nanoTime();
         deltaTime = (time - lastFrameTime) / 1000000000.0f;
         lastFrameTime = time;
@@ -567,7 +567,7 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
             if (!input.isControllerConnected())
                 input.updateInputRay(null);
             input.processEvents();
-            ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, eye, eye1);
+            ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, leftEye, rightEye);
             frameId++;
         }
 

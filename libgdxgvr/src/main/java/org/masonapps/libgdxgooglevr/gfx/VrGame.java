@@ -32,8 +32,8 @@ public abstract class VrGame extends VrApplicationAdapter {
     }
 
     @Override
-    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
-        if (screen != null) screen.onDrawFrame(headTransform, eye, eye1);
+    public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
+        if (screen != null) screen.onDrawFrame(headTransform, leftEye, rightEye);
     }
 
     @Override

@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.BaseLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
@@ -57,15 +58,17 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
         super(game, context, songList, index);
         final ModelBuilder modelBuilder = new ModelBuilder();
 
-        texture = new Texture("white.png");
+        texture = new Texture("room/tiled_bg.png");
 
         spriteBatch = new SpriteBatch();
         fbo = new FrameBuffer(Pixmap.Format.RGB565, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         orthoCamera = new OrthographicCamera(GdxVr.graphics.getWidth(), GdxVr.graphics.getHeight());
 
-        final Color[] colors = new Color[]{Color.LIME, Color.BLUE, Color.OLIVE, Color.ORANGE, Color.TAN, Color.RED, Color.PURPLE};
-        for (int i = 0; i < colors.length; i++) {
-            instances.add(new ModelInstance(createBox(modelBuilder, colors[i]), 0, 0, -5));
+//        final Color[] colors = new Color[]{Color.LIME, Color.BLUE, Color.OLIVE, Color.ORANGE, Color.TAN, Color.RED, Color.PURPLE};
+        for (int i = 0; i < 6; i++) {
+            final ModelInstance modelInstance = new ModelInstance(createBox(modelBuilder, Color.WHITE), 0, 0, -5f - i);
+            modelInstance.materials.get(0).set(TextureAttribute.createDiffuse(fbo.getColorBufferTexture()));
+            instances.add(modelInstance);
         }
 
         createShaderProgram();
@@ -95,15 +98,15 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
 
     @SuppressLint("MissingSuperCall")
     @Override
-    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+    public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         angle += Gdx.graphics.getDeltaTime() * 30f;
         for (int i = 0; i < instances.size; i++) {
             instances.get(i).transform.idt().translate(MathUtils.cosDeg(angle - i * 45f) * 2f, MathUtils.sinDeg(angle + i * 30f) * 3f, -5f - i).rotate(axis, angle + i * 60f);
         }
-        final Viewport viewport = eye.getViewport();
-        final Viewport viewport1 = eye1.getViewport();
+        final Viewport viewport = leftEye.getViewport();
+        final Viewport viewport1 = rightEye.getViewport();
 
-//        fbo.begin();
+        fbo.begin();
 
         Gdx.gl.glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1f);
@@ -126,25 +129,29 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
 //        spriteBatch.draw(texture, -fbo.getWidth() / 2, -fbo.getHeight() / 2, fbo.getWidth(), fbo.getHeight());
 
 //        spriteBatch.setShader(null);
-//        spriteBatch.setColor(color.set(MathUtils.random(), MathUtils.random(), MathUtils.random(), 1f));
-//        spriteBatch.draw(texture, Gdx.input.getX() - fbo.getWidth() / 2f - texture.getWidth() / 2f, Gdx.input.getY() - fbo.getHeight() / 2 - texture.getHeight() / 2f, texture.getWidth(), texture.getHeight(), 0, 0, texture.getWidth(), texture.getHeight(), false, true);
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                spriteBatch.setColor(color.set(MathUtils.random(), MathUtils.random(), MathUtils.random(), 1f));
+                spriteBatch.draw(texture, x * texture.getWidth(), y * texture.getHeight(), texture.getWidth(), texture.getHeight());
+            }
+        }
 
 //        spriteBatch.end();
 //        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
+        fbo.end();
+
         Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        getVrCamera().onDrawEye(eye);
+        getVrCamera().onDrawEye(leftEye);
         getModelBatch().begin(getVrCamera());
         getModelBatch().render(instances, getEnvironment());
         getModelBatch().end();
 
         Gdx.gl.glViewport(viewport1.x, viewport1.y, viewport1.width, viewport1.height);
-        getVrCamera().onDrawEye(eye1);
+        getVrCamera().onDrawEye(rightEye);
         getModelBatch().begin(getVrCamera());
         getModelBatch().render(instances, getEnvironment());
         getModelBatch().end();
-
-//        fbo.end();
     }
 
     @Override

@@ -30,10 +30,10 @@ public abstract class VrScreen implements Disposable {
     public abstract void resume();
 
     @CallSuper
-    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
+    public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         onNewFrame(headTransform);
-        onDrawEye(eye);
-        onDrawEye(eye1);
+        onDrawEye(leftEye);
+        onDrawEye(rightEye);
     }
 
     public abstract void pause();

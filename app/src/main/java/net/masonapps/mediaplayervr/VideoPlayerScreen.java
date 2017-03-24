@@ -21,6 +21,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.google.vr.sdk.base.Eye;
+import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.database.VideoOptions;
@@ -52,7 +53,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private final VideoDetails videoDetails;
     private final Entity controllerEntity;
     private final VideoPlayerGUI ui;
-    private final VrCamera videoCamera;
+    private final VrCamera leftCamera;
+    private final VrCamera rightCamera;
     private VideoOptions videoOptions;
     //    private final FieldOfView fov = new FieldOfView();
 //    private final float[] proj = new float[16];
@@ -69,6 +71,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private ModelInstance sphereOutlineInstance;
     private boolean useCustomCamera = false;
     private Vector3 translation = new Vector3();
+    private boolean projectionChanged = true;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -80,7 +83,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             this.videoOptions = new VideoOptions();
             this.videoOptions.title = videoDetails.title;
         }
-        videoCamera = new VrCamera();
+        leftCamera = new VrCamera();
+        rightCamera = new VrCamera();
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height);
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
@@ -155,54 +159,76 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     @SuppressLint("MissingSuperCall")
     @Override
-    public void onDrawEye(Eye eye) {
-        getVrCamera().onDrawEye(eye);
-//        if (useCustomCamera) {
-//            if (doRatioCalc) {
-//                final FieldOfView eyeFov = eye.getFov();
-//                Log.i(VideoPlayerScreen.class.getSimpleName(), eyeFov.toString());
-//                final float t1 = (float) Math.tan(Math.toRadians(eyeFov.getTop())) * getVrCamera().near;
-//                final float b1 = (float) Math.tan(Math.toRadians(eyeFov.getBottom())) * getVrCamera().near;
-//                yRatio = Math.abs(b1 / t1);
-//                doRatioCalc = false;
-//            }
+    public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
+        onNewFrame(headTransform);
 
+        leftCamera.viewportWidth = leftEye.getViewport().width;
+        leftCamera.viewportHeight = leftEye.getViewport().height;
+        rightCamera.viewportWidth = rightEye.getViewport().width;
+        rightCamera.viewportHeight = rightEye.getViewport().height;
 
-            final float defaultIpd = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f;
-        translation.set(getRightVector()).scl(defaultIpd * ipd).scl(eye.getType() == Eye.Type.LEFT ? -1f : 1f);
-            translation.add(tempV.set(getForwardVector()).scl((1f - zoom) * -4f));
-            videoCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
-            videoCamera.projection.set(eye.getPerspective(videoCamera.near, videoCamera.far));
-            videoCamera.combined.set(videoCamera.projection);
-            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
-//        } else {
-//            videoCamera.view.set(getVrCamera().view);
-//            videoCamera.projection.set(getVrCamera().projection);
-//            videoCamera.combined.set(videoCamera.projection);
-//            Matrix4.mul(videoCamera.combined.val, videoCamera.view.val);
-//        }
-        
-        getModelBatch().begin(getVrCamera());
-        getWorld().render(getModelBatch(), environment);
+        videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : 10f);
+
+        if (leftEye.getProjectionChanged() | rightEye.getProjectionChanged())
+            projectionChanged = true;
+
+        if (projectionChanged) {
+            if (videoPlayer.useFlatRectangle()) {
+                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
+                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
+            } else {
+                setCameraProjectionZoom(leftEye, leftCamera, zoom);
+                setCameraProjectionZoom(rightEye, rightCamera, zoom);
+            }
+            projectionChanged = false;
+        }
+
+        final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
+        if (!videoPlayer.useFlatRectangle() && videoPlayer.isStereoscopic()) {
+            translation.set(-ipdHalf, 0, 0);
+            leftCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+            updateCamera(leftCamera);
+
+            translation.set(ipdHalf, 0, 0);
+            rightCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+            updateCamera(rightCamera);
+        } else {
+            setCameraViewFromEye(leftEye, leftCamera);
+            updateCamera(leftCamera);
+
+            setCameraViewFromEye(rightEye, rightCamera);
+            updateCamera(rightCamera);
+        }
+
+        getModelBatch().begin(leftCamera);
+        videoPlayer.render(getModelBatch(), (videoPlayer.isStereoscopic() && isUiVisible) ? Eye.Type.MONOCULAR : leftEye.getType());
         getModelBatch().end();
 
-        getModelBatch().begin((videoPlayer.useFlatRectangle() || !videoPlayer.isStereoscopic()) ? getVrCamera() : videoCamera);
-        videoPlayer.render(getModelBatch(), (videoPlayer.isStereoscopic() && isUiVisible) ? Eye.Type.MONOCULAR : eye.getType());
-//        if (isUiVisible()) {
-//            final float s = videoPlayer.getModelSize();
-//            sphereOutlineInstance.transform.idt().scale(s, s, s);
-//            getModelBatch().render(sphereOutlineInstance);
-//        }
+        getModelBatch().begin(rightCamera);
+        videoPlayer.render(getModelBatch(), (videoPlayer.isStereoscopic() && isUiVisible) ? Eye.Type.MONOCULAR : rightEye.getType());
         getModelBatch().end();
-        render(getVrCamera(), eye.getType());
+
+        onDrawEye(leftEye);
+        onDrawEye(rightEye);
     }
 
-    private void setCameraProjectionZoom(Eye eye) {
+    private void setCameraViewFromEye(Eye eye, VrCamera camera) {
+        final Vector3 position = camera.position;
+        android.opengl.Matrix.setLookAtM(camera.view.getValues(), 0, position.x, position.y, position.z, position.x, position.y, position.z - 0.01f, 0f, 1f, 0f);
+        camera.view.mulLeft(tempM.set(eye.getEyeView()));
+    }
+
+    private void setCameraProjectionZoom(Eye eye, VrCamera camera, float zoom) {
         final float l = (float) -Math.tan(Math.toRadians(eye.getFov().getLeft())) * getVrCamera().near;
         final float r = (float) Math.tan(Math.toRadians(eye.getFov().getRight())) * getVrCamera().near;
         final float t = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * getVrCamera().near;
         final float b = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * getVrCamera().near;
-        videoCamera.projection.setToProjection(l / zoom, r / zoom, b / zoom, t / zoom, getVrCamera().near, getVrCamera().far);
+        camera.projection.setToProjection(l / zoom, r / zoom, b / zoom, t / zoom, getVrCamera().near, getVrCamera().far);
+    }
+
+    private void updateCamera(VrCamera camera) {
+        camera.combined.set(camera.projection);
+        Matrix4.mul(camera.combined.val, camera.view.val);
     }
 
     @SuppressLint("MissingSuperCall")
@@ -261,8 +287,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                     if (ui.thumbSeekbarLayout.isVisible()) {
                         setUiVisible(false);
                         ui.hideThumbSeekbarLayout();
-                    }
-                    else
+                    } else
                         ui.backButtonClicked();
                 }
                 break;
@@ -303,13 +328,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         return videoPlayer;
     }
 
-    public void setZ(float z) {
-//        getVrCamera().position.z = z;
-        setZoom(z);
-    }
-
     public void setZoom(float zoom) {
         this.zoom = zoom;
+        projectionChanged = true;
     }
 
     public float getIpd() {

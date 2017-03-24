@@ -29,11 +29,11 @@ public class LoadingScreen extends VrWorldScreen {
         super(game);
         setBackgroundColor(Color.BLACK);
         getVrCamera().near = 0.1f;
-        final Model rect = ModelGenerator.createRectScreen(new ModelBuilder(), 3f, 0.25f);
+        final Model rect = ModelGenerator.createRectScreen(new ModelBuilder());
         final Texture texture = new Texture("loading.png");
         manageDisposable(texture);
         rect.materials.get(0).set(new BlendingAttribute(), TextureAttribute.createDiffuse(texture));
-        entity = getWorld().add(new Entity(new ModelInstance(rect)));
+        entity = getWorld().add(new Entity(new ModelInstance(rect, 0, 0, -3)));
         entity.setLightingEnabled(false);
     }
 

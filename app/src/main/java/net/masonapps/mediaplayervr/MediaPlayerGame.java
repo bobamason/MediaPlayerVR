@@ -104,8 +104,8 @@ public class MediaPlayerGame extends VrGame {
     }
 
     @Override
-    public void onDrawFrame(HeadTransform headTransform, Eye eye, Eye eye1) {
-        super.onDrawFrame(headTransform, eye, eye1);
+    public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
+        super.onDrawFrame(headTransform, leftEye, rightEye);
         if (loading) {
             if (assets.update()) {
                 skin.addRegions(assets.get(Style.ATLAS_FILE, TextureAtlas.class));

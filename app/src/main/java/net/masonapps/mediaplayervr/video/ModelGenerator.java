@@ -77,15 +77,15 @@ public class ModelGenerator {
         return modelBuilder.end();
     }
 
-    public static Model createRectScreen(ModelBuilder modelBuilder, float distance, float radius) {
-        final float x = -radius;
-        final float y = -radius;
-        final float diameter = radius * 2f;
+    public static Model createRectScreen(ModelBuilder modelBuilder) {
+        final float x = -0.5f;
+        final float y = -0.5f;
+        final float s = 1f;
         return modelBuilder.createRect(
-                x, y, -distance,
-                x + diameter, y, -distance,
-                x + diameter, y + diameter, -distance,
-                x, y + diameter, -distance,
+                x, y, 0,
+                x + s, y, 0,
+                x + s, y + s, 0,
+                x, y + s, 0,
                 0, 0, 1,
                 new Material(), VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates);
     }
