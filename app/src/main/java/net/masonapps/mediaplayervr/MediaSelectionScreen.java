@@ -73,10 +73,10 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 //        label3d.setFontSize(0.1f);
 //        label3d.setPosition(-2f, 2f, -4f);
 //        label3d.setAlignment(Align.center);
-        setBackgroundColor(Color.BLACK);
         container = new VrUiContainer();
         initStage();
         switchToStartScreen();
+        setBackgroundColor(Color.SLATE);
     }
 
     private void initStage() {

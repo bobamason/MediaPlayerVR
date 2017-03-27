@@ -17,7 +17,6 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.BaseLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
@@ -33,7 +32,6 @@ import com.google.vr.sdk.base.Viewport;
 
 import net.masonapps.mediaplayervr.media.SongDetails;
 
-import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 
 import java.util.List;
@@ -61,17 +59,20 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
         texture = new Texture("room/tiled_bg.png");
 
         spriteBatch = new SpriteBatch();
-        fbo = new FrameBuffer(Pixmap.Format.RGB565, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-        orthoCamera = new OrthographicCamera(GdxVr.graphics.getWidth(), GdxVr.graphics.getHeight());
+        fbo = new FrameBuffer(Pixmap.Format.RGB888, 256, 256, true);
+        Log.d(TrippyVisualizer.class.getSimpleName(), "BackBuffer w = " + Gdx.graphics.getBackBufferWidth() + " h = " + Gdx.graphics.getBackBufferHeight());
+//        fbo = new FrameBuffer(Pixmap.Format.RGB888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        orthoCamera = new OrthographicCamera(fbo.getWidth(), fbo.getHeight());
 
-//        final Color[] colors = new Color[]{Color.LIME, Color.BLUE, Color.OLIVE, Color.ORANGE, Color.TAN, Color.RED, Color.PURPLE};
-        for (int i = 0; i < 6; i++) {
-            final ModelInstance modelInstance = new ModelInstance(createBox(modelBuilder, Color.WHITE), 0, 0, -5f - i);
-            modelInstance.materials.get(0).set(TextureAttribute.createDiffuse(fbo.getColorBufferTexture()));
+        final Color[] colors = new Color[]{Color.LIME, Color.BLUE, Color.OLIVE, Color.ORANGE, Color.TAN, Color.RED, Color.PURPLE};
+        for (int i = 0; i < colors.length; i++) {
+            final ModelInstance modelInstance = new ModelInstance(createBox(modelBuilder, colors[i]), 0, 0, -5f - i);
+//            modelInstance.materials.get(0).set(TextureAttribute.createDiffuse(fbo.getColorBufferTexture()));
             instances.add(modelInstance);
         }
 
         createShaderProgram();
+        setBackgroundColor(Color.DARK_GRAY);
     }
 
     @Override
@@ -106,12 +107,11 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
         final Viewport viewport = leftEye.getViewport();
         final Viewport viewport1 = rightEye.getViewport();
 
-        fbo.begin();
+//        fbo.begin();
 
-        Gdx.gl.glViewport(0, 0, fbo.getWidth(), fbo.getHeight());
-        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1f);
-//        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+//        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1f);
+////        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 //        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 ////        spriteBatch.setShader(null);
@@ -129,17 +129,23 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
 //        spriteBatch.draw(texture, -fbo.getWidth() / 2, -fbo.getHeight() / 2, fbo.getWidth(), fbo.getHeight());
 
 //        spriteBatch.setShader(null);
-        for (int x = 0; x < 10; x++) {
-            for (int y = 0; y < 10; y++) {
-                spriteBatch.setColor(color.set(MathUtils.random(), MathUtils.random(), MathUtils.random(), 1f));
-                spriteBatch.draw(texture, x * texture.getWidth(), y * texture.getHeight(), texture.getWidth(), texture.getHeight());
-            }
-        }
-
+//        spriteBatch.begin();
+//        spriteBatch.setProjectionMatrix(orthoCamera.combined);
+//        for (int x = 0; x < 4; x++) {
+//            for (int y = 0; y < 4; y++) {
+//                spriteBatch.setColor(color.set(MathUtils.random(), MathUtils.random(), MathUtils.random(), 1f));
+//                spriteBatch.draw(texture, x * texture.getWidth(), y * texture.getHeight(), texture.getWidth(), texture.getHeight());
+//            }
+//        }
+//
 //        spriteBatch.end();
 //        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
-        fbo.end();
+//        fbo.end();
+
+        Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);
+        Gdx.gl.glClear(GL20.GL_DEPTH_BUFFER_BIT);
+//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         getVrCamera().onDrawEye(leftEye);
@@ -152,12 +158,13 @@ public class TrippyVisualizer extends MusicVisualizerScreen {
         getModelBatch().begin(getVrCamera());
         getModelBatch().render(instances, getEnvironment());
         getModelBatch().end();
+
+        if (Gdx.graphics.getFrameId() % 60 == 0)
+            Log.d("FPS", Gdx.graphics.getFramesPerSecond() + "fps");
     }
 
     @Override
     public void onFinishFrame(Viewport viewport) {
-        if (Gdx.graphics.getFrameId() % 60 == 0)
-            Log.d("FPS", Gdx.graphics.getFramesPerSecond() + "fps");
 
 //        Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
 //        Gdx.gl.glClearColor(getBackgroundColor().r, getBackgroundColor().g, getBackgroundColor().b, getBackgroundColor().a);

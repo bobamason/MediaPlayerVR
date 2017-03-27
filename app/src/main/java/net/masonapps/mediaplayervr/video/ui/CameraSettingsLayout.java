@@ -51,8 +51,9 @@ public class CameraSettingsLayout extends SingleStageUi {
         final ImageButton.ImageButtonStyle leftButtonStyle = Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, false);
         final ImageButton.ImageButtonStyle rightButtonStyle = Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, false);
 
-        videoPlayerGUI.getVideoPlayerScreen().setIpd(videoOptions.ipd);
-        final Label ipdLabel = new Label("IPD " + Math.round(videoPlayerGUI.getVideoPlayerScreen().getIpd() * 100) + "%", skin);
+        ipd = videoOptions.ipd;
+        videoPlayerGUI.getVideoPlayerScreen().setIpd(ipd);
+        final Label ipdLabel = new Label("IPD " + Math.round(ipd * 100) + "%", skin);
 
         final ImageButton ipdLeft = new ImageButton(leftButtonStyle);
         ipdLeft.addListener(new ClickListener() {

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -22,6 +23,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.database.VideoOptions;
@@ -62,7 +64,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private VrVideoPlayer videoPlayer;
     private boolean isButtonClicked = false;
     private long startPosition;
-    private float ipd;
+    private float ipd = 1f;
     private float zoom = 1f;
     private float projZ = 0.94f;
     private float yRatio = 1f;
@@ -185,11 +187,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
         final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
         if (!videoPlayer.useFlatRectangle() && videoPlayer.isStereoscopic()) {
-            translation.set(-ipdHalf, 0, 0);
+            translation.set(getRightVector()).scl(-ipdHalf);
             leftCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
             updateCamera(leftCamera);
 
-            translation.set(ipdHalf, 0, 0);
+            translation.set(getRightVector()).scl(ipdHalf);
             rightCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
             updateCamera(rightCamera);
         } else {
@@ -200,10 +202,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             updateCamera(rightCamera);
         }
 
+        Viewport viewport = leftEye.getViewport();
+        Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         getModelBatch().begin(leftCamera);
         videoPlayer.render(getModelBatch(), (videoPlayer.isStereoscopic() && isUiVisible) ? Eye.Type.MONOCULAR : leftEye.getType());
         getModelBatch().end();
 
+        viewport = rightEye.getViewport();
+        Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         getModelBatch().begin(rightCamera);
         videoPlayer.render(getModelBatch(), (videoPlayer.isStereoscopic() && isUiVisible) ? Eye.Type.MONOCULAR : rightEye.getType());
         getModelBatch().end();
