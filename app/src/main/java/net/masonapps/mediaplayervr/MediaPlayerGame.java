@@ -28,7 +28,7 @@ import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
-import net.masonapps.mediaplayervr.audiovisualization.TrippyVisualizer;
+import net.masonapps.mediaplayervr.audiovisualization.tests.DecalsPerformanceTest;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.media.SongDetails;
@@ -212,7 +212,7 @@ public class MediaPlayerGame extends VrGame {
     }
 
     public void playMusic(List<SongDetails> songList, int index) {
-        setScreen(new TrippyVisualizer(this, context, songList, index));
+        setScreen(new DecalsPerformanceTest(this, context, songList, index));
     }
 
     @Override
