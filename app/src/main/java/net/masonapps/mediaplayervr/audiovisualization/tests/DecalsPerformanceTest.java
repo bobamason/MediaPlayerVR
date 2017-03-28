@@ -34,7 +34,7 @@ public class DecalsPerformanceTest extends MusicVisualizerScreen {
     public static final float SPEED = 5f;
     public static final String TAG = DecalsPerformanceTest.class.getSimpleName();
     private final Array<Array<Decal>> decals = new Array<>();
-    DecalBatch decalBatch;
+    private DecalBatch decalBatch;
     private TextureRegion textureRegion;
     private float lastLayerZ = 0f;
     private int resetIndex = -1;
@@ -71,6 +71,7 @@ public class DecalsPerformanceTest extends MusicVisualizerScreen {
             final float a = aStep * i;
             final Decal decal = array.get(i);
             decal.setPosition(MathUtils.cos(a) * r, MathUtils.sin(a) * r, z);
+            decal.rotateZ(MathUtils.random(360));
             decal.setColor(color);
         }
     }
@@ -110,11 +111,11 @@ public class DecalsPerformanceTest extends MusicVisualizerScreen {
                 count++;
             }
         }
+        decalBatch.flush();
+        
         if (Gdx.graphics.getFrameId() % 120 == 0) {
             Log.i(TAG, Gdx.graphics.getFramesPerSecond() + "fps");
             Log.i(TAG, "count: " + count);
         }
-
-        decalBatch.flush();
     }
 }
