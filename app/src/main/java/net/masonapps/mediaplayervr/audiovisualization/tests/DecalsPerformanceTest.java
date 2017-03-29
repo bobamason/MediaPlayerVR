@@ -44,7 +44,7 @@ public class DecalsPerformanceTest extends MusicVisualizerScreen {
         setBackgroundColor(Color.BLACK);
         decalBatch = new DecalBatch(new CameraGroupStrategy(getVrCamera()));
         manageDisposable(decalBatch);
-        final Texture texture = new Texture("particle.png");
+        final Texture texture = new Texture("visualizer/particle.png");
         manageDisposable(texture);
         textureRegion = new TextureRegion(texture);
         final Array<Decal> array = new Array<>();
