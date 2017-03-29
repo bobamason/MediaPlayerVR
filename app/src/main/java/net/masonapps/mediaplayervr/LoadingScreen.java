@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 
-import net.masonapps.mediaplayervr.video.ModelGenerator;
+import net.masonapps.mediaplayervr.utils.ModelGenerator;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
@@ -29,7 +29,7 @@ public class LoadingScreen extends VrWorldScreen {
         super(game);
         setBackgroundColor(Color.BLACK);
         getVrCamera().near = 0.1f;
-        final Model rect = ModelGenerator.createRectScreen(new ModelBuilder());
+        final Model rect = ModelGenerator.createRect(new ModelBuilder());
         final Texture texture = new Texture("loading.png");
         manageDisposable(texture);
         rect.materials.get(0).set(new BlendingAttribute(), TextureAttribute.createDiffuse(texture));

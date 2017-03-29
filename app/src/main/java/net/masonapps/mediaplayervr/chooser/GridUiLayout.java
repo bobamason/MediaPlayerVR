@@ -318,7 +318,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         void onItemClicked(int index, T obj);
     }
 
-    public static abstract class GridItemHolder<T> {
+    public static class GridItemHolder<T> {
         public Table table;
         public Image image;
         public Label label;

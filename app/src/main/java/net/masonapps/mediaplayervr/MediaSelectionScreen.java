@@ -21,10 +21,12 @@ import com.google.vr.sdk.controller.Controller;
 import net.masonapps.mediaplayervr.chooser.AlbumListLayout;
 import net.masonapps.mediaplayervr.chooser.ArtistListLayout;
 import net.masonapps.mediaplayervr.chooser.GridUiLayout;
+import net.masonapps.mediaplayervr.chooser.ImageListLayout;
 import net.masonapps.mediaplayervr.chooser.SongListLayout;
 import net.masonapps.mediaplayervr.chooser.VideoListLayout;
 import net.masonapps.mediaplayervr.media.AlbumDetails;
 import net.masonapps.mediaplayervr.media.ArtistDetails;
+import net.masonapps.mediaplayervr.media.ImageDetails;
 import net.masonapps.mediaplayervr.media.MediaUtils;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
@@ -59,9 +61,10 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private volatile int currentState = STATE_NO_LIST;
     private volatile int lastState = STATE_NO_LIST;
     private Table tablePermissions;
-    private VideoListLayout layoutVideoList;
-    private AlbumListLayout layoutAlbumList;
-    private ArtistListLayout layoutArtistList;
+    private GridUiLayout<VideoDetails> layoutVideoList;
+    private GridUiLayout<ImageDetails> layoutImageList;
+    private GridUiLayout<AlbumDetails> layoutAlbumList;
+    private GridUiLayout<ArtistDetails> layoutArtistList;
     private SongListLayout layoutSongList;
 
     public MediaSelectionScreen(final Context context, VrGame game) {
@@ -94,6 +97,15 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             @Override
             public void onItemClicked(int index, VideoDetails obj) {
                 mediaPlayerGame.playVideo(obj);
+            }
+        });
+
+        layoutImageList = new ImageListLayout(context, skin, spriteBatch);
+        layoutImageList.attach(container);
+        layoutImageList.setOnItemClickedListener(new GridUiLayout.OnGridItemClickedListener<ImageDetails>() {
+            @Override
+            public void onItemClicked(int index, ImageDetails obj) {
+                mediaPlayerGame.displayPicture(obj);
             }
         });
 
@@ -256,6 +268,33 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         });
         tableStart.add(videosButton).center().pad(6).row();
 
+        final ImageTextButton pictureButton = new ImageTextButton(context.getString(R.string.pictures), Style.createImageTextButtonStyle(skin, Style.Drawables.ic_movie_white_48dp));
+        pictureButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!isLoading()) {
+                    setLoading(true);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final List<ImageDetails> list = MediaUtils.getImageList(context);
+                            Gdx.app.postRunnable(new Runnable() {
+                                @Override
+                                public void run() {
+                                    layoutImageList.clear();
+                                    layoutImageList.getList().addAll(list);
+                                    layoutImageList.displayList(0);
+                                    switchToPictureScreen();
+                                    setLoading(false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+            }
+        });
+        tableStart.add(pictureButton).center().pad(6).row();
+
         final ImageTextButton musicButton = new ImageTextButton(context.getString(R.string.music), Style.createImageTextButtonStyle(skin, Style.Drawables.ic_album_white_48dp));
         musicButton.addListener(new ClickListener() {
             @Override
@@ -383,6 +422,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             tablePermissions.setVisible(true);
         }
         layoutVideoList.setVisible(false);
+        layoutImageList.setVisible(false);
         layoutAlbumList.setVisible(false);
         layoutArtistList.setVisible(false);
         layoutSongList.setVisible(false);
@@ -394,6 +434,19 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         stageBack.setVisible(true);
         stageStart.setVisible(false);
         layoutVideoList.setVisible(true);
+        layoutImageList.setVisible(false);
+        layoutAlbumList.setVisible(false);
+        layoutArtistList.setVisible(false);
+        layoutSongList.setVisible(false);
+    }
+
+    private void switchToPictureScreen() {
+        lastState = STATE_NO_LIST;
+        currentState = STATE_VIDEO_LIST;
+        stageBack.setVisible(true);
+        stageStart.setVisible(false);
+        layoutVideoList.setVisible(false);
+        layoutImageList.setVisible(true);
         layoutAlbumList.setVisible(false);
         layoutArtistList.setVisible(false);
         layoutSongList.setVisible(false);
@@ -405,6 +458,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         stageBack.setVisible(true);
         stageStart.setVisible(false);
         layoutVideoList.setVisible(false);
+        layoutImageList.setVisible(false);
         layoutAlbumList.setVisible(true);
         layoutArtistList.setVisible(false);
         layoutSongList.setVisible(false);
@@ -416,6 +470,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         stageBack.setVisible(true);
         stageStart.setVisible(false);
         layoutVideoList.setVisible(false);
+        layoutImageList.setVisible(false);
         layoutAlbumList.setVisible(false);
         layoutArtistList.setVisible(true);
         layoutSongList.setVisible(false);
@@ -427,6 +482,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         stageBack.setVisible(true);
         stageStart.setVisible(false);
         layoutVideoList.setVisible(false);
+        layoutImageList.setVisible(false);
         layoutAlbumList.setVisible(false);
         layoutArtistList.setVisible(false);
         layoutSongList.setVisible(true);

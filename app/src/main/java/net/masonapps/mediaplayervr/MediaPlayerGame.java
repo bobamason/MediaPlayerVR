@@ -31,6 +31,7 @@ import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
 import net.masonapps.mediaplayervr.audiovisualization.tests.DecalsPerformanceTest;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
+import net.masonapps.mediaplayervr.media.ImageDetails;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 
@@ -280,5 +281,9 @@ public class MediaPlayerGame extends VrGame {
 
     public VideoOptionsDatabaseHelper getVideoOptionsDatabaseHelper() {
         return ((MainActivity) context).getVideoOptionsDatabaseHelper();
+    }
+
+    public void displayPicture(ImageDetails obj) {
+        
     }
 }

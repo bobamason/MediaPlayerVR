@@ -1,4 +1,4 @@
-package net.masonapps.mediaplayervr.video;
+package net.masonapps.mediaplayervr.utils;
 
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -77,7 +77,7 @@ public class ModelGenerator {
         return modelBuilder.end();
     }
 
-    public static Model createRectScreen(ModelBuilder modelBuilder) {
+    public static Model createRect(ModelBuilder modelBuilder) {
         final float x = -0.5f;
         final float y = -0.5f;
         final float s = 1f;

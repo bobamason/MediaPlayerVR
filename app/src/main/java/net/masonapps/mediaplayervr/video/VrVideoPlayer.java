@@ -19,6 +19,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
 
+import net.masonapps.mediaplayervr.utils.ModelGenerator;
+
 /**
  * Created by Bob on 12/21/2016.
  */
@@ -68,7 +70,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.height = height;
         shader = new VideoShader();
         final ModelBuilder modelBuilder = new ModelBuilder();
-        final Model rect = ModelGenerator.createRectScreen(modelBuilder);
+        final Model rect = ModelGenerator.createRect(modelBuilder);
         disposables.add(rect);
         rectModelInstance = new ModelInstance(rect);
         final int divisionsU = 64;

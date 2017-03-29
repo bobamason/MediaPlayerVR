@@ -18,6 +18,8 @@ import java.util.List;
 
 public class MediaUtils {
 
+    public static final int SAMPLE_SIZE = 1;
+
     public static List<VideoDetails> getVideoList(Context context) {
         ArrayList<VideoDetails> list = new ArrayList<>();
         final String[] projection = {MediaStore.Video.Media._ID, MediaStore.Video.Media.DATA, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.WIDTH, MediaStore.Video.Media.HEIGHT, MediaStore.Video.Media.DURATION, MediaStore.Video.Media.TAGS};
@@ -46,10 +48,42 @@ public class MediaUtils {
         return list;
     }
 
+    public static List<ImageDetails> getImageList(Context context) {
+        ArrayList<ImageDetails> list = new ArrayList<>();
+        final String[] projection = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.DISPLAY_NAME, MediaStore.Images.Media.WIDTH, MediaStore.Images.Media.HEIGHT, MediaStore.Images.Media.DATE_TAKEN};
+        Cursor c = context.getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, projection, null, null, MediaStore.Video.Media.DATE_TAKEN + " DSC");
+        if (c != null) {
+            try {
+                if (c.moveToFirst()) {
+                    do {
+                        final ImageDetails imageDetails = new ImageDetails();
+                        imageDetails.id = c.getLong(c.getColumnIndexOrThrow(MediaStore.Video.Media._ID));
+                        imageDetails.uri = Uri.parse(c.getString(c.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)));
+                        imageDetails.title = c.getString(c.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME));
+                        imageDetails.width = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH));
+                        imageDetails.height = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT));
+                        list.add(imageDetails);
+                    } while (c.moveToNext());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                c.close();
+            }
+        }
+        return list;
+    }
+
     public static Bitmap getVideoThumbnailBitmap(Context context, long id) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 2;
+        options.inSampleSize = SAMPLE_SIZE;
         return MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Video.Thumbnails.MINI_KIND, options);
+    }
+
+    public static Bitmap getImageThumbnailBitmap(Context context, long id) {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = SAMPLE_SIZE;
+        return MediaStore.Images.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, options);
     }
 
     public static List<SongDetails> getSongList(Context context, String selection) {
