@@ -21,8 +21,8 @@ public class VrVideoPlayerMP extends VrVideoPlayer implements MediaPlayer.OnErro
         super(context, uri, width, height);
     }
 
-    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, VideoMode videoMode) {
-        super(context, uri, width, height, videoMode);
+    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, DisplayMode displayMode) {
+        super(context, uri, width, height, displayMode);
     }
 
     @Override

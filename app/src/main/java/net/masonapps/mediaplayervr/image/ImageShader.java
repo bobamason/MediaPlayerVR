@@ -1,13 +1,11 @@
-package net.masonapps.mediaplayervr.video;
-
-import android.opengl.GLES11Ext;
-import android.opengl.GLES20;
+package net.masonapps.mediaplayervr.image;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -17,13 +15,14 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import net.masonapps.mediaplayervr.GlobalSettings;
 
 /**
- * Created by Bob on 11/11/2016.
+ * Created by Bob on 3/30/2017.
  */
 
-public class VideoShader extends BaseShader {
+public class ImageShader extends BaseShader {
 
     private static String vertexShader = null;
     private static String fragmentShader = null;
+    protected final int u_diffuseTexture = register(new Uniform("u_diffuseTexture"));
     private final int u_projTrans = register(new Uniform("u_projTrans"));
     private final int u_worldTrans = register(new Uniform("u_worldTrans"));
     private final int u_srcRect = register(new Uniform("u_srcRect"));
@@ -42,7 +41,7 @@ public class VideoShader extends BaseShader {
     private float colorTemp = GlobalSettings.DEFAULT_COLOR_TEMP;
     private int textureId = -1;
 
-    public VideoShader() {
+    public ImageShader() {
         program = new ShaderProgram(getVertexShader(), getFragmentShader());
 
         if (!program.isCompiled())
@@ -54,13 +53,13 @@ public class VideoShader extends BaseShader {
 
     private static String getVertexShader() {
         if (vertexShader == null)
-            vertexShader = Gdx.files.internal("shaders/video.vertex.glsl").readString();
+            vertexShader = Gdx.files.internal("shaders/image.vertex.glsl").readString();
         return vertexShader;
     }
 
     private static String getFragmentShader() {
         if (fragmentShader == null)
-            fragmentShader = Gdx.files.internal("shaders/video.fragment.glsl").readString();
+            fragmentShader = Gdx.files.internal("shaders/image.fragment.glsl").readString();
         return fragmentShader;
     }
 
@@ -90,7 +89,11 @@ public class VideoShader extends BaseShader {
     @Override
     public void render(Renderable renderable) {
         set(u_worldTrans, renderable.worldTransform);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
+        if (renderable.material.has(TextureAttribute.Diffuse)) {
+            final TextureAttribute textureAttribute = (TextureAttribute) renderable.material.get(TextureAttribute.Diffuse);
+            textureAttribute.textureDescription.texture.bind();
+            set(u_diffuseTexture, 0);
+        }
         set(u_srcRect, srcRect.x, srcRect.y, srcRect.width, srcRect.height);
         set(u_dstRect, dstRect.x, dstRect.y, dstRect.width, dstRect.height);
         set(u_clip, srcRect.x, srcRect.y, srcRect.x + srcRect.width, srcRect.y + srcRect.height);
@@ -158,9 +161,5 @@ public class VideoShader extends BaseShader {
 
     public void setColorTemp(float colorTemp) {
         this.colorTemp = colorTemp;
-    }
-
-    public void setTextureId(int textureId) {
-        this.textureId = textureId;
     }
 }

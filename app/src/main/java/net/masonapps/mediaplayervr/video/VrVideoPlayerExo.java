@@ -40,8 +40,8 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
         super(context, uri, width, height);
     }
 
-    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, VideoMode videoMode) {
-        super(context, uri, width, height, videoMode);
+    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, DisplayMode displayMode) {
+        super(context, uri, width, height, displayMode);
     }
 
     @Override

@@ -232,12 +232,6 @@ public class MediaPlayerGame extends VrGame {
         } else if (getScreen() instanceof VideoPlayerScreen) {
             final VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
             getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
-//                }
-//            }).start();
             setScreen(mediaSelectionScreen);
             videoPlayerScreen.dispose();
             Log.d(MediaPlayerGame.class.getSimpleName(), "VideoPlayerScreen disposed");
@@ -283,7 +277,7 @@ public class MediaPlayerGame extends VrGame {
         return ((MainActivity) context).getVideoOptionsDatabaseHelper();
     }
 
-    public void displayPicture(ImageDetails obj) {
-        
+    public void displayImage(ImageDetails imageDetails) {
+        setScreen(new ImageViewerScreen(this, context, imageDetails));
     }
 }

@@ -13,14 +13,16 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.media.ArtistDetails;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * Created by Bob on 2/23/2017.
  */
 
 public class ArtistListLayout extends GridUiLayout<ArtistDetails> {
 
-    public ArtistListLayout(Context context, Skin skin, Batch batch) {
-        super(context, skin, batch);
+    public ArtistListLayout(Context context, Skin skin, Batch batch, ExecutorService executor) {
+        super(context, skin, batch, executor);
     }
 
     @Override

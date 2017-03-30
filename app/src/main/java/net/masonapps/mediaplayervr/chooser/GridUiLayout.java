@@ -39,7 +39,6 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static com.badlogic.gdx.utils.Align.center;
 
@@ -72,11 +71,11 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     private OnGridItemClickedListener<T> listener = null;
     private ExecutorService executor;
 
-    public GridUiLayout(Context context, Skin skin, Batch batch) {
+    public GridUiLayout(Context context, Skin skin, Batch batch, ExecutorService executor) {
         contextRef = new WeakReference<>(context);
         this.skin = skin;
-        executor = Executors.newCachedThreadPool();
         stageList = new VirtualStage(batch, 840, 480);
+        this.executor = executor;
         stageList.setPosition(0, 0.25f, -2f);
         stagePages = new VirtualStage(batch, 720, 100);
         stagePages.setPosition(0, -0.5f, -2f);
@@ -133,11 +132,6 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     @Override
     @CallSuper
     public void dispose() {
-        try {
-            executor.shutdownNow();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         try {
             stageList.dispose();
             stagePages.dispose();
@@ -389,7 +383,6 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            gridUiLayout.loading = false;
         }
     }
 }

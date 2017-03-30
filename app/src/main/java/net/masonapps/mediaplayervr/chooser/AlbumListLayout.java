@@ -18,6 +18,7 @@ import net.masonapps.mediaplayervr.media.AlbumDetails;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by Bob on 2/22/2017.
@@ -25,8 +26,8 @@ import java.io.InputStream;
 
 public class AlbumListLayout extends GridUiLayout<AlbumDetails> {
 
-    public AlbumListLayout(Context context, Skin skin, Batch batch) {
-        super(context, skin, batch);
+    public AlbumListLayout(Context context, Skin skin, Batch batch, ExecutorService executor) {
+        super(context, skin, batch, executor);
     }
 
     @Override

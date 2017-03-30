@@ -57,11 +57,11 @@ public class MediaUtils {
                 if (c.moveToFirst()) {
                     do {
                         final ImageDetails imageDetails = new ImageDetails();
-                        imageDetails.id = c.getLong(c.getColumnIndexOrThrow(MediaStore.Video.Media._ID));
-                        imageDetails.uri = Uri.parse(c.getString(c.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)));
-                        imageDetails.title = c.getString(c.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME));
-                        imageDetails.width = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH));
-                        imageDetails.height = c.getInt(c.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT));
+                        imageDetails.id = c.getLong(c.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+                        imageDetails.uri = Uri.parse(c.getString(c.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)));
+                        imageDetails.title = c.getString(c.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
+                        imageDetails.width = c.getInt(c.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH));
+                        imageDetails.height = c.getInt(c.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT));
                         list.add(imageDetails);
                     } while (c.moveToNext());
                 }

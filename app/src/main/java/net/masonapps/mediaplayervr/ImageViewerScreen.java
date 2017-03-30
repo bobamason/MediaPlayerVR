@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.google.vr.sdk.controller.Controller;
 
+import net.masonapps.mediaplayervr.image.ImageDisplay;
 import net.masonapps.mediaplayervr.media.ImageDetails;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -32,6 +33,7 @@ public class ImageViewerScreen extends VrWorldScreen implements DaydreamControll
     private final ImageDetails imageDetails;
     private final Entity controllerEntity;
     private final VrUiContainer container;
+    private final ImageDisplay imageDisplay;
     private boolean isButtonClicked = false;
 
     public ImageViewerScreen(VrGame game, Context context, ImageDetails imageDetails) {
@@ -39,6 +41,8 @@ public class ImageViewerScreen extends VrWorldScreen implements DaydreamControll
         this.context = context;
         this.imageDetails = imageDetails;
         setBackgroundColor(Color.BLACK);
+        imageDisplay = new ImageDisplay(context, imageDetails.uri, imageDetails.width, imageDetails.height);
+        manageDisposable(imageDisplay);
         final SpriteBatch spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);
         container = new VrUiContainer();
@@ -66,20 +70,16 @@ public class ImageViewerScreen extends VrWorldScreen implements DaydreamControll
 
     @Override
     public void hide() {
-        pause();
         GdxVr.input.getDaydreamControllerHandler().removeListener(this);
         GdxVr.input.setProcessor(null);
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
+        dispose();
     }
 
     @Override
     public void update() {
         super.update();
         container.act();
+        imageDisplay.update();
     }
 
     @Override
@@ -87,6 +87,9 @@ public class ImageViewerScreen extends VrWorldScreen implements DaydreamControll
         super.render(camera, whichEye);
 //        if(isUiVisible())
         container.draw(camera);
+        getModelBatch().begin(camera);
+        imageDisplay.render(getModelBatch(), whichEye);
+        getModelBatch().end();
     }
 
     @Override

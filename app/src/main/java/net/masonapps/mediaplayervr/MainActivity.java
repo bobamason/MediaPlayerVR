@@ -31,7 +31,6 @@ public class MainActivity extends VrActivity {
         initialize(game);
         getGvrView().setMultisampling(2);
 
-//        getGvrView().setAsyncReprojectionEnabled(false);
         if (getGvrView().setAsyncReprojectionEnabled(true)) {
 //            // Async reprojection decouples the app framerate from the display framerate,
 //            // allowing immersive interaction even at the throttled clockrates set by
@@ -53,18 +52,18 @@ public class MainActivity extends VrActivity {
     }
 
     public boolean isReadStoragePermissionGranted() {
-        return ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     public void requestReadStoragePermission(StoragePermissionResultListener listener) {
-        ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, RECORD_AUDIO}, RC_PERMISSIONS);
+        ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE}, RC_PERMISSIONS);
         this.listener = listener;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == RC_PERMISSIONS && grantResults.length >= 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == RC_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             if (listener != null) {
                 listener.onResult(true);
             }

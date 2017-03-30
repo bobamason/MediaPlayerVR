@@ -1,13 +1,9 @@
-package net.masonapps.mediaplayervr.video;
+package net.masonapps.mediaplayervr.image;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.net.Uri;
-import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.Nullable;
 
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -20,34 +16,29 @@ import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
 
 import net.masonapps.mediaplayervr.utils.ModelGenerator;
+import net.masonapps.mediaplayervr.video.DisplayMode;
+import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 
 /**
- * Created by Bob on 12/21/2016.
+ * Created by Bob on 3/30/2017.
  */
 
-public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFrameAvailableListener {
+public class ImageDisplay implements Disposable {
 
     public static final String TAG = VrVideoPlayer.class.getSimpleName();
-    protected static Handler handler;
     protected final ModelInstance rectModelInstance;
     //    protected final ModelInstance halfSphereModelInstance;
     protected final ModelInstance sphereModelInstance;
     protected final Object lock = new Object();
     protected ModelInstance modelInstance;
     protected Array<Disposable> disposables = new Array<>();
-    protected VideoShader shader;
+    protected ImageShader shader;
     protected int[] textures = new int[1];
     protected SurfaceTexture videoTexture;
     protected boolean prepared = false;
     protected boolean frameAvailable = false;
     protected boolean isStereoscopic = false;
     protected boolean isHorizontalSplit = false;
-    @Nullable
-    protected VideoSizeListener sizeListener;
-    @Nullable
-    protected CompletionListener completionListener;
-    @Nullable
-    protected ErrorListener errorListener;
     protected DisplayMode displayMode;
     protected float aspectRatio = 1f;
     //    protected float targetAspectRatio = 1f;
@@ -60,51 +51,26 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
     private float shift = 0f;
 
-    public VrVideoPlayer(Context context, Uri uri, int width, int height) {
+    public ImageDisplay(Context context, Uri uri, int width, int height) {
         this(context, uri, width, height, DisplayMode.Mono);
     }
 
-    public VrVideoPlayer(Context context, Uri uri, int width, int height, DisplayMode displayMode) {
+    public ImageDisplay(Context context, Uri uri, int width, int height, DisplayMode displayMode) {
         this.context = context;
         this.width = width;
         this.height = height;
-        shader = new VideoShader();
+        shader = new ImageShader();
         final ModelBuilder modelBuilder = new ModelBuilder();
         final Model rect = ModelGenerator.createRect(modelBuilder);
         disposables.add(rect);
         rectModelInstance = new ModelInstance(rect);
         final int divisionsU = 64;
         final int divisionsV = 64;
-//        final Model halfSphere = ModelGenerator.createHalfSphere(modelBuilder, 0.5f, divisionsU, divisionsV);
-//        disposables.add(halfSphere);
-//        halfSphereModelInstance = new ModelInstance(halfSphere);
         final Model sphere = ModelGenerator.createSphere(modelBuilder, 0.5f, divisionsU * 2, divisionsV);
         disposables.add(sphere);
         sphereModelInstance = new ModelInstance(sphere);
-        setupRenderTexture();
-        initializeMediaPlayer();
         setDisplayMode(displayMode);
-        play(uri);
     }
-
-    private void initializeMediaPlayer() {
-        if (handler == null)
-            handler = new Handler(Looper.getMainLooper());
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (lock) {
-                    createMediaPlayer();
-                    lock.notify();
-                }
-            }
-        });
-    }
-
-    protected abstract void createMediaPlayer();
-
-    public abstract boolean play(final Uri uri);
 
     protected void updateAspectRatio() {
         if (!prepared) return;
@@ -159,27 +125,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             return;
         }
 
-//        switch (videoMode){
-//            case Mono:
-//                break;
-//            case Mono180:
-//                break;
-//            case Mono360:
-//                break;
-//            case LR3D:
-//                break;
-//            case LR180:
-//                break;
-//            case LR360:
-//                break;
-//            case TB3D:
-//                break;
-//            case TB180:
-//                break;
-//            case TB360:
-//                break;
-//        }
-
         if (useFlatRectangle())
             mapDistortModel();
         else
@@ -232,30 +177,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         }
     }
 
-    public abstract void stop();
-
-    protected void setupRenderTexture() {
-        // Generate the actual texture
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glGenTextures(1, textures, 0);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textures[0]);
-        shader.setTextureId(textures[0]);
-
-        videoTexture = new SurfaceTexture(textures[0]);
-        videoTexture.setOnFrameAvailableListener(this);
-    }
-
-    @Override
-    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        synchronized (this) {
-            frameAvailable = true;
-        }
-    }
-
-    public abstract void pause();
-
-    public abstract void resume();
-
     @Override
     public void dispose() {
         if (disposables != null) {
@@ -276,18 +197,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         }
     }
 
-    public void setOnVideoSizeListener(VideoSizeListener listener) {
-        sizeListener = listener;
-    }
-
-    public void setOnCompletionListener(CompletionListener listener) {
-        completionListener = listener;
-    }
-
-    public void setOnErrorListener(ErrorListener listener) {
-        this.errorListener = listener;
-    }
-
     public float getWidth() {
         return width;
     }
@@ -295,8 +204,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public float getHeight() {
         return height;
     }
-
-    public abstract boolean isPlaying();
 
     public boolean isStereoscopic() {
         return isStereoscopic;
@@ -399,16 +306,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         }
     }
 
-    public void set3dShift(float shift) {
-        this.shift = shift * 0.5f;
-    }
-
-    public abstract void seekTo(long position);
-
-    public abstract long getCurrentPosition();
-
-    public abstract long getDuration();
-
     public void setAspectRatio(float ratio) {
         if (ratio < 0)
             updateAspectRatio();
@@ -429,19 +326,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.modelSize = modelSize;
     }
 
-    public VideoShader getShader() {
+    public ImageShader getShader() {
         return shader;
-    }
-
-    public interface VideoSizeListener {
-        void onVideoSizeChanged(float width, float height);
-    }
-
-    public interface CompletionListener {
-        void onCompletion();
-    }
-
-    public interface ErrorListener {
-        void onError(String error);
     }
 }

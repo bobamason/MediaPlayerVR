@@ -14,6 +14,8 @@ import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.media.MediaUtils;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * Created by Bob on 2/23/2017.
  */
@@ -22,8 +24,8 @@ public class VideoListLayout extends GridUiLayout<VideoDetails> {
 
     private Drawable defaultVideoDrawable;
 
-    public VideoListLayout(Context context, Skin skin, Batch batch) {
-        super(context, skin, batch);
+    public VideoListLayout(Context context, Skin skin, Batch batch, ExecutorService executor) {
+        super(context, skin, batch, executor);
         defaultVideoDrawable = skin.newDrawable(Style.Drawables.ic_movie_white_48dp);
     }
 

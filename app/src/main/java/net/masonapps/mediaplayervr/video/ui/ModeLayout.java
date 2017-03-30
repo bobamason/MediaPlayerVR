@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import net.masonapps.mediaplayervr.Style;
-import net.masonapps.mediaplayervr.video.VideoMode;
+import net.masonapps.mediaplayervr.video.DisplayMode;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
@@ -23,8 +23,8 @@ import java.util.ArrayList;
  */
 
 public class ModeLayout extends SingleStageUi {
-    private static ObjectMap<String, VideoMode> nameModeMap = new ObjectMap<>();
-    private static ObjectMap<VideoMode, String> modeNameMap = new ObjectMap<>();
+    private static ObjectMap<String, DisplayMode> nameModeMap = new ObjectMap<>();
+    private static ObjectMap<DisplayMode, String> modeNameMap = new ObjectMap<>();
     private static Array<String> modes = new Array<>();
 
     static {
@@ -39,29 +39,29 @@ public class ModeLayout extends SingleStageUi {
         modes.add("360");
         modes.add("360 L/R");
         modes.add("360 T/B");
-        nameModeMap.put(modes.get(0), VideoMode.Mono);
-        nameModeMap.put(modes.get(1), VideoMode.LR3D);
-        nameModeMap.put(modes.get(2), VideoMode.TB3D);
+        nameModeMap.put(modes.get(0), DisplayMode.Mono);
+        nameModeMap.put(modes.get(1), DisplayMode.LR3D);
+        nameModeMap.put(modes.get(2), DisplayMode.TB3D);
 
-        nameModeMap.put(modes.get(3), VideoMode.Mono180);
-        nameModeMap.put(modes.get(4), VideoMode.LR180);
-        nameModeMap.put(modes.get(5), VideoMode.TB180);
+        nameModeMap.put(modes.get(3), DisplayMode.Mono180);
+        nameModeMap.put(modes.get(4), DisplayMode.LR180);
+        nameModeMap.put(modes.get(5), DisplayMode.TB180);
 
-        nameModeMap.put(modes.get(6), VideoMode.Mono360);
-        nameModeMap.put(modes.get(7), VideoMode.LR360);
-        nameModeMap.put(modes.get(8), VideoMode.TB360);
+        nameModeMap.put(modes.get(6), DisplayMode.Mono360);
+        nameModeMap.put(modes.get(7), DisplayMode.LR360);
+        nameModeMap.put(modes.get(8), DisplayMode.TB360);
 
-        modeNameMap.put(VideoMode.Mono, modes.get(0));
-        modeNameMap.put(VideoMode.LR3D, modes.get(1));
-        modeNameMap.put(VideoMode.TB3D, modes.get(2));
+        modeNameMap.put(DisplayMode.Mono, modes.get(0));
+        modeNameMap.put(DisplayMode.LR3D, modes.get(1));
+        modeNameMap.put(DisplayMode.TB3D, modes.get(2));
 
-        modeNameMap.put(VideoMode.Mono180, modes.get(3));
-        modeNameMap.put(VideoMode.LR180, modes.get(4));
-        modeNameMap.put(VideoMode.TB180, modes.get(5));
+        modeNameMap.put(DisplayMode.Mono180, modes.get(3));
+        modeNameMap.put(DisplayMode.LR180, modes.get(4));
+        modeNameMap.put(DisplayMode.TB180, modes.get(5));
 
-        modeNameMap.put(VideoMode.Mono360, modes.get(6));
-        modeNameMap.put(VideoMode.LR360, modes.get(7));
-        modeNameMap.put(VideoMode.TB360, modes.get(8));
+        modeNameMap.put(DisplayMode.Mono360, modes.get(6));
+        modeNameMap.put(DisplayMode.LR360, modes.get(7));
+        modeNameMap.put(DisplayMode.TB360, modes.get(8));
     }
 
     private final VideoPlayerGUI videoPlayerGUI;
@@ -96,14 +96,14 @@ public class ModeLayout extends SingleStageUi {
             textButtons.add(textButton);
             final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
             if (videoPlayerGUI.getVideoOptions().modeSelection == i) {
-                videoPlayer.setVideoMode(nameModeMap.get(textButton.getText().toString()));
+                videoPlayer.setDisplayMode(nameModeMap.get(textButton.getText().toString()));
                 textButton.setChecked(true);
             }
             final int index = i;
             textButton.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    videoPlayer.setVideoMode(nameModeMap.get(textButton.getText().toString()));
+                    videoPlayer.setDisplayMode(nameModeMap.get(textButton.getText().toString()));
                     videoPlayerGUI.getVideoOptions().modeSelection = index;
                     for (TextButton b : textButtons) {
                         b.setChecked(false);
