@@ -17,7 +17,7 @@ import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
-import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 import java.util.Locale;

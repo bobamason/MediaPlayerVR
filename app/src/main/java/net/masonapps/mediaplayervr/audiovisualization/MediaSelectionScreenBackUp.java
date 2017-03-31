@@ -40,7 +40,7 @@ import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
-import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 
 import java.util.List;

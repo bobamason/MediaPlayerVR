@@ -11,7 +11,7 @@ import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
-import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 /**
  * Created by Bob on 3/13/2017.

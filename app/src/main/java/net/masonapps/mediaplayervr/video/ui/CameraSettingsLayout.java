@@ -13,7 +13,7 @@ import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
-import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 /**
  * Created by Bob on 2/8/2017.

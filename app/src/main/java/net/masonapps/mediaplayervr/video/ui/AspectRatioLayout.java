@@ -12,7 +12,7 @@ import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
-import org.masonapps.libgdxgooglevr.input.VirtualStage;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.util.ArrayList;
 
