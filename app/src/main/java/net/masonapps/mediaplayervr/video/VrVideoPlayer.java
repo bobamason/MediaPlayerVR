@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -59,6 +60,9 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
     private float shift = 0f;
+    private Quaternion headRotation = new Quaternion();
+    private Quaternion invHeadRotation = new Quaternion();
+    private float zoom = 1f;
 
     public VrVideoPlayer(Context context, Uri uri, int width, int height) {
         this(context, uri, width, height, DisplayMode.Mono);
@@ -221,7 +225,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     protected void mapDistortTextureCoordinates() {
-        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
+        modelInstance.transform.idt().rotate(invHeadRotation).scale(modelSize, modelSize, modelSize * zoom).rotate(headRotation);
     }
 
     protected void mapDistortModel() {
@@ -421,6 +425,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         updateAspectRatio();
     }
 
+    public void setZoom(float zoom) {
+        this.zoom = zoom;
+    }
+
     public float getModelSize() {
         return modelSize;
     }
@@ -431,6 +439,11 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     public VideoShader getShader() {
         return shader;
+    }
+
+    public void setHeadRotation(Quaternion headRotation) {
+        this.headRotation.set(headRotation);
+        invHeadRotation.set(headRotation).conjugate();
     }
 
     public interface VideoSizeListener {

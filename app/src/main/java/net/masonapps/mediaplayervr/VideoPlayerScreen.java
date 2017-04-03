@@ -179,6 +179,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
                 rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
             } else {
+//                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
+//                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
                 setCameraProjectionZoom(leftEye, leftCamera, zoom);
                 setCameraProjectionZoom(rightEye, rightCamera, zoom);
             }
@@ -192,7 +194,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             updateCamera(leftCamera);
 
             translation.set(getRightVector()).scl(ipdHalf);
-            rightCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+            rightCamera.view.setToLookAt(translation, tempV.set(getForwardVector()).scl(videoPlayer.getModelSize()), getUpVector());
             updateCamera(rightCamera);
         } else {
             setCameraViewFromEye(leftEye, leftCamera);
@@ -201,6 +203,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             setCameraViewFromEye(rightEye, rightCamera);
             updateCamera(rightCamera);
         }
+
+//        videoPlayer.setHeadRotation(getHeadQuaternion());
+//        videoPlayer.setZoom(zoom);
 
         Viewport viewport = leftEye.getViewport();
         Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);

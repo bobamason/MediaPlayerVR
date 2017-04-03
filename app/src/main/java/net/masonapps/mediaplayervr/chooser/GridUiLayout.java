@@ -32,8 +32,8 @@ import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -378,10 +378,12 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
                         bitmap.recycle();
                         gridUiLayout.thumbnailTextures.add(texture);
                         holder.image.setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
+                        gridUiLayout.loading = false;
                     }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
+                gridUiLayout.loading = false;
             }
         }
     }

@@ -26,8 +26,8 @@ import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
-import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -57,8 +57,10 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         final boolean permissionGranted = isPermissionGranted();
         stageMedia.setVisible(permissionGranted);
         stagePermissions.setVisible(!permissionGranted);
-        if (permissionGranted)
+        if (permissionGranted) {
             showVideoList();
+            loadVideoList();
+        }
         setBackgroundColor(Color.SLATE);
     }
 
@@ -66,6 +68,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         manageDisposable(spriteBatch);
         stageMedia = new VirtualStage(spriteBatch, 360, 540);
         stagePermissions = new VirtualStage(spriteBatch, 720, 540);
+        container.addProcessor(stageMedia);
         container.addProcessor(stagePermissions);
 //        stageSongList = new VirtualStage(batch, 720, 420);
 
@@ -93,8 +96,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         manageDisposable(stagePermissions);
         manageDisposable(layoutVideoList);
 
-        stagePermissions.setPosition(0, 0, -2f);
-        stageMedia.setPosition(-2f, 0, -1.6f);
+        stagePermissions.setPosition(0.4f, 0, -2f);
+        stageMedia.setPosition(-1.2f, 0, -1.4f);
         stageMedia.lookAt(getVrCamera().position, Vector3.Y);
         
 //        stageSongList.setPosition(0, 0.5f, -3f);
@@ -120,8 +123,10 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                     public void onResult(boolean granted) {
                         stageMedia.setVisible(granted);
                         stagePermissions.setVisible(!granted);
-                        if (granted)
+                        if (granted) {
                             showVideoList();
+                            loadVideoList();
+                        }
                     }
                 });
             }
@@ -139,23 +144,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (!isLoading()) {
-                    setLoading(true);
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final List<VideoDetails> list = MediaUtils.getVideoList(context);
-                            Gdx.app.postRunnable(new Runnable() {
-                                @Override
-                                public void run() {
-                                    layoutVideoList.clear();
-                                    layoutVideoList.getList().addAll(list);
-                                    layoutVideoList.displayList(0);
-                                    showVideoList();
-                                    setLoading(false);
-                                }
-                            });
-                        }
-                    }).start();
+                    loadVideoList();
                 }
             }
         });
@@ -187,6 +176,26 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             }
         });
         tableStart.add(photosButton).center().pad(6).row();
+    }
+
+    private void loadVideoList() {
+        setLoading(true);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final List<VideoDetails> list = MediaUtils.getVideoList(context);
+                Gdx.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        layoutVideoList.clear();
+                        layoutVideoList.getList().addAll(list);
+                        layoutVideoList.displayList(0);
+                        showVideoList();
+                        setLoading(false);
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
