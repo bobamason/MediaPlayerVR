@@ -49,7 +49,7 @@ import static com.badlogic.gdx.utils.Align.center;
 public abstract class GridUiLayout<T> extends BaseUiLayout {
 
     private static final float LOADING_SPIN_SPEED = -360f;
-    private static final int ITEMS_PER_PAGE = 6;
+    private static final int ITEMS_PER_PAGE = 4;
     private static final int MAX_TITLE_LENGTH = 18;
     private static final float PADDING = 10f;
     protected final Skin skin;
@@ -74,11 +74,11 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     public GridUiLayout(Context context, Skin skin, Batch batch, ExecutorService executor) {
         contextRef = new WeakReference<>(context);
         this.skin = skin;
-        stageList = new VirtualStage(batch, 840, 480);
+        stageList = new VirtualStage(batch, 1080, 240);
         this.executor = executor;
-        stageList.setPosition(0, 0.25f, -2f);
-        stagePages = new VirtualStage(batch, 720, 100);
-        stagePages.setPosition(0, -0.5f, -2f);
+        stageList.setPosition(0f, -1f, -2.5f);
+        stagePages = new VirtualStage(batch, 960, 100);
+        stagePages.setPosition(0f, -1.4f, -2.5f);
         stagePages.addActor(Style.newBackgroundImage(skin));
         addListTable();
 //        loadingSpinner = new Image(skin.newDrawable(Style.Drawables.loading_spinner));
@@ -157,7 +157,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
             final Image image = new Image();
             image.setScaling(Scaling.fit);
             image.setAlign(Align.center);
-            table.add(image).width(stageList.getWidth() / 3f - PADDING * 6f).height(stageList.getHeight() / 2f - label.getStyle().font.getLineHeight() * 2 - PADDING * 4f).center().row();
+            table.add(image).width(stageList.getWidth() / 4f - PADDING * 8f).height(stageList.getHeight() - label.getStyle().font.getLineHeight() - PADDING * 2f).center().row();
 //            table.add(image).center().row();
             table.setBackground(skin.newDrawable(Style.Drawables.window));
 
@@ -256,7 +256,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
                 }
             });
             final Cell<Table> cell = tableList.add(holder.table).pad(PADDING).fill();
-            if (i % 3 == 2) cell.row();
+//            if (i % 3 == 2) cell.row();
         }
 //        }
         loadThumbnailTextures();

@@ -64,8 +64,16 @@ public class ModeLayout extends SingleStageUi {
         modeNameMap.put(DisplayMode.TB360, modes.get(8));
     }
 
+    public static DisplayMode getMode(int modeSelection) {
+        return nameModeMap.get(modes.get(modeSelection));
+    }
+
     private final VideoPlayerGUI videoPlayerGUI;
     private ArrayList<TextButton> textButtons = new ArrayList<>();
+
+    public static DisplayMode getMode(int modeSelection) {
+        return nameModeMap.get(modes.get(modeSelection));
+    }
 
     public ModeLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());

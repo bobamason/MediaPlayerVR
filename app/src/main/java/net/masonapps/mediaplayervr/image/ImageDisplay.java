@@ -1,21 +1,18 @@
 package net.masonapps.mediaplayervr.image;
 
-import android.content.Context;
-import android.graphics.SurfaceTexture;
-import android.net.Uri;
-import android.opengl.GLES20;
-
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
 
-import net.masonapps.mediaplayervr.utils.ModelGenerator;
 import net.masonapps.mediaplayervr.video.DisplayMode;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 
@@ -30,20 +27,17 @@ public class ImageDisplay implements Disposable {
     //    protected final ModelInstance halfSphereModelInstance;
     protected final ModelInstance sphereModelInstance;
     protected final Object lock = new Object();
+    public Vector3 position = new Vector3();
+    public Quaternion rotation = new Quaternion();
+    public float scale = 1f;
     protected ModelInstance modelInstance;
     protected Array<Disposable> disposables = new Array<>();
     protected ImageShader shader;
-    protected int[] textures = new int[1];
-    protected SurfaceTexture videoTexture;
-    protected boolean prepared = false;
-    protected boolean frameAvailable = false;
     protected boolean isStereoscopic = false;
     protected boolean isHorizontalSplit = false;
     protected DisplayMode displayMode;
     protected float aspectRatio = 1f;
     //    protected float targetAspectRatio = 1f;
-    protected float modelSize = 10f;
-    protected Context context;
     private int width;
     private int height;
     private Vector2 stretch = new Vector2();
@@ -51,29 +45,20 @@ public class ImageDisplay implements Disposable {
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
     private float shift = 0f;
 
-    public ImageDisplay(Context context, Uri uri, int width, int height) {
-        this(context, uri, width, height, DisplayMode.Mono);
+    public ImageDisplay(Model rect, Model sphere) {
+        this(DisplayMode.Mono, rect, sphere);
     }
 
-    public ImageDisplay(Context context, Uri uri, int width, int height, DisplayMode displayMode) {
-        this.context = context;
-        this.width = width;
-        this.height = height;
+    public ImageDisplay(DisplayMode displayMode, Model rect, Model sphere) {
+        this.width = 1;
+        this.height = 1;
         shader = new ImageShader();
-        final ModelBuilder modelBuilder = new ModelBuilder();
-        final Model rect = ModelGenerator.createRect(modelBuilder);
-        disposables.add(rect);
         rectModelInstance = new ModelInstance(rect);
-        final int divisionsU = 64;
-        final int divisionsV = 64;
-        final Model sphere = ModelGenerator.createSphere(modelBuilder, 0.5f, divisionsU * 2, divisionsV);
-        disposables.add(sphere);
         sphereModelInstance = new ModelInstance(sphere);
         setDisplayMode(displayMode);
     }
 
     protected void updateAspectRatio() {
-        if (!prepared) return;
         float w;
         float h;
         if (isStereoscopic) {
@@ -104,27 +89,11 @@ public class ImageDisplay implements Disposable {
         }
     }
 
-    public void update() {
-        if (!prepared) {
-            return;
-        }
-        synchronized (this) {
-            if (frameAvailable) {
-                videoTexture.updateTexImage();
-                frameAvailable = false;
-            }
-        }
-    }
-
     public void render(ModelBatch batch) {
         render(batch, Eye.Type.MONOCULAR);
     }
 
     public void render(ModelBatch batch, int eyeType) {
-        if (!prepared) {
-            return;
-        }
-
         if (useFlatRectangle())
             mapDistortModel();
         else
@@ -166,14 +135,14 @@ public class ImageDisplay implements Disposable {
     }
 
     protected void mapDistortTextureCoordinates() {
-        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
+        modelInstance.transform.set(position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, rotation.w, scale, scale, scale);
     }
 
     protected void mapDistortModel() {
         if (aspectRatio <= 1f) {
-            modelInstance.transform.idt().translate(0, 0, -4).scale(aspectRatio * modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
+            modelInstance.transform.set(position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, rotation.w, aspectRatio * scale + stretch.x * scale, scale + stretch.y * scale, scale);
         } else {
-            modelInstance.transform.idt().translate(0, 0, -4).scale(modelSize + stretch.x * modelSize, modelSize / aspectRatio + stretch.y * modelSize, modelSize);
+            modelInstance.transform.set(position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, rotation.w, scale + stretch.x * scale, scale / aspectRatio + stretch.y * scale, scale);
         }
     }
 
@@ -188,9 +157,6 @@ public class ImageDisplay implements Disposable {
             }
             disposables.clear();
         }
-        videoTexture.detachFromGLContext();
-
-        GLES20.glDeleteTextures(1, textures, 0);
 
         if (shader != null) {
             shader.dispose();
@@ -225,10 +191,6 @@ public class ImageDisplay implements Disposable {
 
     public ModelInstance getModelInstance() {
         return modelInstance;
-    }
-
-    public boolean isPrepared() {
-        return prepared;
     }
 
     public boolean useFlatRectangle() {
@@ -318,15 +280,30 @@ public class ImageDisplay implements Disposable {
         updateAspectRatio();
     }
 
-    public float getModelSize() {
-        return modelSize;
+    public float getScale() {
+        return scale;
     }
 
-    public void setModelSize(float modelSize) {
-        this.modelSize = modelSize;
+    public void setScale(float scale) {
+        this.scale = scale;
     }
 
     public ImageShader getShader() {
         return shader;
+    }
+
+    public void setTexture(Texture texture) {
+        width = texture.getWidth();
+        height = texture.getHeight();
+
+        final TextureAttribute rectTexAttr = (TextureAttribute) rectModelInstance.materials.get(0).get(TextureAttribute.Diffuse);
+        rectTexAttr.textureDescription.texture.dispose();
+        rectTexAttr.textureDescription.texture = texture;
+
+        final TextureAttribute sphereTexAttr = (TextureAttribute) sphereModelInstance.materials.get(0).get(TextureAttribute.Diffuse);
+        sphereTexAttr.textureDescription.texture.dispose();
+        sphereTexAttr.textureDescription.texture = texture;
+
+        updateAspectRatio();
     }
 }

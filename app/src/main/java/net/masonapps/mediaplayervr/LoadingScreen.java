@@ -33,7 +33,7 @@ public class LoadingScreen extends VrWorldScreen {
         final Texture texture = new Texture("loading.png");
         manageDisposable(texture);
         rect.materials.get(0).set(new BlendingAttribute(), TextureAttribute.createDiffuse(texture));
-        entity = getWorld().add(new Entity(new ModelInstance(rect, 0, 0, -3)));
+        entity = getWorld().add(new Entity(new ModelInstance(rect, 0, 0, -5)));
         entity.setLightingEnabled(false);
     }
 
