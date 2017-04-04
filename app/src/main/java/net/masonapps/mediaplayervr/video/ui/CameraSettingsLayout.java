@@ -2,14 +2,12 @@ package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
 import net.masonapps.mediaplayervr.GlobalSettings;
 import net.masonapps.mediaplayervr.Style;
-import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
@@ -53,34 +51,15 @@ public class CameraSettingsLayout extends SingleStageUi {
 
         ipd = videoOptions.ipd;
         videoPlayerGUI.getVideoPlayerScreen().setIpd(ipd);
-        final Label ipdLabel = new Label("IPD " + Math.round(ipd * 100) + "%", skin);
 
-        final ImageButton ipdLeft = new ImageButton(leftButtonStyle);
-        ipdLeft.addListener(new ClickListener() {
+        final TextButton ipdButton = new TextButton("Eye Spacing", skin);
+        ipdButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ipd -= STEP * 5f;
-                final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
-                screen.setIpd(ipd);
-                ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 100) + "%");
-                videoOptions.ipd = screen.getIpd();
+                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.IPD);
             }
         });
-        table.add(ipdLeft).pad(padding);
-        table.add(ipdLabel).pad(padding);
-
-        final ImageButton ipdRight = new ImageButton(rightButtonStyle);
-        ipdRight.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                ipd += STEP * 5f;
-                final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
-                screen.setIpd(ipd);
-                ipdLabel.setText("IPD " + Math.round(screen.getIpd() * 100) + "%");
-                videoOptions.ipd = screen.getIpd();
-            }
-        });
-        table.add(ipdRight).pad(padding).row();
+        table.add(ipdButton).colspan(3).padBottom(padding).row();
 
         final TextButton zoomButton = new TextButton("Zoom", skin);
         zoomButton.addListener(new ClickListener() {

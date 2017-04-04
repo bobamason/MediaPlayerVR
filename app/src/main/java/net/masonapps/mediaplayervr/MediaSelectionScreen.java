@@ -60,15 +60,17 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         final int divisionsV = 24;
         final Model sphereModel = ModelGenerator.createSphere(modelBuilder, 0.5f, divisionsU * 2, divisionsV);
         manageDisposable(rectModel, sphereModel);
-        videoPreviewUi = new VideoPreviewUi(new WeakReference<>(context), rectModel, sphereModel);
-        videoPreviewUi.setListener(new VideoPreviewUi.OnOpenClickedListener() {
+        videoPreviewUi = new VideoPreviewUi(new WeakReference<>(context), rectModel, sphereModel, spriteBatch, skin);
+        videoPreviewUi.setListener(new VideoPreviewUi.OnPlayClickedListener() {
             @Override
             public void onClicked(VideoDetails videoDetails) {
                 mediaPlayerGame.playVideo(videoDetails);
             }
         });
+        videoPreviewUi.attach(container);
         videoPreviewUi.getImageDisplay().position.set(0f, 1f, -2.5f);
         videoPreviewUi.getImageDisplay().setScale(1.5f);
+        videoPreviewUi.getPlayButton().setPosition(1f, 0f, -2.5f);
         initStage();
         final boolean permissionGranted = isPermissionGranted();
         stagePermissions.setVisible(!permissionGranted);
@@ -189,10 +191,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     public void render(Camera camera, int whichEye) {
         super.render(camera, whichEye);
         container.draw(camera);
-        spriteBatch.begin();
-        spriteBatch.setProjectionMatrix(camera.combined);
-//        label3d.draw(spriteBatch);
-        spriteBatch.end();
 
         getModelBatch().begin(camera);
         videoPreviewUi.render(getModelBatch(), whichEye);

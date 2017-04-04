@@ -11,6 +11,7 @@ public class GlobalSettings {
     public static final int BRIGHTNESS = 3;
     public static final int CONTRAST = 4;
     public static final int COLOR_TEMPERATURE = 5;
+    public static final int IPD = 6;
 
     public static final float MIN_TINT = -0.2f;
     public static final float MAX_TINT = 0.2f;

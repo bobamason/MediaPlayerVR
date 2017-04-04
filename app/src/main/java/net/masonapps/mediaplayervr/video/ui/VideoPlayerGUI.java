@@ -54,8 +54,14 @@ public class VideoPlayerGUI extends BaseUiLayout {
             public void onSeekChanged(float value) {
                 final GlobalSettings globalSettings = GlobalSettings.getInstance();
                 switch (currentSetting) {
+                    case GlobalSettings.IPD:
+                        final float ipd = MathUtils.lerp(VideoOptions.MIN_IPD, VideoOptions.MAX_IPD, value);
+                        VideoPlayerGUI.this.videoOptions.ipd = ipd;
+                        thumbSeekbarLayout.label.setText("Eye Spacing " + Math.round(ipd * 100) + "%");
+                        VideoPlayerGUI.this.videoPlayerScreen.setIpd(ipd);
+                        break;
                     case GlobalSettings.ZOOM:
-                        final float z = MathUtils.lerp(0f, 2f, value);
+                        final float z = MathUtils.lerp(VideoOptions.MIN_ZOOM, VideoOptions.MAX_ZOOM, value);
                         VideoPlayerGUI.this.videoOptions.zoom = z;
                         thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
                         VideoPlayerGUI.this.videoPlayerScreen.setZoom(z);
@@ -122,6 +128,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         if (visible) {
             switchToMainLayout();
         } else {
+            currentSetting = GlobalSettings.NONE;
             mainLayout.setVisible(false);
             modeLayout.setVisible(false);
             aspectRatioLayout.setVisible(false);
@@ -135,7 +142,8 @@ public class VideoPlayerGUI extends BaseUiLayout {
         if (modeLayout.isVisible() ||
                 aspectRatioLayout.isVisible() ||
                 cameraSettingsLayout.isVisible() ||
-                playbackSettingsLayout.isVisible()) {
+                playbackSettingsLayout.isVisible() ||
+                thumbSeekbarLayout.isVisible()) {
             switchToMainLayout();
         } else {
             videoPlayerScreen.exit();
@@ -165,6 +173,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToMainLayout() {
+        currentSetting = GlobalSettings.NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
@@ -174,6 +183,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToModeLayout() {
+        currentSetting = GlobalSettings.NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(true);
         aspectRatioLayout.setVisible(false);
@@ -183,6 +193,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToAspectRatioLayout() {
+        currentSetting = GlobalSettings.NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(true);
@@ -192,6 +203,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToCameraSettingsLayout() {
+        currentSetting = GlobalSettings.NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
@@ -201,6 +213,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToPlaybackSettingsLayout() {
+        currentSetting = GlobalSettings.NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
@@ -213,6 +226,11 @@ public class VideoPlayerGUI extends BaseUiLayout {
         currentSetting = setting;
         final GlobalSettings globalSettings = GlobalSettings.getInstance();
         switch (currentSetting) {
+            case GlobalSettings.IPD:
+                final float ipd = videoOptions.ipd;
+                thumbSeekbarLayout.label.setText("Eye Spacing " + Math.round(ipd * 100) + "%");
+                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_IPD, VideoOptions.MAX_IPD, ipd));
+                break;
             case GlobalSettings.ZOOM:
                 final float z = videoOptions.zoom;
                 thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
@@ -247,6 +265,10 @@ public class VideoPlayerGUI extends BaseUiLayout {
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
         thumbSeekbarLayout.setVisible(true);
+    }
+
+    public int getCurrentSetting() {
+        return currentSetting;
     }
 
     public void hideThumbSeekbarLayout() {

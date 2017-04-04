@@ -9,11 +9,16 @@ import android.os.AsyncTask;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.MediaPlayerGame;
+import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.image.ImageDisplay;
 import net.masonapps.mediaplayervr.media.MediaUtils;
@@ -22,6 +27,9 @@ import net.masonapps.mediaplayervr.video.ui.ModeLayout;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
+import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.ui.ImageButtonVR;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -38,15 +46,28 @@ public class VideoPreviewUi {
     private List<Texture> thumbnailTextures = new CopyOnWriteArrayList<>();
     private ImageDisplay imageDisplay;
     private WeakReference<Context> contextRef;
-    private OnOpenClickedListener listener = null;
+    private OnPlayClickedListener listener = null;
     private VideoDetails videoDetails = null;
     private VideoOptions videoOptions;
+    private VirtualStage playButton;
 
-    public VideoPreviewUi(WeakReference<Context> contextRef, Model rectModel, Model sphereModel) {
+    public VideoPreviewUi(WeakReference<Context> contextRef, Model rectModel, Model sphereModel, Batch batch, Skin skin) {
         this.contextRef = contextRef;
         this.rectModel = rectModel;
         this.sphereModel = sphereModel;
         imageDisplay = new ImageDisplay(rectModel, sphereModel);
+        playButton = new ImageButtonVR(batch, Style.createImageButtonStyle(skin, Style.Drawables.ic_play_circle_filled_white_48dp, true));
+        playButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (listener != null)
+                    listener.onClicked(videoDetails);
+            }
+        });
+    }
+
+    public void attach(VrUiContainer vrUiContainer) {
+        vrUiContainer.addProcessor(playButton);
     }
 
     public void render(ModelBatch batch, int eyeType) {
@@ -77,11 +98,15 @@ public class VideoPreviewUi {
         return imageDisplay;
     }
 
-    public void setListener(OnOpenClickedListener listener) {
+    public VirtualStage getPlayButton() {
+        return playButton;
+    }
+
+    public void setListener(OnPlayClickedListener listener) {
         this.listener = listener;
     }
 
-    public interface OnOpenClickedListener {
+    public interface OnPlayClickedListener {
         void onClicked(VideoDetails videoDetails);
     }
 

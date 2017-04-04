@@ -19,7 +19,7 @@ import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 public class ThumbSeekbarLayout extends SingleStageUi {
 
-    private static final float MIN_MOVEMENT = 0.1f;
+    private static final float MIN_MOVEMENT = 0.15f;
     private static final float SENSITIVITY = 0.125f;
     public Label labelLow;
     public Label label;
@@ -27,7 +27,6 @@ public class ThumbSeekbarLayout extends SingleStageUi {
     public Slider slider;
     private float downX;
     private float currentX;
-    private boolean activated;
     private OnThumbSeekListener listener = null;
 
     public ThumbSeekbarLayout(Batch spriteBatch, Skin skin) {
@@ -56,24 +55,21 @@ public class ThumbSeekbarLayout extends SingleStageUi {
     public void onTouchPadEvent(DaydreamTouchEvent event) {
         switch (event.action) {
             case DaydreamTouchEvent.ACTION_DOWN:
-                activated = false;
                 downX = currentX = event.x;
                 break;
             case DaydreamTouchEvent.ACTION_MOVE:
                 currentX = event.x;
-                if (!activated) {
-                    if (Math.abs(currentX - downX) > MIN_MOVEMENT) {
-                        activated = true;
-                    }
-                } else {
+                final float diff = currentX - downX;
+                final float abs = Math.abs(diff);
+                if (abs > MIN_MOVEMENT) {
                     if (listener != null) {
-                        slider.setValue(MathUtils.clamp(slider.getValue() + (currentX - downX) * GdxVr.graphics.getDeltaTime() * SENSITIVITY, 0f, 1f));
+                        final float x = diff > 0 ? (diff - MIN_MOVEMENT) : (diff + MIN_MOVEMENT);
+                        slider.setValue(MathUtils.clamp(slider.getValue() + x * GdxVr.graphics.getDeltaTime() * SENSITIVITY, 0f, 1f));
                         listener.onSeekChanged(slider.getValue());
                     }
                 }
                 break;
             case DaydreamTouchEvent.ACTION_UP:
-                activated = false;
                 break;
         }
     }

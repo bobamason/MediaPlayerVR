@@ -189,12 +189,18 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
         final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
         if (!videoPlayer.useFlatRectangle() && videoPlayer.isStereoscopic()) {
-            translation.set(getRightVector()).scl(-ipdHalf);
-            leftCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+//            translation.set(getRightVector()).scl(-ipdHalf);
+//            leftCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+//            updateCamera(leftCamera);
+//
+//            translation.set(getRightVector()).scl(ipdHalf);
+//            rightCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+//            updateCamera(rightCamera);
+
+            setCameraViewFromEye(leftEye, leftCamera);
             updateCamera(leftCamera);
 
-            translation.set(getRightVector()).scl(ipdHalf);
-            rightCamera.view.setToLookAt(translation, tempV.set(getForwardVector()).scl(videoPlayer.getModelSize()), getUpVector());
+            setCameraViewFromEye(rightEye, rightCamera);
             updateCamera(rightCamera);
         } else {
             setCameraViewFromEye(leftEye, leftCamera);
@@ -210,17 +216,23 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         Viewport viewport = leftEye.getViewport();
         Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         getModelBatch().begin(leftCamera);
-        videoPlayer.render(getModelBatch(), (videoPlayer.isStereoscopic() && isUiVisible) ? Eye.Type.MONOCULAR : leftEye.getType());
+        videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : leftEye.getType());
         getModelBatch().end();
 
         viewport = rightEye.getViewport();
         Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         getModelBatch().begin(rightCamera);
-        videoPlayer.render(getModelBatch(), (videoPlayer.isStereoscopic() && isUiVisible) ? Eye.Type.MONOCULAR : rightEye.getType());
+        videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : rightEye.getType());
         getModelBatch().end();
 
         onDrawEye(leftEye);
         onDrawEye(rightEye);
+    }
+
+    private boolean shouldRenderMono() {
+        return (videoPlayer.isStereoscopic() && isUiVisible) &&
+                ui.getCurrentSetting() != GlobalSettings.IPD &&
+                ui.getCurrentSetting() != GlobalSettings.ZOOM;
     }
 
     private void setCameraViewFromEye(Eye eye, VrCamera camera) {
@@ -234,7 +246,15 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         final float r = (float) Math.tan(Math.toRadians(eye.getFov().getRight())) * getVrCamera().near;
         final float t = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * getVrCamera().near;
         final float b = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * getVrCamera().near;
-        camera.projection.setToProjection(l / zoom, r / zoom, b / zoom, t / zoom, getVrCamera().near, getVrCamera().far);
+
+        final float side = (l + r) / 2f;
+//        final float shiftL = l + side;
+//        final float shiftR = r - side;
+//        final float left = -side + shiftL * ipd;
+//        final float right = side + shiftR * ipd;
+        final float left = -side;
+        final float right = side;
+        camera.projection.setToProjection(left / zoom, right / zoom, b / zoom, t / zoom, getVrCamera().near, getVrCamera().far);
     }
 
     private void updateCamera(VrCamera camera) {
@@ -295,11 +315,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 break;
             case DaydreamButtonEvent.BUTTON_APP:
                 if (event.action == DaydreamButtonEvent.ACTION_UP) {
-                    if (ui.thumbSeekbarLayout.isVisible()) {
-                        setUiVisible(false);
-                        ui.hideThumbSeekbarLayout();
-                    } else
-                        ui.backButtonClicked();
+                    ui.backButtonClicked();
                 }
                 break;
         }
