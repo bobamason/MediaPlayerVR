@@ -83,7 +83,7 @@ public class MediaUtils {
     public static Bitmap getVideoFullscreenBitmap(Context context, long id) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = SAMPLE_SIZE;
-        return MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Video.Thumbnails.FULL_SCREEN_KIND, options);
+        return MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Video.Thumbnails.MINI_KIND, options);
     }
 
     public static Bitmap getImageThumbnailBitmap(Context context, long id) {

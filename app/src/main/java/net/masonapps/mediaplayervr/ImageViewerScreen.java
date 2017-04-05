@@ -11,6 +11,7 @@ import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.image.ImageDisplay;
 import net.masonapps.mediaplayervr.media.ImageDetails;
+import net.masonapps.mediaplayervr.video.DisplayMode;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
@@ -41,7 +42,7 @@ public class ImageViewerScreen extends VrWorldScreen implements DaydreamControll
         this.context = context;
         this.imageDetails = imageDetails;
         setBackgroundColor(Color.BLACK);
-        imageDisplay = new ImageDisplay(context, imageDetails.uri, imageDetails.width, imageDetails.height);
+        imageDisplay = new ImageDisplay(DisplayMode.Mono, null, null);
         manageDisposable(imageDisplay);
         final SpriteBatch spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);
@@ -79,7 +80,6 @@ public class ImageViewerScreen extends VrWorldScreen implements DaydreamControll
     public void update() {
         super.update();
         container.act();
-        imageDisplay.update();
     }
 
     @Override
