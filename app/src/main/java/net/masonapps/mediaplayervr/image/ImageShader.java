@@ -3,9 +3,9 @@ package net.masonapps.mediaplayervr.image;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -33,13 +33,13 @@ public class ImageShader extends BaseShader {
     private final int u_contrast = register(new Uniform("u_contrast"));
     private final int u_colorTemp = register(new Uniform("u_colorTemp"));
     private final ShaderProgram program;
+    public Texture texture = null;
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
     private float tint = GlobalSettings.DEFAULT_TINT;
     private float brightness = GlobalSettings.DEFAULT_BRIGHTNESS;
     private float contrast = GlobalSettings.DEFAULT_CONTRAST;
     private float colorTemp = GlobalSettings.DEFAULT_COLOR_TEMP;
-    private int textureId = -1;
 
     public ImageShader() {
         program = new ShaderProgram(getVertexShader(), getFragmentShader());
@@ -75,7 +75,7 @@ public class ImageShader extends BaseShader {
 
     @Override
     public boolean canRender(Renderable instance) {
-        return textureId >= 0;
+        return true;
     }
 
     @Override
@@ -89,9 +89,8 @@ public class ImageShader extends BaseShader {
     @Override
     public void render(Renderable renderable) {
         set(u_worldTrans, renderable.worldTransform);
-        if (renderable.material.has(TextureAttribute.Diffuse)) {
-            final TextureAttribute textureAttribute = (TextureAttribute) renderable.material.get(TextureAttribute.Diffuse);
-            textureAttribute.textureDescription.texture.bind();
+        if (texture != null) {
+            texture.bind(0);
             set(u_diffuseTexture, 0);
         }
         set(u_srcRect, srcRect.x, srcRect.y, srcRect.width, srcRect.height);

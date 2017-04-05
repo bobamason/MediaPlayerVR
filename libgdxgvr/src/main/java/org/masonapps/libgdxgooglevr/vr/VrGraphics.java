@@ -1,6 +1,5 @@
 package org.masonapps.libgdxgooglevr.vr;
 
-import android.opengl.GLSurfaceView;
 import android.support.annotation.CallSuper;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -113,10 +112,6 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
             this.view.setFocusable(true);
             this.view.setFocusableInTouchMode(true);
         }
-    }
-
-    protected GLSurfaceView.EGLConfigChooser getEglConfigChooser() {
-        return new GdxEglConfigChooser(config.r, config.g, config.b, config.a, config.depth, config.stencil, config.numSamples);
     }
 
     private void updatePpi() {
@@ -237,6 +232,14 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
             running = true;
             resume = true;
         }
+        final Array<LifecycleListener> listeners = app.getLifecycleListeners();
+        synchronized (listeners) {
+            for (LifecycleListener listener : listeners) {
+                listener.resume();
+            }
+        }
+        app.getApplicationListener().resume();
+        Gdx.app.log(LOG_TAG, "resumed");
     }
 
     void pause() {
@@ -244,41 +247,50 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
             if (!running) return;
             running = false;
             pause = true;
-            while (pause) {
-                try {
-                    // TODO: fix deadlock race condition with quick resume/pause.
-                    // Temporary workaround:
-                    // Android ANR time is 5 seconds, so wait up to 4 seconds before assuming
-                    // deadlock and killing process. This can easily be triggered by opening the
-                    // Recent Apps list and then double-tapping the Recent Apps button with
-                    // ~500ms between taps.
-                    synch.wait(4000);
-                    if (pause) {
-                        // pause will never go false if onDrawFrame is never called by the GLThread
-                        // when entering this method, we MUST enforce continuous rendering
-                        Gdx.app.error(LOG_TAG, "waiting for pause synchronization took too long; assuming deadlock and killing");
-                        android.os.Process.killProcess(android.os.Process.myPid());
-                    }
-                } catch (InterruptedException ignored) {
-                    Gdx.app.log(LOG_TAG, "waiting for pause synchronization failed!");
-                }
+        }
+        final Array<LifecycleListener> listeners = app.getLifecycleListeners();
+        synchronized (listeners) {
+            for (LifecycleListener listener : listeners) {
+                listener.pause();
             }
         }
+        app.getApplicationListener().pause();
+        Gdx.app.log(LOG_TAG, "paused");
+//        synchronized (synch) {
+//            if (!running) return;
+//            running = false;
+//            pause = true;
+//            while (pause) {
+//                try {
+//                    // TODO: fix deadlock race condition with quick resume/pause.
+//                    // Temporary workaround:
+//                    // Android ANR time is 5 seconds, so wait up to 4 seconds before assuming
+//                    // deadlock and killing process. This can easily be triggered by opening the
+//                    // Recent Apps list and then double-tapping the Recent Apps button with
+//                    // ~500ms between taps.
+//                    synch.wait(4000);
+//                    if (pause) {
+//                        // pause will never go false if onDrawFrame is never called by the GLThread
+//                        // when entering this method, we MUST enforce continuous rendering
+//                        Gdx.app.error(LOG_TAG, "waiting for pause synchronization took too long; assuming deadlock and killing");
+//                        android.os.Process.killProcess(android.os.Process.myPid());
+//                    }
+//                } catch (InterruptedException ignored) {
+//                    Gdx.app.log(LOG_TAG, "waiting for pause synchronization failed!");
+//                }
+//            }
+//        }
     }
 
     void destroy() {
-        synchronized (synch) {
-            running = false;
-            destroy = true;
-
-            while (destroy) {
-                try {
-                    synch.wait();
-                } catch (InterruptedException ex) {
-                    Gdx.app.log(LOG_TAG, "waiting for destroy synchronization failed!");
-                }
+        Array<LifecycleListener> listeners = app.getLifecycleListeners();
+        synchronized (listeners) {
+            for (LifecycleListener listener : listeners) {
+                listener.dispose();
             }
         }
+        app.getApplicationListener().dispose();
+        clearManagedCaches();
     }
 
     @Override
@@ -537,16 +549,8 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
             }
         }
 
-        if (lresume) {
-            final Array<LifecycleListener> listeners = app.getLifecycleListeners();
-            synchronized (listeners) {
-                for (LifecycleListener listener : listeners) {
-                    listener.resume();
-                }
-            }
-            app.getApplicationListener().resume();
-            Gdx.app.log(LOG_TAG, "resumed");
-        }
+//        if (lresume) {
+//        }
 
         if (lrunning) {
             synchronized (app.getRunnables()) {
@@ -571,27 +575,11 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
             frameId++;
         }
 
-        if (lpause) {
-            final Array<LifecycleListener> listeners = app.getLifecycleListeners();
-            synchronized (listeners) {
-                for (LifecycleListener listener : listeners) {
-                    listener.pause();
-                }
-            }
-            app.getApplicationListener().pause();
-            Gdx.app.log(LOG_TAG, "paused");
-        }
+//        if (lpause) {
+//        }
 
-        if (ldestroy) {
-            Array<LifecycleListener> listeners = app.getLifecycleListeners();
-            synchronized (listeners) {
-                for (LifecycleListener listener : listeners) {
-                    listener.dispose();
-                }
-            }
-            app.getApplicationListener().dispose();
-            Gdx.app.log(LOG_TAG, "destroyed");
-        }
+//        if (ldestroy) {
+//        }
 
         if (time - frameStart > 1000000000) {
             fps = frames;

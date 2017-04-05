@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import com.google.vr.sdk.base.AndroidCompat;
 
@@ -28,16 +29,18 @@ public class MainActivity extends VrActivity {
         AndroidCompat.setVrModeEnabled(this, true);
         game = new MediaPlayerGame(this);
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
-        initialize(game);
+        getGvrView().setRenderTargetScale(0.5f);
         getGvrView().setMultisampling(4);
 
-//        if (getGvrView().setAsyncReprojectionEnabled(true)) {
-////            // Async reprojection decouples the app framerate from the display framerate,
-////            // allowing immersive interaction even at the throttled clockrates set by
-////            // sustained performance mode.
-//            Log.d(MainActivity.class.getSimpleName(), "Async Reprojection Enabled");
-//            AndroidCompat.setSustainedPerformanceMode(this, true);
-//        }
+        if (getGvrView().setAsyncReprojectionEnabled(true)) {
+//            // Async reprojection decouples the app framerate from the display framerate,
+//            // allowing immersive interaction even at the throttled clockrates set by
+//            // sustained performance mode.
+            Log.d(MainActivity.class.getSimpleName(), "Async Reprojection Enabled");
+            AndroidCompat.setSustainedPerformanceMode(this, true);
+        }
+        initialize(game);
+        getGvrView().setTransitionViewEnabled(true);
     }
 
     @Override

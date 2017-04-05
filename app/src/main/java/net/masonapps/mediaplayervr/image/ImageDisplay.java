@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -296,13 +295,9 @@ public class ImageDisplay implements Disposable {
         width = texture.getWidth();
         height = texture.getHeight();
 
-        final TextureAttribute rectTexAttr = (TextureAttribute) rectModelInstance.materials.get(0).get(TextureAttribute.Diffuse);
-        rectTexAttr.textureDescription.texture.dispose();
-        rectTexAttr.textureDescription.texture = texture;
-
-        final TextureAttribute sphereTexAttr = (TextureAttribute) sphereModelInstance.materials.get(0).get(TextureAttribute.Diffuse);
-        sphereTexAttr.textureDescription.texture.dispose();
-        sphereTexAttr.textureDescription.texture = texture;
+        if (shader.texture != null)
+            shader.texture.dispose();
+        shader.texture = texture;
 
         updateAspectRatio();
     }

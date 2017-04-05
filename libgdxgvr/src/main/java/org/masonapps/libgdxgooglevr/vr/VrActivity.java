@@ -164,7 +164,12 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     protected void onPause() {
         // calls to setContinuousRendering(false) from other thread (ex: GLThread)
         // will be ignored at this point...
-        graphics.pause();
+        getGvrView().queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                graphics.pause();
+            }
+        });
 
         input.onPause();
 
@@ -181,7 +186,7 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
         super.onResume();
 
         assert getGvrView() != null;
-        
+
         Gdx.app = this;
         Gdx.input = this.getInput();
         Gdx.audio = this.getAudio();
@@ -193,8 +198,14 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
 
         input.onResume();
 
+
         if (!firstResume) {
-            graphics.resume();
+            getGvrView().queueEvent(new Runnable() {
+                @Override
+                public void run() {
+                    graphics.resume();
+                }
+            });
         } else
             firstResume = false;
 
@@ -208,11 +219,17 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        if (graphics != null) {
-            graphics.clearManagedCaches();
-            graphics.destroy();
+        final GvrView gvrView = getGvrView();
+        if (gvrView != null && graphics != null) {
+            gvrView.queueEvent(new Runnable() {
+                @Override
+                public void run() {
+                    graphics.destroy();
+                }
+            });
+            gvrView.shutdown();
         }
+        super.onDestroy();
     }
 
     @Override

@@ -8,7 +8,6 @@ precision highp float;
 #define LOWP
 #define HIGH
 #endif
-#extension GL_OES_EGL_image_external : require
 uniform sampler2D u_diffuseTexture;
 varying vec2 v_texCoord;
 uniform vec4 u_clip;
