@@ -74,6 +74,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private boolean useCustomCamera = false;
     private Vector3 translation = new Vector3();
     private boolean projectionChanged = true;
+    private float screenZ = 1f;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -181,14 +182,13 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             } else {
 //                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
 //                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
-                setCameraProjectionZoom(leftEye, leftCamera, zoom);
-                setCameraProjectionZoom(rightEye, rightCamera, zoom);
+                setCameraProjection(leftEye, leftCamera);
+                setCameraProjection(rightEye, rightCamera);
             }
             projectionChanged = false;
         }
 
-//        final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
-        final float ipdHalf = 0;
+        final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
         if (!videoPlayer.useFlatRectangle() && videoPlayer.isStereoscopic()) {
             translation.set(getRightVector()).scl(-ipdHalf);
             leftCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
@@ -197,12 +197,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             translation.set(getRightVector()).scl(ipdHalf);
             rightCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
             updateCamera(rightCamera);
-
-//            setCameraViewFromEye(leftEye, leftCamera);
-//            updateCamera(leftCamera);
-//
-//            setCameraViewFromEye(rightEye, rightCamera);
-//            updateCamera(rightCamera);
         } else {
             setCameraViewFromEye(leftEye, leftCamera);
             updateCamera(leftCamera);
@@ -242,20 +236,17 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         camera.view.mulLeft(tempM.set(eye.getEyeView()));
     }
 
-    private void setCameraProjectionZoom(Eye eye, VrCamera camera, float zoom) {
+    private void setCameraProjection(Eye eye, VrCamera camera) {
         final float l = (float) -Math.tan(Math.toRadians(eye.getFov().getLeft())) * getVrCamera().near;
         final float r = (float) Math.tan(Math.toRadians(eye.getFov().getRight())) * getVrCamera().near;
-        final float t = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * getVrCamera().near;
-        final float b = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * getVrCamera().near;
+        final float top = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * getVrCamera().near;
+        final float bottom = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * getVrCamera().near;
 
         final float side = (-l + r) / 2f;
-//        final float shiftL = l + side;
-//        final float shiftR = r - side;
-//        final float left = -side + shiftL * ipd;
-//        final float right = side + shiftR * ipd;
         float left;
         float right;
-        final float shift = ipd * 0.1f / 2f;
+        final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
+        final float shift = ipdHalf * camera.near / screenZ;
         if (eye.getType() == Eye.Type.LEFT) {
             left = -side + shift;
             right = side + shift;
@@ -263,7 +254,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             left = -side - shift;
             right = side - shift;
         }
-        camera.projection.setToProjection(left / zoom, right / zoom, b / zoom, t / zoom, getVrCamera().near, getVrCamera().far);
+        camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, getVrCamera().near, getVrCamera().far);
     }
 
     private void updateCamera(VrCamera camera) {
