@@ -66,7 +66,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private long startPosition;
     private float ipd = 1f;
     private float zoom = 1f;
-    private float projZ = 0.94f;
     private float yRatio = 1f;
     private boolean doRatioCalc = true;
     private VrUiContainer container;
@@ -74,7 +73,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private boolean useCustomCamera = false;
     private Vector3 translation = new Vector3();
     private boolean projectionChanged = true;
-    private float screenZ = 1f;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -246,6 +244,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         float left;
         float right;
         final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
+        final float screenZ = videoPlayer.getModelSize();
         final float shift = ipdHalf * camera.near / screenZ;
         if (eye.getType() == Eye.Type.LEFT) {
             left = -side + shift;
