@@ -19,6 +19,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.SphereShapeBuilder;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.google.vr.sdk.base.Eye;
@@ -49,6 +50,7 @@ import org.masonapps.libgdxgooglevr.vr.VrCamera;
 public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControllerInputListener, VrVideoPlayer.CompletionListener, VrVideoPlayer.ErrorListener {
 
     private static final Vector3 tempV = new Vector3();
+    private static final Quaternion tempQ = new Quaternion();
     private static final Matrix4 tempM = new Matrix4();
     private static final Vector3 NEG_Z = new Vector3(0, 0, -1);
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
@@ -192,13 +194,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
         if (!videoPlayer.useFlatRectangle()) {
             translation.set(getRightVector()).scl(-ipdHalf);
-            tempM.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
-            leftCamera.view.setToLookAt(leftRotCenter, NEG_Z, Vector3.Y).mulLeft(tempM);
+            tempM.idt().rotate(tempQ.set(getHeadQuaternion()).conjugate()).translate(translation);
+            final float a1 = getHeadQuaternion().getAngleAround(getForwardVector());
+            leftCamera.view.idt().translate(tempV.set(leftRotCenter)).rotate(Vector3.Z, a1).translate(leftRotCenter).mul(tempM);
             updateCamera(leftCamera);
 
-            translation.set(getRightVector()).scl(ipdHalf);
-            tempM.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
-            rightCamera.view.setToLookAt(rightRotCenter, NEG_Z, Vector3.Y).mulLeft(tempM);
+            tempM.idt().rotate(tempQ.set(getHeadQuaternion()).conjugate()).translate(translation);
+            final float a2 = getHeadQuaternion().getAngleAround(getForwardVector());
+            rightCamera.view.idt().translate(tempV.set(rightRotCenter)).rotate(Vector3.Z, a2).translate(rightRotCenter).mul(tempM);
             updateCamera(rightCamera);
         } else {
             setCameraViewFromEye(leftEye, leftCamera);
@@ -254,11 +257,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         if (eye.getType() == Eye.Type.LEFT) {
             left = -side + shift;
             right = side + shift;
-            leftRotCenter.set((left + right) * -0.5f, (top + bottom) * -0.5f, 0);
+            leftRotCenter.set((left + right) * 0.5f, (top + bottom) * 0.5f, 0);
         } else {
             left = -side - shift;
             right = side - shift;
-            rightRotCenter.set((left + right) * -0.5f, (top + bottom) * -0.5f, 0);
+            rightRotCenter.set((left + right) * 0.5f, (top + bottom) * 0.5f, 0);
         }
         camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, getVrCamera().near, getVrCamera().far);
     }
