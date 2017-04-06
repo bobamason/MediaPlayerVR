@@ -16,8 +16,8 @@ import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
-import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,6 @@ public class SongListLayout extends BaseUiLayout {
     public SongListLayout(Skin skin, Batch batch) {
         this.skin = skin;
         stageList = new VirtualStage(batch, 1080, 800);
-        stageList.setPixelSizeWorld(0.00125f);
         stageList.setPosition(0, 0.5f, -2f);
         stagePages = new VirtualStage(batch, 720, 100);
         stagePages.setPosition(0, -0.5f, -2f);

@@ -76,8 +76,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private boolean useCustomCamera = false;
     private Vector3 translation = new Vector3();
     private boolean projectionChanged = true;
-    private Vector3 leftRotCenter = new Vector3();
-    private Vector3 rightRotCenter = new Vector3();
+    private float rotCenterY = 0f;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -193,15 +192,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
         final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
         if (!videoPlayer.useFlatRectangle()) {
-            translation.set(getRightVector()).scl(-ipdHalf);
-            tempM.idt().rotate(tempQ.set(getHeadQuaternion()).conjugate()).translate(translation);
-            final float a1 = getHeadQuaternion().getAngleAround(getForwardVector());
-            leftCamera.view.idt().translate(tempV.set(leftRotCenter)).rotate(Vector3.Z, a1).translate(leftRotCenter).mul(tempM);
+            final float a = getHeadQuaternion().getAngleAround(getForwardVector());
+
+            translation.set(0, -rotCenterY, 0).rotate(Vector3.Z, a).add(0, rotCenterY, 0).add(tempV.set(getRightVector()).scl(-ipdHalf));
+            leftCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
             updateCamera(leftCamera);
 
-            tempM.idt().rotate(tempQ.set(getHeadQuaternion()).conjugate()).translate(translation);
-            final float a2 = getHeadQuaternion().getAngleAround(getForwardVector());
-            rightCamera.view.idt().translate(tempV.set(rightRotCenter)).rotate(Vector3.Z, a2).translate(rightRotCenter).mul(tempM);
+            translation.set(0, -rotCenterY, 0).rotate(Vector3.Z, a).add(0, rotCenterY, 0).add(tempV.set(getRightVector()).scl(ipdHalf));
+            rightCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
             updateCamera(rightCamera);
         } else {
             setCameraViewFromEye(leftEye, leftCamera);
@@ -248,6 +246,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         final float top = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * getVrCamera().near;
         final float bottom = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * getVrCamera().near;
 
+        rotCenterY = (top + bottom) / 2f;
+
         final float side = (-l + r) / 2f;
         float left;
         float right;
@@ -257,11 +257,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         if (eye.getType() == Eye.Type.LEFT) {
             left = -side + shift;
             right = side + shift;
-            leftRotCenter.set((left + right) * 0.5f, (top + bottom) * 0.5f, 0);
         } else {
             left = -side - shift;
             right = side - shift;
-            rightRotCenter.set((left + right) * 0.5f, (top + bottom) * 0.5f, 0);
         }
         camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, getVrCamera().near, getVrCamera().far);
     }

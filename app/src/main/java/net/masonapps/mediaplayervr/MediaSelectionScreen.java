@@ -17,7 +17,6 @@ import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.chooser.GridUiLayout;
 import net.masonapps.mediaplayervr.chooser.VideoListLayout;
-import net.masonapps.mediaplayervr.chooser.VideoPreviewUi;
 import net.masonapps.mediaplayervr.media.MediaUtils;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.utils.ModelGenerator;
@@ -30,7 +29,6 @@ import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,7 +40,7 @@ import java.util.concurrent.Executors;
 public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamControllerInputListener {
     private final Context context;
     private final SpriteBatch spriteBatch;
-    private final VideoPreviewUi videoPreviewUi;
+    //    private final VideoPreviewUi videoPreviewUi;
     private VirtualStage stagePermissions;
     private VrUiContainer container;
     private GridUiLayout<VideoDetails> layoutVideoList;
@@ -60,17 +58,17 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         final int divisionsV = 24;
         final Model sphereModel = ModelGenerator.createSphere(modelBuilder, 0.5f, divisionsU * 2, divisionsV);
         manageDisposable(rectModel, sphereModel);
-        videoPreviewUi = new VideoPreviewUi(new WeakReference<>(context), rectModel, sphereModel, spriteBatch, skin);
-        videoPreviewUi.setListener(new VideoPreviewUi.OnPlayClickedListener() {
-            @Override
-            public void onClicked(VideoDetails videoDetails) {
-                mediaPlayerGame.playVideo(videoDetails);
-            }
-        });
-        videoPreviewUi.attach(container);
-        videoPreviewUi.getImageDisplay().position.set(0f, 1f, -2.5f);
-        videoPreviewUi.getImageDisplay().setScale(1.5f);
-        videoPreviewUi.getPlayButton().setPosition(1f, 0f, -2.5f);
+//        videoPreviewUi = new VideoPreviewUi(new WeakReference<>(context), rectModel, sphereModel, spriteBatch, skin);
+//        videoPreviewUi.setListener(new VideoPreviewUi.OnPlayClickedListener() {
+//            @Override
+//            public void onClicked(VideoDetails videoDetails) {
+//                mediaPlayerGame.playVideo(videoDetails);
+//            }
+//        });
+//        videoPreviewUi.attach(container);
+//        videoPreviewUi.getImageDisplay().position.set(0f, 1f, -2.5f);
+//        videoPreviewUi.getImageDisplay().setScale(1.5f);
+//        videoPreviewUi.getPlayButton().setPosition(1f, 0f, -2.5f);
         initStage();
         final boolean permissionGranted = isPermissionGranted();
         stagePermissions.setVisible(!permissionGranted);
@@ -94,8 +92,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         layoutVideoList.setOnItemClickedListener(new GridUiLayout.OnGridItemClickedListener<VideoDetails>() {
             @Override
             public void onItemClicked(int index, VideoDetails obj) {
-//                mediaPlayerGame.playVideo(obj);
-                videoPreviewUi.load(mediaPlayerGame, obj);
+                mediaPlayerGame.playVideo(obj);
+//                videoPreviewUi.load(mediaPlayerGame, obj);
             }
         });
 
@@ -192,9 +190,9 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         super.render(camera, whichEye);
         container.draw(camera);
 
-        getModelBatch().begin(camera);
-        videoPreviewUi.render(getModelBatch(), whichEye);
-        getModelBatch().end();
+//        getModelBatch().begin(camera);
+//        videoPreviewUi.render(getModelBatch(), whichEye);
+//        getModelBatch().end();
     }
 
     @Override

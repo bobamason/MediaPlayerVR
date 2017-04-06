@@ -17,8 +17,8 @@ import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
-import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.util.Locale;
 
@@ -81,10 +81,10 @@ public class MainLayout extends BaseUiLayout {
         optionsTable.setFillParent(true);
         optionsTable.center();
 
-        final Drawable pauseUp = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_UP);
-        final Drawable pauseDown = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_DOWN);
-        final Drawable playUp = skin.newDrawable(Style.Drawables.ic_play_circle_filled_white_48dp, Style.COLOR_UP);
-        final Drawable playDown = skin.newDrawable(Style.Drawables.ic_play_circle_filled_white_48dp, Style.COLOR_DOWN);
+        final Drawable pauseUp = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_UP_2);
+        final Drawable pauseDown = skin.newDrawable(Style.Drawables.ic_pause_circle_filled_white_48dp, Style.COLOR_DOWN_2);
+        final Drawable playUp = skin.newDrawable(Style.Drawables.ic_play_circle_filled_white_48dp, Style.COLOR_UP_2);
+        final Drawable playDown = skin.newDrawable(Style.Drawables.ic_play_circle_filled_white_48dp, Style.COLOR_DOWN_2);
         playButton = new ImageButton(pauseUp, pauseDown);
         playButton.addListener(new ClickListener() {
             @Override

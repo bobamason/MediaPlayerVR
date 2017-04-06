@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.utils.Disposable;
 
 import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
@@ -17,13 +18,13 @@ import java.util.ArrayList;
  * Created by Bob on 3/15/2017.
  */
 
-public class VrUiContainer implements VrInputProcessor {
+public class VrUiContainer implements VrInputProcessor, Disposable {
 
     private static final Vector3 dir = new Vector3();
     private static final Vector3 tmp = new Vector3();
     private static final Vector3 tmp2 = new Vector3();
     private static final Matrix4 tmpM = new Matrix4();
-    private final ArrayList<VirtualStage> stages;
+    private final ArrayList<VrInputProcessor> processors;
     private final Vector3 position = new Vector3();
     private final Quaternion rotation = new Quaternion();
     private final Quaternion rotator = new Quaternion();
@@ -35,16 +36,17 @@ public class VrUiContainer implements VrInputProcessor {
     private Vector3 hitPoint3D = new Vector3();
     private boolean updated = false;
     @Nullable
-    private VrInputProcessor focusedStage;
+    private VrInputProcessor focusedProcessor;
+    private boolean visible = true;
 
     public VrUiContainer() {
-        stages = new ArrayList<>();
+        processors = new ArrayList<>();
     }
 
-    public VrUiContainer(VirtualStage... stages) {
+    public VrUiContainer(VrInputProcessor... processors) {
         this();
-        for (VirtualStage stage : stages) {
-            this.stages.add(stage);
+        for (VrInputProcessor processor : processors) {
+            this.processors.add(processor);
         }
     }
 
@@ -181,34 +183,43 @@ public class VrUiContainer implements VrInputProcessor {
 
     @Override
     public boolean performRayTest(Ray ray) {
+        if (!visible) return false;
         if (!updated) recalculateTransform();
         transformedRay.origin.set(ray.origin).mul(invTransform);
         transformedRay.direction.set(ray.direction).mul(invTransform);
-        for (VrInputProcessor inputProcessor : stages) {
+        for (VrInputProcessor inputProcessor : processors) {
             if (inputProcessor.performRayTest(transformedRay)) {
-                focusedStage = inputProcessor;
+                focusedProcessor = inputProcessor;
                 hitPoint2DPixels.set(inputProcessor.getHitPoint2D());
                 hitPoint3D.set(inputProcessor.getHitPoint3D()).mul(transform);
                 isCursorOver = true;
                 return true;
             }
         }
-        focusedStage = null;
+        focusedProcessor = null;
         isCursorOver = false;
         return false;
     }
 
     public void act() {
+        if (!visible) return;
         if (!updated) recalculateTransform();
-        for (VirtualStage stage : stages) {
-            stage.act();
+        for (VrInputProcessor processor : processors) {
+            if (processor instanceof VirtualStage)
+                ((VirtualStage) processor).act();
+            if (processor instanceof VrUiContainer)
+                ((VrUiContainer) processor).act();
         }
     }
 
     public void draw(Camera camera) {
+        if (!visible) return;
         if (!updated) recalculateTransform();
-        for (VirtualStage stage : stages) {
-            stage.draw(camera, transform);
+        for (VrInputProcessor processor : processors) {
+            if (processor instanceof VirtualStage)
+                ((VirtualStage) processor).draw(camera, transform);
+            if (processor instanceof VrUiContainer)
+                ((VrUiContainer) processor).draw(camera);
         }
     }
 
@@ -224,58 +235,77 @@ public class VrUiContainer implements VrInputProcessor {
 
     @Override
     public boolean isCursorOver() {
-        return isCursorOver;
+        return isCursorOver && visible;
     }
 
-    public void addProcessor(VirtualStage stage) {
-        stages.add(stage);
+    public void addProcessor(VrInputProcessor processor) {
+        processors.add(processor);
     }
 
     public void removeProcessor(VirtualStage stage) {
-        stages.remove(stage);
+        processors.remove(stage);
     }
 
     public void clearProcessors() {
-        stages.clear();
+        processors.clear();
     }
 
     @Override
     public boolean keyDown(int keycode) {
-        return focusedStage != null && focusedStage.keyDown(keycode);
+        return focusedProcessor != null && focusedProcessor.keyDown(keycode);
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        return focusedStage != null && focusedStage.keyUp(keycode);
+        return focusedProcessor != null && focusedProcessor.keyUp(keycode);
     }
 
     @Override
     public boolean keyTyped(char character) {
-        return focusedStage != null && focusedStage.keyTyped(character);
+        return focusedProcessor != null && focusedProcessor.keyTyped(character);
     }
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        return focusedStage != null && focusedStage.touchDown(screenX, screenY, pointer, button);
+        return focusedProcessor != null && focusedProcessor.touchDown(screenX, screenY, pointer, button);
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return focusedStage != null && focusedStage.touchUp(screenX, screenY, pointer, button);
+        return focusedProcessor != null && focusedProcessor.touchUp(screenX, screenY, pointer, button);
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return focusedStage != null && focusedStage.touchDragged(screenX, screenY, pointer);
+        return focusedProcessor != null && focusedProcessor.touchDragged(screenX, screenY, pointer);
     }
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        return focusedStage != null && focusedStage.mouseMoved(screenX, screenY);
+        return focusedProcessor != null && focusedProcessor.mouseMoved(screenX, screenY);
     }
 
     @Override
     public boolean scrolled(int amount) {
-        return focusedStage != null && focusedStage.scrolled(amount);
+        return focusedProcessor != null && focusedProcessor.scrolled(amount);
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    @Override
+    public void dispose() {
+        for (VrInputProcessor processor : processors) {
+            if (processor instanceof VirtualStage)
+                ((VirtualStage) processor).dispose();
+            if (processor instanceof VrUiContainer)
+                ((VrUiContainer) processor).dispose();
+        }
+        clearProcessors();
     }
 }

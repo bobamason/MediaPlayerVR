@@ -25,25 +25,24 @@ import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
  */
 
 public class VirtualStage extends Stage implements VrInputProcessor {
+
     private static final Vector3 dir = new Vector3();
     private static final Vector3 tmp = new Vector3();
     private static final Vector3 tmp2 = new Vector3();
     private static final Vector2 tmpV2 = new Vector2();
     private static final Matrix4 tmpM = new Matrix4();
-    
+    private static float pixelSizeWorld = 1f / 500f;
     // call invalidate() after making changes for them to take effect
     public final Vector3 position = new Vector3();
     public final Quaternion rotation = new Quaternion();
     public final Vector2 scale = new Vector2(1f, 1f);
-    
     private final Vector3 xaxis = new Vector3();
     private final Vector3 yaxis = new Vector3();
     private final Quaternion rotator = new Quaternion();
     private final Matrix4 transform = new Matrix4();
+    public Rectangle bounds = new Rectangle();
     private Plane plane = new Plane();
     private boolean visible = true;
-    private Rectangle bounds = new Rectangle();
-    private float pixelSizeWorld = 0.0025f;
     private int mouseScreenX;
     private int mouseScreenY;
     private Actor mouseOverActor = null;
@@ -54,26 +53,26 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     private float radius;
     private boolean updated = false;
     private Matrix4 batchTransform = new Matrix4();
-
     public VirtualStage(Batch batch, int virtualPixelWidth, int virtualPixelHeight) {
         super(new ScreenViewport(), batch);
         getViewport().update(virtualPixelWidth, virtualPixelHeight, false);
         bounds.set(0, 0, virtualPixelWidth, virtualPixelHeight);
     }
 
-    public VirtualStage(Batch batch, int virtualPixelWidth, int virtualPixelHeight, float pixelSizeWorld) {
-        this(batch, virtualPixelWidth, virtualPixelHeight);
-        this.pixelSizeWorld = pixelSizeWorld;
+    public VirtualStage(Batch batch, float width, float height, Matrix4 transform) {
+        this(batch, (int) (pixelSizeWorld * width), (int) (pixelSizeWorld * height));
+        if (transform != null) {
+            this.transform.set(transform);
+            invalidate();
+        }
     }
 
-    public void setScaleX(float x) {
-        scale.x = x;
-        invalidate();
+    public static void setPixelSizeWorld(float pixelSizeWorld) {
+        VirtualStage.pixelSizeWorld = pixelSizeWorld;
     }
 
-    public void setScaleY(float y) {
-        scale.y = y;
-        invalidate();
+    public static void setPixelsPerWorldUnit(float pixels) {
+        VirtualStage.pixelSizeWorld = 1f / pixels;
     }
 
     public void setScale(float x, float y) {
@@ -105,8 +104,18 @@ public class VirtualStage extends Stage implements VrInputProcessor {
         return this.scale.x;
     }
 
+    public void setScaleX(float x) {
+        scale.x = x;
+        invalidate();
+    }
+
     public float getScaleY() {
         return this.scale.y;
+    }
+
+    public void setScaleY(float y) {
+        scale.y = y;
+        invalidate();
     }
 
     public void setRotationX(float angle) {
@@ -440,10 +449,5 @@ public class VirtualStage extends Stage implements VrInputProcessor {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
-    }
-
-    public void setPixelSizeWorld(float pixelSizeWorld) {
-        this.pixelSizeWorld = pixelSizeWorld;
-        updated = false;
     }
 }

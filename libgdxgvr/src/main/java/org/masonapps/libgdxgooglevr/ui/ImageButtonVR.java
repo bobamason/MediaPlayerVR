@@ -48,12 +48,12 @@ public class ImageButtonVR extends VirtualStage {
         return imageButton;
     }
 
-    public void setStyle (Button.ButtonStyle style) {
-        imageButton.setStyle(style);
-    }
-    
     public ImageButton.ImageButtonStyle getStyle () {
         return imageButton.getStyle();
+    }
+
+    public void setStyle(Button.ButtonStyle style) {
+        imageButton.setStyle(style);
     }
     
     public Image getImage () {
@@ -62,5 +62,10 @@ public class ImageButtonVR extends VirtualStage {
 
     public Cell getImageCell () {
         return imageButton.getImageCell();
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
     }
 }

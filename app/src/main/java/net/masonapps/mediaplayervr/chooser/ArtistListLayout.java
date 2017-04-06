@@ -7,11 +7,12 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.media.ArtistDetails;
+
+import org.masonapps.libgdxgooglevr.ui.TableVR;
 
 import java.util.concurrent.ExecutorService;
 
@@ -26,7 +27,7 @@ public class ArtistListLayout extends GridUiLayout<ArtistDetails> {
     }
 
     @Override
-    protected GridItemHolder<ArtistDetails> createHolder(Table table, Image image, Label label) {
+    protected GridItemHolder<ArtistDetails> createHolder(TableVR table, Image image, Label label) {
         return new ArtistItemHolder(table, image, label, skin.newDrawable(Style.Drawables.ic_album_white_48dp));
     }
 
@@ -37,7 +38,7 @@ public class ArtistListLayout extends GridUiLayout<ArtistDetails> {
 
     private class ArtistItemHolder extends GridItemHolder<ArtistDetails> {
 
-        ArtistItemHolder(Table table, Image image, Label label, Drawable defaultDrawable) {
+        ArtistItemHolder(TableVR table, Image image, Label label, Drawable defaultDrawable) {
             super(table, image, label, defaultDrawable);
         }
 
