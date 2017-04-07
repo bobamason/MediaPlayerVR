@@ -97,7 +97,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             }
         });
 
-        manageDisposable(stagePermissions);
+        manageDisposable(container);
         manageDisposable(layoutVideoList);
 
         stagePermissions.setPosition(0.4f, 0, -2f);

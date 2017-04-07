@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Disposable;
 import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by Bob on 3/15/2017.
@@ -45,9 +46,7 @@ public class VrUiContainer implements VrInputProcessor, Disposable {
 
     public VrUiContainer(VrInputProcessor... processors) {
         this();
-        for (VrInputProcessor processor : processors) {
-            this.processors.add(processor);
-        }
+        Collections.addAll(this.processors, processors);
     }
 
     public void setRotationX(float angle) {
@@ -301,10 +300,8 @@ public class VrUiContainer implements VrInputProcessor, Disposable {
     @Override
     public void dispose() {
         for (VrInputProcessor processor : processors) {
-            if (processor instanceof VirtualStage)
-                ((VirtualStage) processor).dispose();
-            if (processor instanceof VrUiContainer)
-                ((VrUiContainer) processor).dispose();
+            if (processor instanceof Disposable)
+                ((Disposable) processor).dispose();
         }
         clearProcessors();
     }

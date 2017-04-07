@@ -252,7 +252,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         float left;
         float right;
         final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f * ipd;
-        final float screenZ = videoPlayer.getModelSize();
+        final float screenZ = videoPlayer.getModelSize() / 2f;
         final float shift = ipdHalf * camera.near / screenZ;
         if (eye.getType() == Eye.Type.LEFT) {
             left = -side + shift;

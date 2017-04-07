@@ -13,8 +13,10 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -31,6 +33,7 @@ import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 import org.masonapps.libgdxgooglevr.ui.ImageButtonVR;
+import org.masonapps.libgdxgooglevr.ui.LabelVR;
 import org.masonapps.libgdxgooglevr.ui.TableVR;
 
 import java.lang.ref.WeakReference;
@@ -61,7 +64,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
     private final Actor loadingSpinner;
     private final WeakReference<Context> contextRef;
     private float downX;
-    private Label pageLabel;
+    private LabelVR pageLabel;
     private ImageButtonVR prevPageButton;
     private ImageButtonVR nextPageButton;
     private int currentPage = 0;
@@ -84,23 +87,29 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         prevPageButton.getViewport().update((int) prevPageButton.getImageButton().getWidth() + 8, 720, false);
         prevPageButton.getImageButton().center().pad(4).setFillParent(true);
         prevPageButton.setPosition(-WIDTH / 2f - prevPageButton.getWidthWorld(), 0.5f, -2f);
+        prevPageButton.lookAt(Vector3.Zero, Vector3.Y);
         prevPageButton.getImageButton().addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 prevPagePressed();
             }
         });
+//        prevPageButton.lookAt(Vector3.Zero, Vector3.Y);
 
         nextPageButton = new ImageButtonVR(batch, Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.getViewport().update((int) nextPageButton.getImageButton().getWidth() + 8, 720, false);
         nextPageButton.getImageButton().center().pad(4).setFillParent(true);
         nextPageButton.setPosition(WIDTH / 2f + nextPageButton.getWidthWorld(), 0.5f, -2f);
+//        nextPageButton.lookAt(Vector3.Zero, Vector3.Y);
         nextPageButton.getImageButton().addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 nextPagePressed();
             }
         });
+
+        pageLabel = new LabelVR("Page 0/0", batch, skin);
+        pageLabel.setPosition(0, -0.25f, -2f);
         
         addListTable();
         loadingSpinner = new Image(skin.newDrawable(Style.Drawables.loading_spinner));
@@ -136,7 +145,8 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
 
     @Override
     public void attach(VrUiContainer container) {
-        container.addProcessor(container);
+        container.addProcessor(this.container);
+        container.addProcessor(pageLabel);
         container.addProcessor(prevPageButton);
         container.addProcessor(nextPageButton);
     }
@@ -176,21 +186,22 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
 
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLUMNS; c++) {
-                final TableVR table = new TableVR(batch, skin, 420, 420);
-                final float x = -WIDTH / 2f + WIDTH / COLUMNS * c;
-                final float y = (-HEIGHT / 2f + HEIGHT / ROWS * c) + 0.5f;
+                final TableVR table = new TableVR(batch, skin, 420, 360);
+                final float x = (-WIDTH / 2f + WIDTH / COLUMNS * c) + table.getWidthWorld() / 2f;
+                final float y = (-HEIGHT / 2f + HEIGHT / ROWS * r) + 0.5f + table.getHeightWorld() / 2f;
                 final float z = -2;
                 table.setPosition(x, y, z);
+//                table.lookAt(Vector3.Zero, Vector3.Y);
+                table.getTable().setBackground(skin.newDrawable(Style.Drawables.window));
+                
                 final Label label = new Label("", skin);
                 label.setWrap(false);
 
                 final Image image = new Image();
                 image.setScaling(Scaling.fit);
                 image.setAlign(Align.center);
-                table.getTable().add(image).width(table.getWidth() - PADDING * 2f).height(table.getHeight() - label.getStyle().font.getLineHeight() * 2f - PADDING * 2f).center().row();
-//            table.add(image).center().row();
-                table.getTable().setBackground(skin.newDrawable(Style.Drawables.window));
 
+                table.getTable().add(image).width(table.getWidth() - PADDING * 2f).height(table.getHeight() - label.getStyle().font.getLineHeight() * 2f - PADDING * 2f).center().row();
                 table.getTable().add(label).center();
 
                 final GridItemHolder<T> holder = createHolder(table, image, label);
@@ -231,6 +242,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
 
         thumbnailTextures.clear();
         container.clearProcessors();
+        container.setVisible(true);
 
         currentPage = page;
 
@@ -254,13 +266,14 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
             }
 
             holder.bind(list.get(index));
-
+            holder.table.getRoot().setTouchable(Touchable.enabled);
             holder.table.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     onListItemClicked(index, holder.obj);
                 }
             });
+            holder.table.setVisible(true);
             container.addProcessor(holder.table);
         }
 //        }
