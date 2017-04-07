@@ -6,8 +6,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -19,7 +17,6 @@ import net.masonapps.mediaplayervr.chooser.GridUiLayout;
 import net.masonapps.mediaplayervr.chooser.VideoListLayout;
 import net.masonapps.mediaplayervr.media.MediaUtils;
 import net.masonapps.mediaplayervr.media.VideoDetails;
-import net.masonapps.mediaplayervr.utils.ModelGenerator;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
@@ -52,12 +49,12 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);
         container = new VrUiContainer();
-        final ModelBuilder modelBuilder = new ModelBuilder();
-        final Model rectModel = ModelGenerator.createRect(modelBuilder);
-        final int divisionsU = 24;
-        final int divisionsV = 24;
-        final Model sphereModel = ModelGenerator.createSphere(modelBuilder, 0.5f, divisionsU * 2, divisionsV);
-        manageDisposable(rectModel, sphereModel);
+//        final ModelBuilder modelBuilder = new ModelBuilder();
+//        final Model rectModel = ModelGenerator.createRect(modelBuilder);
+//        final int divisionsU = 24;
+//        final int divisionsV = 24;
+//        final Model sphereModel = ModelGenerator.createSphere(modelBuilder, 0.5f, divisionsU * 2, divisionsV);
+//        manageDisposable(rectModel, sphereModel);
 //        videoPreviewUi = new VideoPreviewUi(new WeakReference<>(context), rectModel, sphereModel, spriteBatch, skin);
 //        videoPreviewUi.setListener(new VideoPreviewUi.OnPlayClickedListener() {
 //            @Override

@@ -243,11 +243,10 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     }
 
     public void recalculateTransform() {
-        tmpM.set(position, rotation);
         plane.set(position, tmp.set(Vector3.Z).mul(rotation).nor());
         bounds.set(0, 0, getViewport().getCamera().viewportWidth * pixelSizeWorld * scale.x, getViewport().getCamera().viewportHeight * pixelSizeWorld * scale.y);
         radius = (float) Math.sqrt(bounds.width * bounds.width + bounds.height * bounds.height);
-        transform.idt().translate(-bounds.getWidth() * 0.5f, -bounds.getHeight() * 0.5f, 0).mul(tmpM).scale(pixelSizeWorld * scale.x, pixelSizeWorld * scale.y, 1f);
+        transform.idt().translate(position).rotate(rotation).translate(-bounds.getWidth() * 0.5f, -bounds.getHeight() * 0.5f, 0).scale(pixelSizeWorld * scale.x, pixelSizeWorld * scale.y, 1f);
         updated = true;
     }
 
@@ -289,10 +288,11 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     public boolean performRayTest(Ray ray) {
         if (!visible | !touchable) return false;
         if (!updated) recalculateTransform();
-        if (!Intersector.intersectRaySphere(ray, position, radius, null))
+        transform.getTranslation(tmp);
+        if (!Intersector.intersectRaySphere(ray, tmp, radius, null))
             return false;
         if (Intersector.intersectRayPlane(ray, plane, hitPoint3D)) {
-            tmp2.set(hitPoint3D).sub(transform.getTranslation(tmp));
+            tmp2.set(hitPoint3D).sub(tmp);
             xaxis.set(Vector3.Y).crs(plane.normal).nor();
             yaxis.set(plane.normal).crs(xaxis).nor();
             tmpV2.set(xaxis.dot(tmp2), yaxis.dot(tmp2));

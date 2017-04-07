@@ -60,7 +60,6 @@ public class MediaPlayerGame extends VrGame {
     private ModelBatch phongModelBatch;
     private Vector3 worldOffset = new Vector3(0, -1.2f, 0);
     private MediaSelectionScreen mediaSelectionScreen;
-    private LoadingScreen loadingScreen;
     private boolean waitingToPlayVideo = false;
 
     public MediaPlayerGame(Context context) {
@@ -71,8 +70,7 @@ public class MediaPlayerGame extends VrGame {
     @Override
     public void create() {
         super.create();
-        loadingScreen = new LoadingScreen(this);
-        setScreen(loadingScreen);
+        setScreen(new LoadingScreen(this));
         final GlobalSettings globalSettings = GlobalSettings.getInstance();
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         globalSettings.tint = sharedPreferences.getFloat(GlobalSettings.KEY_TINT, globalSettings.tint);
