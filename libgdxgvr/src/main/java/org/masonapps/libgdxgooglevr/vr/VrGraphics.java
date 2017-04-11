@@ -13,7 +13,6 @@ import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.backends.android.AndroidApplicationBase;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AndroidGL20;
-import com.badlogic.gdx.backends.android.AndroidGL30;
 import com.badlogic.gdx.backends.android.surfaceview.GdxEglConfigChooser;
 import com.badlogic.gdx.graphics.Cubemap;
 import com.badlogic.gdx.graphics.Cursor;
@@ -178,20 +177,20 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
     }
 
     private void setupGL() {
-        if (config.useGL30 && glVersion.getMajorVersion() > 2) {
-            if (gl30 != null) return;
-            gl20 = gl30 = new AndroidGL30();
-
-            Gdx.gl = gl30;
-            Gdx.gl20 = gl30;
-            Gdx.gl30 = gl30;
-        } else {
-            if (gl20 != null) return;
+//        if (config.useGL30 && glVersion.getMajorVersion() > 2) {
+//            if (gl30 != null) return;
+//            gl20 = gl30 = new AndroidGL30();
+//
+//            Gdx.gl = gl30;
+//            Gdx.gl20 = gl30;
+//            Gdx.gl30 = gl30;
+//        } else {
+        if (Gdx.gl != null) return;
             gl20 = new AndroidGL20();
 
             Gdx.gl = gl20;
             Gdx.gl20 = gl20;
-        }
+//        }
         String versionString = Gdx.gl.glGetString(GL10.GL_VERSION);
         String vendorString = Gdx.gl.glGetString(GL10.GL_VENDOR);
         String rendererString = Gdx.gl.glGetString(GL10.GL_RENDERER);

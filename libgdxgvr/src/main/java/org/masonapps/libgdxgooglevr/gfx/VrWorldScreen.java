@@ -154,8 +154,7 @@ public abstract class VrWorldScreen extends VrScreen {
 //                floatAction.restart();
                 cursor.setVisible(true);
             } else {
-                final float s = 2f;
-                cursor.position.set(ray.direction.x * s + ray.origin.x, ray.direction.y * s + ray.origin.y, ray.direction.z * s + ray.origin.z);
+                cursor.position.set(ray.direction.x + ray.origin.x, ray.direction.y + ray.origin.y, ray.direction.z + ray.origin.z);
                 cursor.lookAtTarget(ray.origin, Vector3.Y);
 //                floatAction.setReverse(true);
 //                floatAction.restart();

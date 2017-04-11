@@ -86,7 +86,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         prevPageButton = new ImageButtonVR(batch, Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, true));
         prevPageButton.getViewport().update((int) prevPageButton.getImageButton().getWidth() + 8, 720, false);
         prevPageButton.getImageButton().center().pad(4).setFillParent(true);
-        prevPageButton.setPosition(-WIDTH / 2f - prevPageButton.getWidthWorld(), 0.5f, -2f);
+        prevPageButton.position.set(-WIDTH / 2f - prevPageButton.getWidthWorld(), 0.5f, -2f).limit(2f);
         prevPageButton.lookAt(Vector3.Zero, Vector3.Y);
         prevPageButton.getImageButton().addListener(new ClickListener() {
             @Override
@@ -99,8 +99,8 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         nextPageButton = new ImageButtonVR(batch, Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.getViewport().update((int) nextPageButton.getImageButton().getWidth() + 8, 720, false);
         nextPageButton.getImageButton().center().pad(4).setFillParent(true);
-        nextPageButton.setPosition(WIDTH / 2f + nextPageButton.getWidthWorld(), 0.5f, -2f);
-//        nextPageButton.lookAt(Vector3.Zero, Vector3.Y);
+        nextPageButton.position.set(WIDTH / 2f + nextPageButton.getWidthWorld(), 0.5f, -2f).limit(2f);
+        nextPageButton.lookAt(Vector3.Zero, Vector3.Y);
         nextPageButton.getImageButton().addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -109,7 +109,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         });
 
         pageLabel = new LabelVR("Page 0/0", batch, skin);
-        pageLabel.setPosition(0, -0.25f, -2f);
+        pageLabel.setPosition(0, -0.65f, -2f);
         
         addListTable();
         loadingSpinner = new Image(skin.newDrawable(Style.Drawables.loading_spinner));
@@ -190,8 +190,8 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
                 final float x = (-WIDTH / 2f + WIDTH / COLUMNS * c) + table.getWidthWorld() / 2f;
                 final float y = (-HEIGHT / 2f + HEIGHT / ROWS * r) + 0.5f + table.getHeightWorld() / 2f;
                 final float z = -2;
-                table.setPosition(x, y, z);
-//                table.lookAt(Vector3.Zero, Vector3.Y);
+                table.position.set(x, y, z).limit(2f);
+                table.lookAt(Vector3.Zero, Vector3.Y);
                 table.getTable().setBackground(skin.newDrawable(Style.Drawables.window));
                 
                 final Label label = new Label("", skin);

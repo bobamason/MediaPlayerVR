@@ -2,6 +2,7 @@ package org.masonapps.libgdxgooglevr.ui;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Plane;
@@ -40,6 +41,7 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     private final Vector3 yaxis = new Vector3();
     private final Quaternion rotator = new Quaternion();
     private final Matrix4 transform = new Matrix4();
+    private final Vector3 translation = new Vector3();
     public Rectangle bounds = new Rectangle();
     private Plane plane = new Plane();
     private boolean visible = true;
@@ -53,6 +55,11 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     private float radius;
     private boolean updated = false;
     private Matrix4 batchTransform = new Matrix4();
+    private float activationMovement = 0.125f;
+    private float activation = 0f;
+    private float animationDuration = 0.25f;
+    private Interpolation interpolation = new Interpolation.Pow(2);
+
     public VirtualStage(Batch batch, int virtualPixelWidth, int virtualPixelHeight) {
         super(new ScreenViewport(), batch);
         getViewport().update(virtualPixelWidth, virtualPixelHeight, false);
@@ -243,10 +250,12 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     }
 
     public void recalculateTransform() {
-        plane.set(position, tmp.set(Vector3.Z).mul(rotation).nor());
+        final Vector3 normal = tmp.set(Vector3.Z).mul(rotation).nor();
+        translation.set(normal).scl(activationMovement).add(position).lerp(position, interpolation.apply(1f - activation));
+        plane.set(translation, normal);
         bounds.set(0, 0, getViewport().getCamera().viewportWidth * pixelSizeWorld * scale.x, getViewport().getCamera().viewportHeight * pixelSizeWorld * scale.y);
         radius = (float) Math.sqrt(bounds.width * bounds.width + bounds.height * bounds.height);
-        transform.idt().translate(position).rotate(rotation).translate(-bounds.getWidth() * 0.5f, -bounds.getHeight() * 0.5f, 0).scale(pixelSizeWorld * scale.x, pixelSizeWorld * scale.y, 1f);
+        transform.idt().translate(translation).rotate(rotation).translate(-bounds.getWidth() * 0.5f, -bounds.getHeight() * 0.5f, 0).scale(pixelSizeWorld * scale.x, pixelSizeWorld * scale.y, 1f);
         updated = true;
     }
 
@@ -272,6 +281,13 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     @Override
     public void act(float delta) {
         super.act(delta);
+        if (isCursorOver && activation < 1f) {
+            activation += delta / animationDuration;
+            invalidate();
+        } else if (!isCursorOver && activation > 0f) {
+            activation -= delta / animationDuration;
+            invalidate();
+        }
         mouseOverActor = fireEnterAndExit(mouseOverActor, mouseScreenX, mouseScreenY, -1);
     }
 
@@ -449,5 +465,17 @@ public class VirtualStage extends Stage implements VrInputProcessor {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public void setAnimationDuration(float animationDuration) {
+        this.animationDuration = animationDuration;
+    }
+
+    public void setActivationMovement(float activationMovement) {
+        this.activationMovement = activationMovement;
+    }
+
+    public void setInterpolation(Interpolation interpolation) {
+        this.interpolation = interpolation;
     }
 }
