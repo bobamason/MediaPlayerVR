@@ -184,6 +184,8 @@ public class VrUiContainer implements VrInputProcessor, Disposable {
     public boolean performRayTest(Ray ray) {
         if (!visible) return false;
         if (!updated) recalculateTransform();
+        focusedProcessor = null;
+        isCursorOver = false;
         transformedRay.origin.set(ray.origin).mul(invTransform);
         transformedRay.direction.set(ray.direction).mul(invTransform);
         for (VrInputProcessor inputProcessor : processors) {
@@ -192,12 +194,9 @@ public class VrUiContainer implements VrInputProcessor, Disposable {
                 hitPoint2DPixels.set(inputProcessor.getHitPoint2D());
                 hitPoint3D.set(inputProcessor.getHitPoint3D()).mul(transform);
                 isCursorOver = true;
-                return true;
             }
         }
-        focusedProcessor = null;
-        isCursorOver = false;
-        return false;
+        return isCursorOver;
     }
 
     public void act() {
