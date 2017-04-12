@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.view.Surface;
 
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -36,12 +37,12 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
     public static final String TAG = VrVideoPlayerExo.class.getSimpleName();
     private ExoPlayer exoPlayer;
 
-    public VrVideoPlayerExo(Context context, Uri uri, int width, int height) {
-        super(context, uri, width, height);
+    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel) {
+        super(context, uri, width, height, rectModel, sphereModel);
     }
 
-    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, DisplayMode displayMode) {
-        super(context, uri, width, height, displayMode);
+    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel) {
+        super(context, uri, width, height, displayMode, rectModel, sphereModel);
     }
 
     @Override

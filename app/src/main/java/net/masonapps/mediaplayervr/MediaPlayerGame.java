@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -31,9 +32,11 @@ import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
 import net.masonapps.mediaplayervr.audiovisualization.tests.DecalsPerformanceTest;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
+import net.masonapps.mediaplayervr.loaders.VideoSphereLoader;
 import net.masonapps.mediaplayervr.media.ImageDetails;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
+import net.masonapps.mediaplayervr.utils.ModelGenerator;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
@@ -48,7 +51,8 @@ import java.util.List;
 public class MediaPlayerGame extends VrGame {
     public static final String ROOM_FILENAME = "room/dome_room.g3db";
     //    public static final String HIGHLIGHT_FILENAME = "room/dome_highlight.g3db";
-    public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
+//    public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
+    public static final String SPHERE_FILENAME = "video.sphere";
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private final Context context;
     private Skin skin;
@@ -61,6 +65,8 @@ public class MediaPlayerGame extends VrGame {
     private Vector3 worldOffset = new Vector3(0, -1.2f, 0);
     private MediaSelectionScreen mediaSelectionScreen;
     private boolean waitingToPlayVideo = false;
+    private Model sphereModel;
+    private Model rectModel;
 
     public MediaPlayerGame(Context context) {
         super();
@@ -71,6 +77,7 @@ public class MediaPlayerGame extends VrGame {
     public void create() {
         super.create();
         setScreen(new LoadingScreen(this));
+        rectModel = ModelGenerator.createRect(new ModelBuilder());
         final GlobalSettings globalSettings = GlobalSettings.getInstance();
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         globalSettings.tint = sharedPreferences.getFloat(GlobalSettings.KEY_TINT, globalSettings.tint);
@@ -80,6 +87,8 @@ public class MediaPlayerGame extends VrGame {
         skin = new Skin();
         assets = new AssetManager();
         assets.load(Style.ATLAS_FILE, TextureAtlas.class);
+        assets.setLoader(Model.class, "sphere", new VideoSphereLoader(new InternalFileHandleResolver()));
+        assets.load(SPHERE_FILENAME, Model.class);
 //        assets.load(ROOM_FILENAME, Model.class);
 //        assets.load(FLOOR_FILENAME, Model.class);
         assets.load(CONTROLLER_FILENAME, Model.class);
@@ -120,6 +129,8 @@ public class MediaPlayerGame extends VrGame {
 
                 controllerEntity = new Entity(new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class)));
                 controllerEntity.setLightingEnabled(false);
+
+                sphereModel = assets.get(SPHERE_FILENAME, Model.class);
 
                 goToSelectionScreen();
                 loading = false;
@@ -244,12 +255,19 @@ public class MediaPlayerGame extends VrGame {
         if (skin != null)
             skin.dispose();
         skin = null;
+
 //        if (roomEntity != null)
 //            roomEntity.dispose();
 //        roomEntity = null;
+
         if (controllerEntity != null)
             controllerEntity.dispose();
         controllerEntity = null;
+
+        if (sphereModel != null)
+            sphereModel.dispose();
+        sphereModel = null;
+        
         if (phongModelBatch != null)
             phongModelBatch.dispose();
         phongModelBatch = null;
@@ -271,11 +289,19 @@ public class MediaPlayerGame extends VrGame {
         return controllerEntity;
     }
 
+    public Model getSphereModel() {
+        return sphereModel;
+    }
+
     public VideoOptionsDatabaseHelper getVideoOptionsDatabaseHelper() {
         return ((MainActivity) context).getVideoOptionsDatabaseHelper();
     }
 
     public void displayImage(ImageDetails imageDetails) {
         setScreen(new ImageViewerScreen(this, context, imageDetails));
+    }
+
+    public Model getRectModel() {
+        return rectModel;
     }
 }

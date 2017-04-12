@@ -12,15 +12,12 @@ import android.support.annotation.Nullable;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
-
-import net.masonapps.mediaplayervr.utils.ModelGenerator;
 
 /**
  * Created by Bob on 12/21/2016.
@@ -64,27 +61,17 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Quaternion invHeadRotation = new Quaternion();
     private float zoom = 1f;
 
-    public VrVideoPlayer(Context context, Uri uri, int width, int height) {
-        this(context, uri, width, height, DisplayMode.Mono);
+    public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel) {
+        this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel);
     }
 
-    public VrVideoPlayer(Context context, Uri uri, int width, int height, DisplayMode displayMode) {
+    public VrVideoPlayer(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel) {
         this.context = context;
         this.width = width;
         this.height = height;
         shader = new VideoShader();
-        final ModelBuilder modelBuilder = new ModelBuilder();
-        final Model rect = ModelGenerator.createRect(modelBuilder);
-        disposables.add(rect);
-        rectModelInstance = new ModelInstance(rect);
-        final int divisionsU = 64;
-        final int divisionsV = 64;
-//        final Model halfSphere = ModelGenerator.createHalfSphere(modelBuilder, 0.5f, divisionsU, divisionsV);
-//        disposables.add(halfSphere);
-//        halfSphereModelInstance = new ModelInstance(halfSphere);
-        final Model sphere = ModelGenerator.createSphere(modelBuilder, 0.5f, divisionsU * 2, divisionsV);
-        disposables.add(sphere);
-        sphereModelInstance = new ModelInstance(sphere);
+        rectModelInstance = new ModelInstance(rectModel);
+        sphereModelInstance = new ModelInstance(sphereModel);
         setupRenderTexture();
         initializeMediaPlayer();
         setDisplayMode(displayMode);

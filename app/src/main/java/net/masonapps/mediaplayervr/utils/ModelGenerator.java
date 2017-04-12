@@ -36,7 +36,7 @@ public class ModelGenerator {
 
     private static Model createSphere(ModelBuilder modelBuilder, float radius, float angleUFrom, float angleUTo, float angleVFrom, float angleVTo, int divisionsU, int divisionsV) {
         modelBuilder.begin();
-        MeshPartBuilder builder = modelBuilder.part("", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates, new Material());
+        MeshPartBuilder builder = modelBuilder.part("sphere", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates, new Material());
         final float auo = MathUtils.degreesToRadians * angleUFrom;
         final float stepU = (MathUtils.degreesToRadians * (angleUTo - angleUFrom)) / divisionsU;
         final float avo = MathUtils.degreesToRadians * angleVFrom;

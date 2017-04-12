@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.util.Log;
 import android.view.Surface;
 
+import com.badlogic.gdx.graphics.g3d.Model;
+
 import java.io.IOException;
 
 /**
@@ -17,12 +19,12 @@ public class VrVideoPlayerMP extends VrVideoPlayer implements MediaPlayer.OnErro
     public static final String TAG = VrVideoPlayerMP.class.getSimpleName();
     private MediaPlayer player;
 
-    public VrVideoPlayerMP(Context context, Uri uri, int width, int height) {
-        super(context, uri, width, height);
+    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel) {
+        super(context, uri, width, height, rectModel, sphereModel);
     }
 
-    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, DisplayMode displayMode) {
-        super(context, uri, width, height, displayMode);
+    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel) {
+        super(context, uri, width, height, displayMode, rectModel, sphereModel);
     }
 
     @Override

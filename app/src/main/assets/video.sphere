@@ -1,0 +1,5 @@
+{
+  "radius": 0.5,
+  "divisions_u": 128,
+  "divisions_v": 64
+}
