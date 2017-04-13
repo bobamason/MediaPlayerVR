@@ -1,9 +1,12 @@
 package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
@@ -57,7 +60,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         final VideoOptions videoOptions = videoPlayerGUI.getVideoOptions();
         stretch.set(videoOptions.textureStretch);
         player.setStretch(stretch);
-        
+
         final ImageButton xLeft = new ImageButton(leftButtonStyle);
         xLeft.addListener(new ClickListener() {
             @Override
@@ -105,5 +108,14 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         });
         table.add(yRight).pad(padding).row();
         setVisible(false);
+
+        final TextButton cylinderBtn = new TextButton("use cylinder", skin, Style.TOGGLE);
+        cylinderBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                player.setUseCylinderProjection(cylinderBtn.isChecked());
+            }
+        });
+        table.add(cylinderBtn).pad(padding).row();
     }
 }

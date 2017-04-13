@@ -32,7 +32,7 @@ import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
 import net.masonapps.mediaplayervr.audiovisualization.tests.DecalsPerformanceTest;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
-import net.masonapps.mediaplayervr.loaders.VideoSphereLoader;
+import net.masonapps.mediaplayervr.loaders.VideoModelLoader;
 import net.masonapps.mediaplayervr.media.ImageDetails;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
@@ -52,7 +52,8 @@ public class MediaPlayerGame extends VrGame {
     public static final String ROOM_FILENAME = "room/dome_room.g3db";
     //    public static final String HIGHLIGHT_FILENAME = "room/dome_highlight.g3db";
 //    public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
-    public static final String SPHERE_FILENAME = "video.sphere";
+    public static final String SPHERE_FILENAME = "sphere.vidmodel";
+    public static final String CYLINDER_FILENAME = "cylinder.vidmodel";
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private final Context context;
     private Skin skin;
@@ -66,6 +67,7 @@ public class MediaPlayerGame extends VrGame {
     private MediaSelectionScreen mediaSelectionScreen;
     private boolean waitingToPlayVideo = false;
     private Model sphereModel;
+    private Model cylinderModel;
     private Model rectModel;
 
     public MediaPlayerGame(Context context) {
@@ -87,8 +89,9 @@ public class MediaPlayerGame extends VrGame {
         skin = new Skin();
         assets = new AssetManager();
         assets.load(Style.ATLAS_FILE, TextureAtlas.class);
-        assets.setLoader(Model.class, "sphere", new VideoSphereLoader(new InternalFileHandleResolver()));
+        assets.setLoader(Model.class, "vidmodel", new VideoModelLoader(new InternalFileHandleResolver()));
         assets.load(SPHERE_FILENAME, Model.class);
+        assets.load(CYLINDER_FILENAME, Model.class);
 //        assets.load(ROOM_FILENAME, Model.class);
 //        assets.load(FLOOR_FILENAME, Model.class);
         assets.load(CONTROLLER_FILENAME, Model.class);
@@ -131,6 +134,7 @@ public class MediaPlayerGame extends VrGame {
                 controllerEntity.setLightingEnabled(false);
 
                 sphereModel = assets.get(SPHERE_FILENAME, Model.class);
+                cylinderModel = assets.get(CYLINDER_FILENAME, Model.class);
 
                 goToSelectionScreen();
                 loading = false;
@@ -291,6 +295,10 @@ public class MediaPlayerGame extends VrGame {
 
     public Model getSphereModel() {
         return sphereModel;
+    }
+
+    public Model getCylinderModel() {
+        return cylinderModel;
     }
 
     public VideoOptionsDatabaseHelper getVideoOptionsDatabaseHelper() {

@@ -17,9 +17,9 @@ import org.json.JSONObject;
  * Created by Bob on 4/12/2017.
  */
 
-public class VideoSphereLoader extends ModelLoader<ModelLoader.ModelParameters> {
+public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
 
-    public VideoSphereLoader(FileHandleResolver resolver) {
+    public VideoModelLoader(FileHandleResolver resolver) {
         super(resolver);
     }
 
@@ -33,10 +33,16 @@ public class VideoSphereLoader extends ModelLoader<ModelLoader.ModelParameters> 
         try {
             final JSONObject json = new JSONObject(fileHandle.readString());
             final ModelBuilder modelBuilder = new ModelBuilder();
-            float r = (float) json.getDouble("radius");
+            final String shape = json.getString("shape");
+            final float r = (float) json.getDouble("radius");
             final int divU = json.getInt("divisions_u");
             final int divV = json.getInt("divisions_v");
-            return ModelGenerator.createSphere(modelBuilder, r, divU, divV);
+            if (shape.equals("sphere"))
+                return ModelGenerator.createSphere(modelBuilder, r, divU, divV);
+            else if (shape.equals("cylinder"))
+                return ModelGenerator.createCylinder(modelBuilder, r, divU, divV);
+            else
+                return null;
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

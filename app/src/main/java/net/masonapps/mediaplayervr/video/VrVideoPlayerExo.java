@@ -37,12 +37,12 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
     public static final String TAG = VrVideoPlayerExo.class.getSimpleName();
     private ExoPlayer exoPlayer;
 
-    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel) {
-        super(context, uri, width, height, rectModel, sphereModel);
+    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
+        super(context, uri, width, height, rectModel, sphereModel, cylinderModel);
     }
 
-    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel) {
-        super(context, uri, width, height, displayMode, rectModel, sphereModel);
+    public VrVideoPlayerExo(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel, Model cylinderModel) {
+        super(context, uri, width, height, displayMode, rectModel, sphereModel, cylinderModel);
     }
 
     @Override

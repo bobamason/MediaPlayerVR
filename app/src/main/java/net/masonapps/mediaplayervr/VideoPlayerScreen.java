@@ -101,7 +101,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         setIpd(this.videoOptions.ipd);
         leftCamera = new VrCamera();
         rightCamera = new VrCamera();
-        videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height, ((MediaPlayerGame) game).getRectModel(), ((MediaPlayerGame) game).getSphereModel());
+        final MediaPlayerGame mediaPlayerGame = (MediaPlayerGame) game;
+        videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
         final GlobalSettings globalSettings = GlobalSettings.getInstance();
@@ -113,12 +114,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         final SpriteBatch spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);
         container = new VrUiContainer();
-        final Skin skin = ((MediaPlayerGame) game).getSkin();
+        final Skin skin = mediaPlayerGame.getSkin();
         ui = new VideoPlayerGUI(this, spriteBatch, skin, this.videoOptions);
         ui.attach(container);
         getVrCamera().near = 0.125f;
-        getVrCamera().far = 100f;
-        controllerEntity = getWorld().add(((MediaPlayerGame) game).getControllerEntity());
+        getVrCamera().far = 101f;
+        controllerEntity = getWorld().add(mediaPlayerGame.getControllerEntity());
         modelBuilder = new ModelBuilder();
         modelBuilder.begin();
         final MeshPartBuilder part = modelBuilder.part("outline", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material(ColorAttribute.createDiffuse(Color.YELLOW)));
@@ -184,7 +185,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         rightCamera.viewportWidth = rightEye.getViewport().width;
         rightCamera.viewportHeight = rightEye.getViewport().height;
 
-        videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : sphereDiameter);
+        videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : 200f);
 
         if (leftEye.getProjectionChanged() | rightEye.getProjectionChanged())
             projectionChanged = true;
@@ -236,7 +237,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 //        videoPlayer.setZoom(zoom);
 
         // TODO: 4/12/2017 remove 
-        setRotation(getForwardVector(), getUpVector());
+//        setRotation(getForwardVector(), getUpVector());
         
         Viewport viewport = leftEye.getViewport();
         Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
@@ -245,9 +246,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : leftEye.getType());
 
         // TODO: 4/12/2017 remove 
-        sphereInstance.transform.idt().translate(0, -2, -10).scale(sphereDiameter, sphereDiameter, sphereDiameter);
-        eye0Instance.transform.idt().translate(0, -2, -10).rotate(rotation);
-        eye1Instance.transform.idt().translate(0, -2, -10).rotate(rotation);
+//        sphereInstance.transform.idt().translate(0, -2, -10).scale(sphereDiameter, sphereDiameter, sphereDiameter);
+//        eye0Instance.transform.idt().translate(0, -2, -10).rotate(rotation);
+//        eye1Instance.transform.idt().translate(0, -2, -10).rotate(rotation);
         
         getModelBatch().end();
 
@@ -258,9 +259,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : rightEye.getType());
 
         // TODO: 4/12/2017 remove 
-        sphereInstance.transform.idt().translate(0, -2, -10).scale(sphereDiameter, sphereDiameter, sphereDiameter);
-        eye0Instance.transform.idt().translate(0, -2, -10);
-        eye1Instance.transform.idt().translate(0, -2, -10);
+//        sphereInstance.transform.idt().translate(0, -2, -10).scale(sphereDiameter, sphereDiameter, sphereDiameter);
+//        eye0Instance.transform.idt().translate(0, -2, -10);
+//        eye1Instance.transform.idt().translate(0, -2, -10);
         
         getModelBatch().end();
 

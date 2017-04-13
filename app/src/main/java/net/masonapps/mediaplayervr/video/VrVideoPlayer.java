@@ -30,6 +30,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     protected final ModelInstance rectModelInstance;
     //    protected final ModelInstance halfSphereModelInstance;
     protected final ModelInstance sphereModelInstance;
+    protected final ModelInstance cylinderModelInstance;
     protected final Object lock = new Object();
     protected ModelInstance modelInstance;
     protected Array<Disposable> disposables = new Array<>();
@@ -60,18 +61,20 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Quaternion headRotation = new Quaternion();
     private Quaternion invHeadRotation = new Quaternion();
     private float zoom = 1f;
+    private boolean useCylinderProjection = false;
 
-    public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel) {
-        this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel);
+    public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
+        this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel, cylinderModel);
     }
 
-    public VrVideoPlayer(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel) {
+    public VrVideoPlayer(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel, Model cylinderModel) {
         this.context = context;
         this.width = width;
         this.height = height;
         shader = new VideoShader();
         rectModelInstance = new ModelInstance(rectModel);
         sphereModelInstance = new ModelInstance(sphereModel);
+        cylinderModelInstance = new ModelInstance(cylinderModel);
         setupRenderTexture();
         initializeMediaPlayer();
         setDisplayMode(displayMode);
@@ -118,14 +121,14 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         if (useFlatRectangle()) {
             srcRect.set(0, 0, 1, 1);
             dstRect.set(0, 0, 1, 1);
-        } else if (use180Sphere()) {
+        } else if (is180Video()) {
             srcRect.set(0, 0, 1, 1);
 //            final float invAspect = 1f / aspectRatio;
 //            dstRect.set(0.25f + stretch.x * 0.5f, (1f - invAspect) * 0.5f - stretch.y * 0.5f, 0.5f + stretch.x, invAspect + stretch.y);
-            dstRect.set(0.25f - stretch.x * 0.5f, -stretch.y * 0.5f, 0.5f + stretch.x, 1f + stretch.y);
+            dstRect.set(0.25f - stretch.x, -stretch.y, 0.5f + stretch.x, 1f + stretch.y);
         } else {
             srcRect.set(0, 0, 1, 1);
-            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1f + stretch.x, 1f + stretch.y);
+            dstRect.set(-stretch.x, -stretch.y, 1f + stretch.x, 1f + stretch.y);
         }
     }
 
@@ -319,11 +322,11 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         return displayMode == DisplayMode.Mono || displayMode == DisplayMode.LR3D || displayMode == DisplayMode.TB3D;
     }
 
-    public boolean use180Sphere() {
+    public boolean is180Video() {
         return displayMode == DisplayMode.Mono180 || displayMode == DisplayMode.LR180 || displayMode == DisplayMode.TB180;
     }
 
-    public boolean use360Sphere() {
+    public boolean is360Video() {
         return displayMode == DisplayMode.Mono360 || displayMode == DisplayMode.LR360 || displayMode == DisplayMode.TB360;
     }
 
@@ -335,11 +338,11 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.displayMode = displayMode;
         if (useFlatRectangle()) {
             modelInstance = rectModelInstance;
-        } else if (use180Sphere()) {
-//            modelInstance = halfSphereModelInstance;
-            modelInstance = sphereModelInstance;
         } else {
-            modelInstance = sphereModelInstance;
+            if (useCylinderProjection)
+                modelInstance = cylinderModelInstance;
+            else
+                modelInstance = sphereModelInstance;
         }
         switch (displayMode) {
             case Mono:
@@ -410,6 +413,11 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public void setStretch(Vector2 stretch) {
         this.stretch.set(stretch);
         updateAspectRatio();
+    }
+
+    public void setUseCylinderProjection(boolean useCylinderProjection) {
+        this.useCylinderProjection = useCylinderProjection;
+        setDisplayMode(displayMode);
     }
 
     public void setZoom(float zoom) {

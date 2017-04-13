@@ -19,12 +19,12 @@ public class VrVideoPlayerMP extends VrVideoPlayer implements MediaPlayer.OnErro
     public static final String TAG = VrVideoPlayerMP.class.getSimpleName();
     private MediaPlayer player;
 
-    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel) {
-        super(context, uri, width, height, rectModel, sphereModel);
+    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
+        super(context, uri, width, height, rectModel, sphereModel, cylinderModel);
     }
 
-    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel) {
-        super(context, uri, width, height, displayMode, rectModel, sphereModel);
+    public VrVideoPlayerMP(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel, Model cylinderModel) {
+        super(context, uri, width, height, displayMode, rectModel, sphereModel, cylinderModel);
     }
 
     @Override

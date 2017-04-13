@@ -89,4 +89,47 @@ public class ModelGenerator {
                 0, 0, 1,
                 new Material(), VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates);
     }
+
+    public static Model createCylinder(ModelBuilder modelBuilder, float radius, int divisionsU, int divisionsV) {
+        return createCylinder(modelBuilder, radius, -90, 270, divisionsU, divisionsV);
+    }
+
+    private static Model createCylinder(ModelBuilder modelBuilder, float radius, float angleUFrom, float angleUTo, int divisionsU, int divisionsV) {
+        modelBuilder.begin();
+        MeshPartBuilder builder = modelBuilder.part("cylinder", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates, new Material());
+        final float auo = MathUtils.degreesToRadians * angleUFrom;
+        final float stepU = (MathUtils.degreesToRadians * (angleUTo - angleUFrom)) / divisionsU;
+        final float us = 1f / divisionsU;
+        final float vs = 1f / divisionsV;
+        float u, v, angleU;
+        MeshPartBuilder.VertexInfo curr1 = vertTmp3.set(null, null, null, null);
+        curr1.hasUV = curr1.hasPosition = curr1.hasNormal = true;
+
+        final int s = divisionsU + 3;
+        tmpIndices.clear();
+        tmpIndices.ensureCapacity(divisionsU * 2);
+        tmpIndices.size = s;
+        int tempOffset = 0;
+
+        builder.ensureVertices((divisionsV + 1) * (divisionsU + 1));
+        builder.ensureRectangleIndices(divisionsU);
+        for (int iv = 0; iv <= divisionsV; iv++) {
+            v = vs * iv;
+            final float h = -radius / 2f + radius / divisionsV * iv;
+            for (int iu = 0; iu <= divisionsU; iu++) {
+                angleU = auo + stepU * iu + MathUtils.PI;
+                u = us * iu;
+                curr1.position.set(MathUtils.cos(angleU) * radius, h, MathUtils.sin(angleU) * radius);
+                curr1.normal.set(curr1.position).scl(-1).nor();
+                curr1.uv.set(u, v);
+                tmpIndices.set(tempOffset, builder.vertex(curr1));
+                final int o = tempOffset + s;
+                if ((iv > 0) && (iu > 0))
+                    builder.rect(tmpIndices.get(tempOffset), tmpIndices.get((o - 1) % s), tmpIndices.get((o - (divisionsU + 2)) % s),
+                            tmpIndices.get((o - (divisionsU + 1)) % s));
+                tempOffset = (tempOffset + 1) % tmpIndices.size;
+            }
+        }
+        return modelBuilder.end();
+    }
 }
