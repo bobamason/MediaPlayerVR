@@ -185,7 +185,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         rightCamera.viewportWidth = rightEye.getViewport().width;
         rightCamera.viewportHeight = rightEye.getViewport().height;
 
-        videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : 200f);
+        videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : 100f);
 
         if (leftEye.getProjectionChanged() | rightEye.getProjectionChanged())
             projectionChanged = true;
@@ -200,7 +200,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 setCameraProjection(leftEye, leftCamera);
                 setCameraProjection(rightEye, rightCamera);
 
-                createVisualization();
+//                createVisualization();
             }
             projectionChanged = false;
         }

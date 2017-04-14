@@ -114,7 +114,7 @@ public class ModelGenerator {
         builder.ensureVertices((divisionsV + 1) * (divisionsU + 1));
         builder.ensureRectangleIndices(divisionsU);
         for (int iv = 0; iv <= divisionsV; iv++) {
-            v = vs * iv;
+            v = 1f - vs * iv;
             final float h = -radius / 2f + radius / divisionsV * iv;
             for (int iu = 0; iu <= divisionsU; iu++) {
                 angleU = auo + stepU * iu + MathUtils.PI;

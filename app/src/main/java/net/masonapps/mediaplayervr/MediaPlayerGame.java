@@ -90,8 +90,8 @@ public class MediaPlayerGame extends VrGame {
         assets = new AssetManager();
         assets.load(Style.ATLAS_FILE, TextureAtlas.class);
         assets.setLoader(Model.class, "vidmodel", new VideoModelLoader(new InternalFileHandleResolver()));
-        assets.load(SPHERE_FILENAME, Model.class);
-        assets.load(CYLINDER_FILENAME, Model.class);
+//        assets.load(SPHERE_FILENAME, Model.class);
+//        assets.load(CYLINDER_FILENAME, Model.class);
 //        assets.load(ROOM_FILENAME, Model.class);
 //        assets.load(FLOOR_FILENAME, Model.class);
         assets.load(CONTROLLER_FILENAME, Model.class);
@@ -133,8 +133,10 @@ public class MediaPlayerGame extends VrGame {
                 controllerEntity = new Entity(new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class)));
                 controllerEntity.setLightingEnabled(false);
 
-                sphereModel = assets.get(SPHERE_FILENAME, Model.class);
-                cylinderModel = assets.get(CYLINDER_FILENAME, Model.class);
+//                sphereModel = assets.get(SPHERE_FILENAME, Model.class);
+                sphereModel = ModelGenerator.createSphere(modelBuilder, 0.5f, 128, 64);
+//                cylinderModel = assets.get(CYLINDER_FILENAME, Model.class);
+                cylinderModel = ModelGenerator.createCylinder(modelBuilder, 0.5f, 128, 2);
 
                 goToSelectionScreen();
                 loading = false;

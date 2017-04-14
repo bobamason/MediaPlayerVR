@@ -1,6 +1,6 @@
 {
-  "shape": "sphere",
+  "shape": "cylinder",
   "radius": 0.5,
   "divisions_u": 128,
-  "divisions_v": 1
+  "divisions_v": 2
 }

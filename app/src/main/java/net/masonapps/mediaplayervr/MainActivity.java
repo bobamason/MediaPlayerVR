@@ -29,8 +29,8 @@ public class MainActivity extends VrActivity {
         AndroidCompat.setVrModeEnabled(this, true);
         game = new MediaPlayerGame(this);
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
-        getGvrView().setRenderTargetScale(0.75f);
-        getGvrView().setMultisampling(2);
+        getGvrView().setRenderTargetScale(1.0f);
+//        getGvrView().setMultisampling(2);
 
         if (getGvrView().setAsyncReprojectionEnabled(true)) {
 //            // Async reprojection decouples the app framerate from the display framerate,
