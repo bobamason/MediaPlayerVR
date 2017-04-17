@@ -185,7 +185,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         rightCamera.viewportWidth = rightEye.getViewport().width;
         rightCamera.viewportHeight = rightEye.getViewport().height;
 
-        videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : 100f);
+        videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : sphereDiameter);
 
         if (leftEye.getProjectionChanged() | rightEye.getProjectionChanged())
             projectionChanged = true;
@@ -309,13 +309,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 //        final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f;
         final float defaultIpd = GdxVr.app.getGvrView().getInterpupillaryDistance();
         final float ipdHalf = defaultIpd * ipd / 2f;
-        final float defaultShift = Math.abs(r - side);
-        final float screenZ = (defaultIpd * 0.5f * camera.near) / defaultShift;
+//        final float defaultShift = Math.abs(r - side);
+//        final float screenZ = (defaultIpd * 0.5f * camera.near) / defaultShift;
+        final float screenZ = 4f;
         sphereDiameter = screenZ * 2f;
-        Log.d("setCameraProjection", (eye.getType() == Eye.Type.LEFT ? "left" : "right") + "eye");
-        Log.d("setCameraProjection", "screenZ = " + screenZ + "m");
+//        Log.d("setCameraProjection", (eye.getType() == Eye.Type.LEFT ? "left" : "right") + "eye");
+//        Log.d("setCameraProjection", "screenZ = " + screenZ + "m");
         final float shift = ipdHalf * camera.near / screenZ;
-        Log.d("setCameraProjection", "defaultShift = " + defaultShift + ", shift = " + shift);
+//        Log.d("setCameraProjection", "defaultShift = " + defaultShift + ", shift = " + shift);
         if (eye.getType() == Eye.Type.LEFT) {
             left = -side + shift;
             right = side + shift;
