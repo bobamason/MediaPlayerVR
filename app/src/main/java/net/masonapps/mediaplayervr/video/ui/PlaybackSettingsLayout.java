@@ -30,9 +30,10 @@ public class PlaybackSettingsLayout extends SingleStageUi {
     private Vector2 stretch = new Vector2();
     private float s = 10f;
     private DecimalFormat df = new DecimalFormat("0.00");
+    private float shift = 0f;
 
     public PlaybackSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
-        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());
+        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 500), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
         stage.setPosition(0, 0, -2.5f);
         stage.addActor(Style.newBackgroundImage(skin));
@@ -109,6 +110,42 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         table.add(yRight).pad(padding).row();
         setVisible(false);
 
+        final ImageButton shiftLeft = new ImageButton(leftButtonStyle);
+        shiftLeft.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                shift -= STEP;
+                player.set3dShift(shift);
+            }
+        });
+        table.add(shiftLeft).pad(padding);
+
+        table.add(new Label(" Shift ", skin)).pad(padding);
+
+        final ImageButton shiftRight = new ImageButton(rightButtonStyle);
+        shiftRight.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                shift += STEP;
+                player.set3dShift(shift);
+            }
+        });
+        table.add(shiftRight).pad(padding).row();
+        setVisible(false);
+
+        final TextButton resetBtn = new TextButton("reset", skin);
+        resetBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                stretch.set(0, 0);
+                player.setStretch(stretch);
+                videoOptions.textureStretch.set(stretch);
+                shift = 0;
+                player.set3dShift(shift);
+            }
+        });
+        table.add(resetBtn).pad(padding).colspan(3).row();
+
         final TextButton cylinderBtn = new TextButton("use cylinder", skin, Style.TOGGLE);
         cylinderBtn.addListener(new ChangeListener() {
             @Override
@@ -116,6 +153,6 @@ public class PlaybackSettingsLayout extends SingleStageUi {
                 player.setUseCylinderProjection(cylinderBtn.isChecked());
             }
         });
-        table.add(cylinderBtn).pad(padding).row();
+        table.add(cylinderBtn).pad(padding).colspan(3).row();
     }
 }
