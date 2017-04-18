@@ -215,7 +215,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     protected void mapDistortTextureCoordinates() {
-        modelInstance.transform.idt().rotate(invHeadRotation).scale(modelSize, modelSize, modelSize * zoom).rotate(headRotation);
+        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
+//        modelInstance.transform.idt().rotate(invHeadRotation).scale(modelSize, modelSize, modelSize * zoom).rotate(headRotation);
     }
 
     protected void mapDistortModel() {
