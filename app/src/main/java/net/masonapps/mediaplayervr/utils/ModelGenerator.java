@@ -115,11 +115,12 @@ public class ModelGenerator {
         builder.ensureRectangleIndices(divisionsU);
         for (int iv = 0; iv <= divisionsV; iv++) {
             v = 1f - vs * iv;
-            final float h = -radius / 2f + radius / divisionsV * iv;
+            final float h = radius * MathUtils.PI;
+            final float y = -h / 2f + h / divisionsV * iv;
             for (int iu = 0; iu <= divisionsU; iu++) {
                 angleU = auo + stepU * iu + MathUtils.PI;
                 u = us * iu;
-                curr1.position.set(MathUtils.cos(angleU) * radius, h, MathUtils.sin(angleU) * radius);
+                curr1.position.set(MathUtils.cos(angleU) * radius, y, MathUtils.sin(angleU) * radius);
                 curr1.normal.set(curr1.position).scl(-1).nor();
                 curr1.uv.set(u, v);
                 tmpIndices.set(tempOffset, builder.vertex(curr1));

@@ -122,13 +122,15 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             srcRect.set(0, 0, 1, 1);
             dstRect.set(0, 0, 1, 1);
         } else if (is180Video()) {
+//            srcRect.set(stretch.x * 0.5f, stretch.y * 0.5f, 1f - stretch.x, 1f - stretch.y);
             srcRect.set(0, 0, 1, 1);
 //            final float invAspect = 1f / aspectRatio;
 //            dstRect.set(0.25f + stretch.x * 0.5f, (1f - invAspect) * 0.5f - stretch.y * 0.5f, 0.5f + stretch.x, invAspect + stretch.y);
-            dstRect.set(0.25f - stretch.x, -stretch.y, 0.5f + stretch.x, 1f + stretch.y);
+//            dstRect.set(0.25f - stretch.x, -stretch.y, 0.5f + stretch.x, 1f + stretch.y);
+            dstRect.set(0.25f - stretch.x * 0.5f, -stretch.y * 0.5f, 0.5f + stretch.x, 1f + stretch.y);
         } else {
             srcRect.set(0, 0, 1, 1);
-            dstRect.set(-stretch.x, -stretch.y, 1f + stretch.x, 1f + stretch.y);
+            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1f + stretch.x, 1f + stretch.y);
         }
     }
 
@@ -216,6 +218,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     protected void mapDistortTextureCoordinates() {
         modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
+//        modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
 //        modelInstance.transform.idt().rotate(invHeadRotation).scale(modelSize, modelSize, modelSize * zoom).rotate(headRotation);
     }
 
