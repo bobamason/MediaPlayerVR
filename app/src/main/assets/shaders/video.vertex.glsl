@@ -5,6 +5,7 @@ uniform mat4 u_worldTrans;
 uniform vec4 u_srcRect;
 uniform vec4 u_dstRect;
 uniform float u_useTexCoords;
+uniform float u_useFishEye;
 varying vec2 v_texCoord;
 ##define PI 3.14159265
 
@@ -19,8 +20,6 @@ vec2 fishEyeProj(vec3 p){
     float r = 2.0 * MathUtils.atan2(length(p.xy), -p.z) / PI;
     float u = r * MathUtils.cos(theta);
     float v = r * MathUtils.sin(theta);
-    float latitude = atan(-p.z, p.x);
-    float longitude = atan(p.y, length(vec2(p.x, -p.z)));
     return vec2(u * 0.5 + 0.5, 1.0 - (v * 0.5 + 0.5));
 }
 
@@ -29,10 +28,15 @@ void main() {
     vec2 scale = u_srcRect.zw / u_dstRect.zw;
     vec2 offset = u_srcRect.xy - u_dstRect.xy;
     vec2 tc;
-    if(u_useTexCoords > 0.5)
+    if(u_useTexCoords > 0.5) {
         tc = a_texCoord0;
-    else
-        tc = equirectangularProj(pos.xyz);
+    } else {
+        if(u_useFishEye > 0.5) {
+            tc = fishEyeProj(pos.xyz);
+        } else {
+            tc = equirectangularProj(pos.xyz);
+        }
+    }
     v_texCoord = scale * tc + offset;
 	gl_Position = u_projTrans * pos;
 }
