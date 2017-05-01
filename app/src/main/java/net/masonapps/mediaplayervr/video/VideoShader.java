@@ -26,6 +26,7 @@ public class VideoShader extends BaseShader {
     private static String fragmentShader = null;
     private final int u_projTrans = register(new Uniform("u_projTrans"));
     private final int u_worldTrans = register(new Uniform("u_worldTrans"));
+    private final int u_useTexCoords = register(new Uniform("u_useTexCoords"));
     private final int u_srcRect = register(new Uniform("u_srcRect"));
     private final int u_dstRect = register(new Uniform("u_dstRect"));
     private final int u_clip = register(new Uniform("u_clip"));
@@ -41,6 +42,7 @@ public class VideoShader extends BaseShader {
     private float contrast = GlobalSettings.DEFAULT_CONTRAST;
     private float colorTemp = GlobalSettings.DEFAULT_COLOR_TEMP;
     private int textureId = -1;
+    private boolean useTexCoords = true;
 
     public VideoShader() {
         program = new ShaderProgram(getVertexShader(), getFragmentShader());
@@ -98,6 +100,7 @@ public class VideoShader extends BaseShader {
         set(u_brightness, brightness);
         set(u_contrast, contrast);
         set(u_colorTemp, colorTemp);
+        set(u_useTexCoords, useTexCoords ? 0f : 1f);
         renderable.meshPart.render(program);
     }
 
@@ -162,5 +165,9 @@ public class VideoShader extends BaseShader {
 
     public void setTextureId(int textureId) {
         this.textureId = textureId;
+    }
+
+    public void setUseTexCoords(boolean useTexCoords) {
+        this.useTexCoords = useTexCoords;
     }
 }

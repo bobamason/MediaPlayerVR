@@ -176,6 +176,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 //                break;
 //        }
 
+        shader.setUseTexCoords(useFlatRectangle());
+
         if (useFlatRectangle())
             mapDistortModel();
         else
