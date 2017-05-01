@@ -30,7 +30,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     protected final ModelInstance rectModelInstance;
     //    protected final ModelInstance halfSphereModelInstance;
     protected final ModelInstance sphereModelInstance;
-    protected final ModelInstance cylinderModelInstance;
+    protected final ModelInstance fishEyeModelInstance;
     protected final Object lock = new Object();
     protected ModelInstance modelInstance;
     protected Array<Disposable> disposables = new Array<>();
@@ -61,20 +61,20 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Quaternion headRotation = new Quaternion();
     private Quaternion invHeadRotation = new Quaternion();
     private float zoom = 1f;
-    private boolean useCylinderProjection = false;
+    private boolean useFishEyeProjection = false;
 
-    public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
-        this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel, cylinderModel);
+    public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model fishEyeModel) {
+        this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel, fishEyeModel);
     }
 
-    public VrVideoPlayer(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel, Model cylinderModel) {
+    public VrVideoPlayer(Context context, Uri uri, int width, int height, DisplayMode displayMode, Model rectModel, Model sphereModel, Model fishEyeModel) {
         this.context = context;
         this.width = width;
         this.height = height;
         shader = new VideoShader();
         rectModelInstance = new ModelInstance(rectModel);
         sphereModelInstance = new ModelInstance(sphereModel);
-        cylinderModelInstance = new ModelInstance(cylinderModel);
+        fishEyeModelInstance = new ModelInstance(fishEyeModel);
         setupRenderTexture();
         initializeMediaPlayer();
         setDisplayMode(displayMode);
@@ -121,7 +121,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         if (useFlatRectangle()) {
             srcRect.set(0, 0, 1, 1);
             dstRect.set(0, 0, 1, 1);
-        } else if (is180Video()) {
+        } else if (is180Video() && !useFishEyeProjection) {
 //            srcRect.set(stretch.x * 0.5f, stretch.y * 0.5f, 1f - stretch.x, 1f - stretch.y);
             srcRect.set(0, 0, 1, 1);
 //            final float invAspect = 1f / aspectRatio;
@@ -343,8 +343,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         if (useFlatRectangle()) {
             modelInstance = rectModelInstance;
         } else {
-            if (useCylinderProjection)
-                modelInstance = cylinderModelInstance;
+            if (useFishEyeProjection)
+                modelInstance = fishEyeModelInstance;
             else
                 modelInstance = sphereModelInstance;
         }
@@ -419,8 +419,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         updateAspectRatio();
     }
 
-    public void setUseCylinderProjection(boolean useCylinderProjection) {
-        this.useCylinderProjection = useCylinderProjection;
+    public void setUseFishEyeProjection(boolean useFishEyeProjection) {
+        this.useFishEyeProjection = useFishEyeProjection;
         setDisplayMode(displayMode);
     }
 

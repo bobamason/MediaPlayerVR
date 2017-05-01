@@ -146,7 +146,7 @@ public class MediaPlayerGame extends VrGame {
                 controllerEntity = new Entity(new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class)));
                 controllerEntity.setLightingEnabled(false);
                 sphereModel = ModelGenerator.createSphere(modelBuilder, 0.5f, 128, 64);
-                cylinderModel = ModelGenerator.createCylinder(modelBuilder, 0.5f, 128, 2);
+                cylinderModel = ModelGenerator.create180FishEye(modelBuilder, 1f, 64, 64);
 
                 goToSelectionScreen();
                 loading = false;

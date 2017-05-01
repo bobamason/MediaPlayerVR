@@ -150,7 +150,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         cylinderBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                player.setUseCylinderProjection(cylinderBtn.isChecked());
+                player.setUseFishEyeProjection(cylinderBtn.isChecked());
             }
         });
         table.add(cylinderBtn).pad(padding).colspan(3).row();
