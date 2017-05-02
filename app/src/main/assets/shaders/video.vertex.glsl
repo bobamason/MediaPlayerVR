@@ -7,19 +7,20 @@ uniform vec4 u_dstRect;
 uniform float u_useTexCoords;
 uniform float u_useFishEye;
 varying vec2 v_texCoord;
-##define PI 3.14159265
+#define PI 3.14159265
 
 vec2 equirectangularProj(vec3 p){
-    float latitude = atan(-p.z, p.x);
-    float longitude = atan(p.y, length(vec2(p.x, -p.z)));
-    return vec2(longitude * 0.5 + 0.5, 1.0 - (latitude * 0.5 + 0.5));
+    float u = atan(-p.z, p.x) / PI;
+//    float v = acos(p.y / length(p)) / PI;
+    float v = p.y;
+    return vec2(u * 0.5 + 0.5, 1.0 - (v * 0.5 + 0.5));
 }
 
 vec2 fishEyeProj(vec3 p){
     float theta = atan(p.y, p.x);
-    float r = 2.0 * MathUtils.atan2(length(p.xy), -p.z) / PI;
-    float u = r * MathUtils.cos(theta);
-    float v = r * MathUtils.sin(theta);
+    float r = 2.0 * atan(length(p.xy), -p.z) / PI;
+    float u = r * cos(theta);
+    float v = r * sin(theta);
     return vec2(u * 0.5 + 0.5, 1.0 - (v * 0.5 + 0.5));
 }
 
@@ -32,9 +33,9 @@ void main() {
         tc = a_texCoord0;
     } else {
         if(u_useFishEye > 0.5) {
-            tc = fishEyeProj(pos.xyz);
+            tc = fishEyeProj(a_position.xyz);
         } else {
-            tc = equirectangularProj(pos.xyz);
+            tc = equirectangularProj(a_position.xyz);
         }
     }
     v_texCoord = scale * tc + offset;

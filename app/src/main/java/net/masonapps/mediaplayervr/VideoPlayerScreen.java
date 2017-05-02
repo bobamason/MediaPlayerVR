@@ -87,6 +87,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private ModelInstance eye0Instance;
     private ModelInstance eye1Instance;
     private ModelInstance sphereInstance;
+    private Quaternion headQuat = new Quaternion();
+    private Vector3 right = new Vector3();
+    private Vector3 up = new Vector3();
+    private Vector3 forward = new Vector3();
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -216,14 +220,21 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
             rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
         } else {
-            final float a = getHeadQuaternion().getAngleAround(getForwardVector());
 
-            translation.set(0, -rotCenterY, 0).rotate(Vector3.Z, a).add(0, rotCenterY, 0).add(tempV.set(getRightVector()).scl(-ipdHalf));
-            leftCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+            headQuat.slerp(getHeadQuaternion(), 0.5f);
+            right.set(1, 0, 0).mul(headQuat);
+            up.set(0, 1, 0).mul(headQuat);
+            forward.set(0, 0, -1).mul(headQuat);
+//            final float a = getHeadQuaternion().getAngleAround(getForwardVector());
+
+            translation.set(tempV.set(right).scl(-ipdHalf));
+//            translation.set(0, -rotCenterY, 0).rotate(Vector3.Z, a).add(0, rotCenterY, 0).add(tempV.set(getRightVector()).scl(-ipdHalf));
+            leftCamera.view.setToLookAt(translation, tempV.set(translation).add(forward), up);
             updateCamera(leftCamera);
 
-            translation.set(0, -rotCenterY, 0).rotate(Vector3.Z, a).add(0, rotCenterY, 0).add(tempV.set(getRightVector()).scl(ipdHalf));
-            rightCamera.view.setToLookAt(translation, tempV.set(translation).add(getForwardVector()), getUpVector());
+            translation.set(tempV.set(right).scl(ipdHalf));
+//            translation.set(0, -rotCenterY, 0).rotate(Vector3.Z, a).add(0, rotCenterY, 0).add(tempV.set(getRightVector()).scl(ipdHalf));
+            rightCamera.view.setToLookAt(translation, tempV.set(translation).add(forward), up);
             updateCamera(rightCamera);
 
 //            setCameraViewFromEye(leftEye, leftCamera);

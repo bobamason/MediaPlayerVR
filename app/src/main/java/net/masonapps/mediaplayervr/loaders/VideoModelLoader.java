@@ -51,9 +51,10 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
     private ModelData createSphere(float radius, int divisionsU, int divisionsV) {
 
         final int numVertices = (divisionsU + 1) * (divisionsV + 1);
-        final int numIndices = 2 * divisionsU * (divisionsV - 1) * 3;
+        final int floatsPerVertex = 5;
+        final int numIndices = 2 * divisionsU * (divisionsV - 1) * floatsPerVertex;
 
-        final float[] vertices = new float[numVertices * 3];
+        final float[] vertices = new float[numVertices * floatsPerVertex];
         final short[] indices = new short[numIndices];
 
         int vertIndex = 0, index = 0;
@@ -71,6 +72,8 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
                 vertices[vertIndex++] = x;
                 vertices[vertIndex++] = z;
                 vertices[vertIndex++] = y;
+                vertices[vertIndex++] = (float) ((i + 3 * divisionsU / 4) % divisionsU) / divisionsU;
+                vertices[vertIndex++] = (float) j / divisionsV;
 
                 if (i > 0 && j > 0) {
                     int a = (divisionsU + 1) * j + i;
@@ -114,7 +117,7 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
         part.primitiveType = GL20.GL_TRIANGLES;
         ModelMesh mesh = new ModelMesh();
         mesh.id = "mesh";
-        mesh.attributes = new VertexAttribute[]{VertexAttribute.Position()};
+        mesh.attributes = new VertexAttribute[]{VertexAttribute.Position(), VertexAttribute.TexCoords(0)};
         mesh.vertices = vertices;
         mesh.parts = new ModelMeshPart[]{part};
         final ModelData data = new ModelData();
