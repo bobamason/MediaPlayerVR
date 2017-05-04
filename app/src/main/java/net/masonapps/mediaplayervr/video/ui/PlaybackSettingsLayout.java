@@ -146,7 +146,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         });
         table.add(resetBtn).pad(padding).colspan(3).row();
 
-        final TextButton cylinderBtn = new TextButton("use cylinder", skin, Style.TOGGLE);
+        final TextButton cylinderBtn = new TextButton("use fish eye", skin, Style.TOGGLE);
         cylinderBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

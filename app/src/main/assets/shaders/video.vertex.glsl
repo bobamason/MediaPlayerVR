@@ -10,10 +10,10 @@ varying vec2 v_texCoord;
 #define PI 3.14159265
 
 vec2 equirectangularProj(vec3 p){
-    float u = atan(-p.z, p.x) / PI;
-//    float v = acos(p.y / length(p)) / PI;
-    float v = p.y;
-    return vec2(u * 0.5 + 0.5, 1.0 - (v * 0.5 + 0.5));
+    float u = atan(p.x, -p.z) / PI;
+    float v = acos(p.y) / PI;
+    return vec2(u * 0.5 + 0.5, v);
+//    return vec2(p.x * 0.5 + 0.5, 1.0 - (p.y * 0.5 + 0.5));
 }
 
 vec2 fishEyeProj(vec3 p){

@@ -102,10 +102,8 @@ public class VideoShader extends BaseShader {
         set(u_brightness, brightness);
         set(u_contrast, contrast);
         set(u_colorTemp, colorTemp);
-//        set(u_useTexCoords, useTexCoords ? 0f : 1f);
-        // TODO: 5/1/2017  
-        set(u_useTexCoords, 1f);
-        set(u_useFishEye, useFishEye ? 0f : 1f);
+        set(u_useTexCoords, useTexCoords ? 1f : 0f);
+        set(u_useFishEye, useFishEye ? 1f : 0f);
         renderable.meshPart.render(program);
     }
 
