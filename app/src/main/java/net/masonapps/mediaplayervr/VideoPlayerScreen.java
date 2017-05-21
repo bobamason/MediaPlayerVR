@@ -55,6 +55,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private static final Quaternion tempQ = new Quaternion();
     private static final Matrix4 tempM = new Matrix4();
     private static final Vector3 NEG_Z = new Vector3(0, 0, -1);
+    private static final float NEAR = 1f;
+    private static final float FAR = 51f;
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
 
     private final VideoDetails videoDetails;
@@ -104,7 +106,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         }
         setIpd(this.videoOptions.ipd);
         leftCamera = new VrCamera();
+        leftCamera.near = NEAR;
+        leftCamera.far = FAR;
         rightCamera = new VrCamera();
+        rightCamera.near = NEAR;
+        rightCamera.far = FAR;
         final MediaPlayerGame mediaPlayerGame = (MediaPlayerGame) game;
         videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
         videoPlayer.setOnCompletionListener(this);
@@ -210,7 +216,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         }
 
         final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() * ipd / 2f;
-        if (videoPlayer.useFlatRectangle() && shouldRenderMono()) {
+        if (videoPlayer.useFlatRectangle() || shouldRenderMono()) {
             setCameraViewFromEye(leftEye, leftCamera);
             updateCamera(leftCamera);
 
@@ -307,23 +313,22 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     private void setCameraProjection(Eye eye, VrCamera camera) {
-        final float l = (float) -Math.tan(Math.toRadians(eye.getFov().getLeft())) * getVrCamera().near;
-        final float r = (float) Math.tan(Math.toRadians(eye.getFov().getRight())) * getVrCamera().near;
-        final float top = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * getVrCamera().near;
-        final float bottom = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * getVrCamera().near;
+        final float l = (float) -Math.tan(Math.toRadians(eye.getFov().getLeft())) * camera.near;
+        final float r = (float) Math.tan(Math.toRadians(eye.getFov().getRight())) * camera.near;
+        final float top = (float) Math.tan(Math.toRadians(eye.getFov().getTop())) * camera.near;
+        final float bottom = (float) -Math.tan(Math.toRadians(eye.getFov().getBottom())) * camera.near;
 
         rotCenterY = (top + bottom) / 2f;
 
         final float side = (-l + r) / 2f;
         float left;
         float right;
-//        final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() / 2f;
         final float defaultIpd = GdxVr.app.getGvrView().getInterpupillaryDistance();
         final float ipdHalf = defaultIpd * ipd / 2f;
-//        final float defaultShift = Math.abs(r - side);
-//        final float screenZ = (defaultIpd * 0.5f * camera.near) / defaultShift;
-        final float screenZ = 4f;
-        sphereDiameter = screenZ * 2f;
+        final float defaultShift = Math.abs(r - side);
+        final float screenZ = (defaultIpd * 0.5f * camera.near) / defaultShift;
+        sphereDiameter = 10f;
+//        final float screenZ = sphereDiameter * 0.75f;
 //        Log.d("setCameraProjection", (eye.getType() == Eye.Type.LEFT ? "left" : "right") + "eye");
 //        Log.d("setCameraProjection", "screenZ = " + screenZ + "m");
         final float shift = ipdHalf * camera.near / screenZ;
@@ -335,7 +340,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             left = -side - shift;
             right = side - shift;
         }
-        camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, getVrCamera().near, getVrCamera().far);
+        camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, camera.near, camera.far);
     }
 
     private void updateCamera(VrCamera camera) {
@@ -357,6 +362,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         super.setUiVisible(uiVisible);
         ui.setVisible(uiVisible);
         controllerEntity.setRenderingEnabled(uiVisible);
+        projectionChanged = true;
     }
 
     @Override
