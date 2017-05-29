@@ -28,7 +28,7 @@ public class MainActivity extends VrActivity {
         AndroidCompat.setVrModeEnabled(this, true);
         game = new MediaPlayerGame(this);
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
-        getGvrView().setRenderTargetScale(0.75f);
+        getGvrView().setRenderTargetScale(1.0f);
         getGvrView().setMultisampling(4);
 
 //        if (getGvrView().setAsyncReprojectionEnabled(true)) {
