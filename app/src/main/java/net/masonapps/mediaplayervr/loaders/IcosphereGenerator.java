@@ -23,6 +23,7 @@ import com.badlogic.gdx.utils.ShortArray;
  */
 
 public class IcosphereGenerator {
+    private static final Vector3 temp = new Vector3();
     private final Array<Facet> faces = new Array<>();
     private final Array<Vertex> vertexArray = new Array<>();
     private int subdivisions = 3;
@@ -99,12 +100,15 @@ public class IcosphereGenerator {
             float r = a.position.len();
             final Vertex b = vertexArray.get(face.b);
             final Vertex c = vertexArray.get(face.c);
-            Vertex ab = new Vertex(a).lerp(b, 0.5f);
-            ab.position.nor().scl(r);
-            Vertex bc = new Vertex(b).lerp(c, 0.5f);
-            bc.position.nor().scl(r);
-            Vertex ca = new Vertex(c).lerp(a, 0.5f);
-            ca.position.nor().scl(r);
+
+            temp.set(a.position).lerp(b.position, 0.5f);
+            Vertex ab = createVertex(temp.x, temp.y, temp.z, radius);
+
+            temp.set(b.position).lerp(c.position, 0.5f);
+            Vertex bc = createVertex(temp.x, temp.y, temp.z, radius);
+
+            temp.set(c.position).lerp(a.position, 0.5f);
+            Vertex ca = createVertex(temp.x, temp.y, temp.z, radius);
 
 //            newTris.add(new Triangle(a, ab, ca));
 //            newTris.add(new Triangle(b, bc, ab));
