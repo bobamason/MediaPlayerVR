@@ -36,8 +36,12 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
             final float r = (float) json.getDouble("radius");
             final int divU = json.getInt("divisions_u");
             final int divV = json.getInt("divisions_v");
-            if (shape.equals("sphere"))
-                return createSphere(r, divU, divV);
+            if (shape.equals("sphere")) {
+                final IcosphereGenerator icosphereGenerator = new IcosphereGenerator();
+                icosphereGenerator.setRadius(r);
+                icosphereGenerator.setSubdivisions(4);
+                return icosphereGenerator.buildModelData();
+            }
             else if (shape.equals("cylinder"))
                 return createCylinder(r, divU, divV);
             else
