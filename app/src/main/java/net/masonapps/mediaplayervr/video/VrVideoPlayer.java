@@ -57,7 +57,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Vector2 stretch = new Vector2();
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
-    private float shift = 0f;
     private Quaternion headRotation = new Quaternion();
     private Quaternion invHeadRotation = new Quaternion();
     private float zoom = 1f;
@@ -193,7 +192,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                     } else {
                         shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
                     }
-                    shader.setDstRect(dstRect.x - shift, dstRect.y, dstRect.width, dstRect.height);
+                    shader.setDstRect(dstRect.x, dstRect.y, dstRect.width, dstRect.height);
                     break;
                 case Eye.Type.RIGHT:
                     if (isHorizontalSplit) {
@@ -201,7 +200,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                     } else {
                         shader.setSrcRect(srcRect.x, srcRect.y + 0.5f, srcRect.width, srcRect.height * 0.5f);
                     }
-                    shader.setDstRect(dstRect.x + shift, dstRect.y, dstRect.width, dstRect.height);
+                    shader.setDstRect(dstRect.x, dstRect.y, dstRect.width, dstRect.height);
                     break;
                 default:
                     if (isHorizontalSplit) {
@@ -209,7 +208,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                     } else {
                         shader.setSrcRect(srcRect.x, srcRect.y, srcRect.width, srcRect.height * 0.5f);
                     }
-                    shader.setDstRect(dstRect.x - shift, dstRect.y, dstRect.width, dstRect.height);
+                    shader.setDstRect(dstRect.x, dstRect.y, dstRect.width, dstRect.height);
                     break;
             }
         } else {
@@ -399,10 +398,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                 updateAspectRatio();
                 break;
         }
-    }
-
-    public void set3dShift(float shift) {
-        this.shift = shift * 0.5f;
     }
 
     public abstract void seekTo(long position);

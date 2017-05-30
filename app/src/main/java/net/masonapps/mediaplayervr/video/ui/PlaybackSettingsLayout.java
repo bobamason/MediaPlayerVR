@@ -110,27 +110,27 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         table.add(yRight).pad(padding).row();
         setVisible(false);
 
-        final ImageButton shiftLeft = new ImageButton(leftButtonStyle);
-        shiftLeft.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                shift -= STEP;
-                player.set3dShift(shift);
-            }
-        });
-        table.add(shiftLeft).pad(padding);
-
-        table.add(new Label(" Shift ", skin)).pad(padding);
-
-        final ImageButton shiftRight = new ImageButton(rightButtonStyle);
-        shiftRight.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                shift += STEP;
-                player.set3dShift(shift);
-            }
-        });
-        table.add(shiftRight).pad(padding).row();
+//        final ImageButton shiftLeft = new ImageButton(leftButtonStyle);
+//        shiftLeft.addListener(new ClickListener() {
+//            @Override
+//            public void clicked(InputEvent event, float x, float y) {
+//                shift -= STEP;
+//                player.set3dShift(shift);
+//            }
+//        });
+//        table.add(shiftLeft).pad(padding);
+//
+//        table.add(new Label(" Shift ", skin)).pad(padding);
+//
+//        final ImageButton shiftRight = new ImageButton(rightButtonStyle);
+//        shiftRight.addListener(new ClickListener() {
+//            @Override
+//            public void clicked(InputEvent event, float x, float y) {
+//                shift += STEP;
+//                player.set3dShift(shift);
+//            }
+//        });
+//        table.add(shiftRight).pad(padding).row();
         setVisible(false);
 
         final TextButton resetBtn = new TextButton("reset", skin);
@@ -141,7 +141,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
                 player.setStretch(stretch);
                 videoOptions.textureStretch.set(stretch);
                 shift = 0;
-                player.set3dShift(shift);
+//                player.set3dShift(shift);
             }
         });
         table.add(resetBtn).pad(padding).colspan(3).row();
