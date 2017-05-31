@@ -14,6 +14,8 @@ import com.badlogic.gdx.graphics.g3d.model.data.ModelNode;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNodePart;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.ShortArray;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,10 +39,7 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
             final int divU = json.getInt("divisions_u");
             final int divV = json.getInt("divisions_v");
             if (shape.equals("sphere")) {
-                final IcosphereGenerator icosphereGenerator = new IcosphereGenerator();
-                icosphereGenerator.setRadius(r);
-                icosphereGenerator.setSubdivisions(4);
-                return icosphereGenerator.buildModelData();
+                return createSphere(r, divU, divV);
             }
             else if (shape.equals("cylinder"))
                 return createCylinder(r, divU, divV);
@@ -54,53 +53,64 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
 
     private ModelData createSphere(float radius, int divisionsU, int divisionsV) {
 
-        final int numVertices = (divisionsU + 1) * (divisionsV + 1);
-        final int floatsPerVertex = 5;
-        final int numIndices = 2 * divisionsU * (divisionsV - 1) * floatsPerVertex;
-
-        final float[] vertices = new float[numVertices * floatsPerVertex];
-        final short[] indices = new short[numIndices];
-
-        int vertIndex = 0, index = 0;
+        final FloatArray vertices = new FloatArray();
+        final ShortArray indices = new ShortArray();
+        final ShortArray tmpIndices = new ShortArray();
+        final int s = divisionsU + 3;
+        tmpIndices.clear();
+        tmpIndices.ensureCapacity(divisionsU * 2);
+        tmpIndices.size = s;
+        int tempOffset = 0;
 
         for (int j = 0; j <= divisionsV; ++j) {
-            float horAngle = (float) (Math.PI * j / divisionsV);
-            float z = radius * (float) Math.cos(horAngle);
-            float ringRadius = radius * (float) Math.sin(horAngle);
+            float angleV = (float) (Math.PI * j / divisionsV);
+            float y = radius * (float) Math.cos(angleV);
+            float ringRadius = radius * (float) Math.sin(angleV);
 
             for (int i = 0; i <= divisionsU; ++i) {
-                float verAngle = (float) (2.0f * Math.PI * i / divisionsU);
-                float x = ringRadius * (float) Math.cos(verAngle);
-                float y = ringRadius * (float) Math.sin(verAngle);
+                float angleU = (float) (2.0f * Math.PI * i / divisionsU);
+                float x = ringRadius * (float) Math.cos(angleU);
+                float z = -ringRadius * (float) Math.sin(angleU);
 
-                vertices[vertIndex++] = x;
-                vertices[vertIndex++] = z;
-                vertices[vertIndex++] = y;
-                vertices[vertIndex++] = (float) ((i + 3 * divisionsU / 4) % divisionsU) / divisionsU;
-                vertices[vertIndex++] = (float) j / divisionsV;
+                vertices.add(x);
+                vertices.add(y);
+                vertices.add(z);
+                vertices.add((float) ((i + 3 * divisionsU / 4) % divisionsU) / divisionsU);
+                vertices.add((float) j / divisionsV);
 
+                final int o = tempOffset + s;
                 if (i > 0 && j > 0) {
-                    int a = (divisionsU + 1) * j + i;
-                    int b = (divisionsU + 1) * j + i - 1;
-                    int c = (divisionsU + 1) * (j - 1) + i - 1;
-                    int d = (divisionsU + 1) * (j - 1) + i;
+                    tempOffset = (tempOffset + 1) % tmpIndices.size;
+//                    int a = (divisionsU + 1) * j + i;
+//                    int b = (divisionsU + 1) * j + i - 1;
+//                    int c = (divisionsU + 1) * (j - 1) + i - 1;
+//                    int d = (divisionsU + 1) * (j - 1) + i;
+                    int a = tmpIndices.get(tempOffset);
+                    int b = tmpIndices.get((o - 1) % s);
+                    int c = tmpIndices.get((o - (divisionsU + 2)) % s);
+                    int d = tmpIndices.get((o - (divisionsU + 1)) % s);
 
-                    if (j == divisionsV) {
-                        indices[index++] = (short) a;
-                        indices[index++] = (short) c;
-                        indices[index++] = (short) d;
-                    } else if (j == 1) {
-                        indices[index++] = (short) a;
-                        indices[index++] = (short) b;
-                        indices[index++] = (short) c;
-                    } else {
-                        indices[index++] = (short) a;
-                        indices[index++] = (short) b;
-                        indices[index++] = (short) c;
-                        indices[index++] = (short) a;
-                        indices[index++] = (short) c;
-                        indices[index++] = (short) d;
-                    }
+//                    if (j == divisionsV) {
+//                        indices.add(a);
+//                        indices.add(c);
+//                        indices.add(d);
+//                    } else if (j == 1) {
+//                        indices.add(a);
+//                        indices.add(b);
+//                        indices.add(c);
+//                    } else {
+                    indices.add(a);
+                    indices.add(b);
+                    indices.add(c);
+
+                    indices.add(c);
+                    indices.add(d);
+                    indices.add(a);
+
+//                        indices.add(a);
+//                        indices.add(c);
+//                        indices.add(d);
+//                    }
                 }
             }
         }
@@ -117,12 +127,12 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
         node.parts = new ModelNodePart[]{pm};
         ModelMeshPart part = new ModelMeshPart();
         part.id = "part";
-        part.indices = indices;
+        part.indices = indices.toArray();
         part.primitiveType = GL20.GL_TRIANGLES;
         ModelMesh mesh = new ModelMesh();
         mesh.id = "mesh";
         mesh.attributes = new VertexAttribute[]{VertexAttribute.Position(), VertexAttribute.TexCoords(0)};
-        mesh.vertices = vertices;
+        mesh.vertices = vertices.toArray();
         mesh.parts = new ModelMeshPart[]{part};
         final ModelData data = new ModelData();
         data.nodes.add(node);
@@ -131,6 +141,8 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
         mm.id = "mat0";
         mm.diffuse = new Color(Color.WHITE);
         data.materials.add(mm);
+        vertices.clear();
+        indices.clear();
         return data;
     }
 
