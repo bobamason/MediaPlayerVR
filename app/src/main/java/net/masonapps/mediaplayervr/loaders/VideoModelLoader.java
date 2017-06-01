@@ -81,14 +81,14 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
                 final int o = tempOffset + s;
                 if (i > 0 && j > 0) {
                     tempOffset = (tempOffset + 1) % tmpIndices.size;
-//                    int a = (divisionsU + 1) * j + i;
-//                    int b = (divisionsU + 1) * j + i - 1;
-//                    int c = (divisionsU + 1) * (j - 1) + i - 1;
-//                    int d = (divisionsU + 1) * (j - 1) + i;
-                    int a = tmpIndices.get(tempOffset);
-                    int b = tmpIndices.get((o - 1) % s);
-                    int c = tmpIndices.get((o - (divisionsU + 2)) % s);
-                    int d = tmpIndices.get((o - (divisionsU + 1)) % s);
+                    int a = (divisionsU + 1) * j + i;
+                    int b = (divisionsU + 1) * j + i - 1;
+                    int c = (divisionsU + 1) * (j - 1) + i - 1;
+                    int d = (divisionsU + 1) * (j - 1) + i;
+//                    int a = tmpIndices.get(tempOffset);
+//                    int b = tmpIndices.get((o - 1) % s);
+//                    int c = tmpIndices.get((o - (divisionsU + 2)) % s);
+//                    int d = tmpIndices.get((o - (divisionsU + 1)) % s);
 
 //                    if (j == divisionsV) {
 //                        indices.add(a);
@@ -103,13 +103,13 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
                     indices.add(b);
                     indices.add(c);
 
+//                    indices.add(c);
+//                    indices.add(d);
+//                    indices.add(a);
+
+                    indices.add(a);
                     indices.add(c);
                     indices.add(d);
-                    indices.add(a);
-
-//                        indices.add(a);
-//                        indices.add(c);
-//                        indices.add(d);
 //                    }
                 }
             }

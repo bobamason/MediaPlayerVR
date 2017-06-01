@@ -28,8 +28,6 @@ import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.controller.Controller;
 
-import net.masonapps.mediaplayervr.audiovisualization.MusicVisualizerScreen;
-import net.masonapps.mediaplayervr.audiovisualization.tests.DecalsPerformanceTest;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.loaders.VideoModelLoader;
@@ -239,7 +237,7 @@ public class MediaPlayerGame extends VrGame {
     }
 
     public void playMusic(List<SongDetails> songList, int index) {
-        setScreen(new DecalsPerformanceTest(this, context, songList, index));
+//        setScreen(new DecalsPerformanceTest(this, context, songList, index));
     }
 
     @Override
@@ -250,12 +248,13 @@ public class MediaPlayerGame extends VrGame {
     public void goToSelectionScreen() {
         if (mediaSelectionScreen == null)
             mediaSelectionScreen = new MediaSelectionScreen(context, this);
-        if (getScreen() instanceof MusicVisualizerScreen) {
-            MusicVisualizerScreen musicVisualizerScreen = (MusicVisualizerScreen) getScreen();
-            setScreen(mediaSelectionScreen);
-            musicVisualizerScreen.dispose();
-            Log.d(MediaPlayerGame.class.getSimpleName(), "MusicVisualizerScreen disposed");
-        } else if (getScreen() instanceof VideoPlayerScreen) {
+//        if (getScreen() instanceof MusicVisualizerScreen) {
+//            MusicVisualizerScreen musicVisualizerScreen = (MusicVisualizerScreen) getScreen();
+//            setScreen(mediaSelectionScreen);
+//            musicVisualizerScreen.dispose();
+//            Log.d(MediaPlayerGame.class.getSimpleName(), "MusicVisualizerScreen disposed");
+//        } else 
+        if (getScreen() instanceof VideoPlayerScreen) {
             final VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
             getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
             setScreen(mediaSelectionScreen);
