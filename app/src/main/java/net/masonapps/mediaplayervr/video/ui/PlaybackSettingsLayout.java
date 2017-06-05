@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
 import net.masonapps.mediaplayervr.Style;
+import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
@@ -25,7 +26,7 @@ import java.text.DecimalFormat;
 
 public class PlaybackSettingsLayout extends SingleStageUi {
 
-    private static final float STEP = 0.01f;
+    private static final float STEP = 0.005f;
     private final VideoPlayerGUI videoPlayerGUI;
     private Vector2 stretch = new Vector2();
     private float s = 10f;
@@ -35,6 +36,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
     public PlaybackSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 500), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
+        final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
         stage.setPosition(0, 0, -2.5f);
         stage.addActor(Style.newBackgroundImage(skin));
 
@@ -69,6 +71,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
                 stretch.x -= STEP;
                 player.setStretch(stretch);
                 videoOptions.textureStretch.set(stretch);
+                screen.invalidateProjection();
             }
         });
         table.add(xLeft).pad(padding);
@@ -81,6 +84,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
                 stretch.x += STEP;
                 player.setStretch(stretch);
                 videoOptions.textureStretch.set(stretch);
+                screen.invalidateProjection();
             }
         });
         table.add(xRight).pad(padding).row();
@@ -92,6 +96,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
                 stretch.y -= STEP;
                 player.setStretch(stretch);
                 videoOptions.textureStretch.set(stretch);
+                screen.invalidateProjection();
             }
         });
         table.add(yLeft).pad(padding);
@@ -105,6 +110,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
                 stretch.y += STEP;
                 player.setStretch(stretch);
                 videoOptions.textureStretch.set(stretch);
+                screen.invalidateProjection();
             }
         });
         table.add(yRight).pad(padding).row();

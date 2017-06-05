@@ -101,7 +101,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public abstract boolean play(final Uri uri);
 
     protected void updateAspectRatio() {
-        if (!prepared) return;
+        if (!prepared)
+            return;
         float w;
         float h;
         if (isStereoscopic) {
@@ -122,22 +123,19 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             srcRect.set(0, 0, 1, 1);
             dstRect.set(0, 0, 1, 1);
         } else if (is180Video() && !useFishEyeProjection) {
-//            srcRect.set(stretch.x * 0.5f, stretch.y * 0.5f, 1f - stretch.x, 1f - stretch.y);
             srcRect.set(0, 0, 1, 1);
-//            final float invAspect = 1f / aspectRatio;
-//            dstRect.set(0.25f + stretch.x * 0.5f, (1f - invAspect) * 0.5f - stretch.y * 0.5f, 0.5f + stretch.x, invAspect + stretch.y);
-//            dstRect.set(0.25f - stretch.x, -stretch.y, 0.5f + stretch.x, 1f + stretch.y);
-            dstRect.set(0.25f - stretch.x * 0.5f, -stretch.y * 0.5f, 0.5f + stretch.x, 1f + stretch.y);
+            dstRect.set(0.25f, 0f, 0.5f, 1f);
+//            dstRect.set(0.25f - stretch.x * 0.5f, -stretch.y * 0.5f, 0.5f + stretch.x, 1f + stretch.y);
         } else {
             srcRect.set(0, 0, 1, 1);
-            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1f + stretch.x, 1f + stretch.y);
+            dstRect.set(0, 0, 1, 1);
+//            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1f + stretch.x, 1f + stretch.y);
         }
     }
 
     public void update() {
-        if (!prepared) {
+        if (!prepared)
             return;
-        }
         synchronized (this) {
             if (frameAvailable) {
                 videoTexture.updateTexImage();
@@ -151,31 +149,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     public void render(ModelBatch batch, int eyeType) {
-        if (!prepared) {
+        if (!prepared)
             return;
-        }
-
-//        switch (videoMode){
-//            case Mono:
-//                break;
-//            case Mono180:
-//                break;
-//            case Mono360:
-//                break;
-//            case LR3D:
-//                break;
-//            case LR180:
-//                break;
-//            case LR360:
-//                break;
-//            case TB3D:
-//                break;
-//            case TB180:
-//                break;
-//            case TB360:
-//                break;
-//        }
-
         shader.setUseTexCoords(useFlatRectangle());
         shader.setUseFishEye(useFishEyeProjection);
 
@@ -411,6 +386,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             updateAspectRatio();
         else
             aspectRatio = ratio;
+    }
+
+    public Vector2 getStretch() {
+        return stretch;
     }
 
     public void setStretch(Vector2 stretch) {

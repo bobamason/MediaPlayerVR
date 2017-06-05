@@ -56,7 +56,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private static final Matrix4 tempM = new Matrix4();
     private static final Vector3 NEG_Z = new Vector3(0, 0, -1);
     private static final float NEAR = 1f;
-    private static final float FAR = 51f;
+    private static final float FAR = 101f;
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
 
     private final VideoDetails videoDetails;
@@ -135,7 +135,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         final MeshPartBuilder part = modelBuilder.part("outline", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material(ColorAttribute.createDiffuse(Color.YELLOW)));
         SphereShapeBuilder.build(part, 1, 1, 1, 12, 12);
         sphereOutlineInstance = new ModelInstance(modelBuilder.end());
-        projectionChanged = true;
+        invalidateProjection();
     }
 
     @Override
@@ -198,7 +198,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : sphereDiameter);
 
         if (leftEye.getProjectionChanged() | rightEye.getProjectionChanged())
-            projectionChanged = true;
+            invalidateProjection();
 
         if (projectionChanged) {
             if (videoPlayer.useFlatRectangle()) {
@@ -322,6 +322,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 //            left = -side - shift;
 //            right = side - shift;
 //        }
+        final float stretchX = 1f + videoPlayer.getStretch().x;
+        final float stretchY = 1f + videoPlayer.getStretch().y;
         final float shift = (ipd - 1f) * 0.1f;
         if (eye.getType() == Eye.Type.LEFT) {
             left = l + shift;
@@ -330,7 +332,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             left = l - shift;
             right = r - shift;
         }
-        camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, camera.near, camera.far);
+        camera.projection.setToProjection(stretchX * left / zoom, stretchX * right / zoom, stretchY * bottom / zoom, stretchY * top / zoom, camera.near, camera.far);
     }
 
     private void updateCamera(VrCamera camera) {
@@ -352,6 +354,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         super.setUiVisible(uiVisible);
         ui.setVisible(uiVisible);
         controllerEntity.setRenderingEnabled(uiVisible);
+        invalidateProjection();
+    }
+
+    public void invalidateProjection() {
         projectionChanged = true;
     }
 
@@ -434,7 +440,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     public void setZoom(float zoom) {
         this.zoom = zoom;
-        projectionChanged = true;
+        invalidateProjection();
     }
 
     public float getIpd() {
@@ -443,7 +449,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     public void setIpd(float ipd) {
         this.ipd = MathUtils.clamp(ipd, -1f, 2f);
-        projectionChanged = true;
+        invalidateProjection();
     }
 
     public void exit() {
