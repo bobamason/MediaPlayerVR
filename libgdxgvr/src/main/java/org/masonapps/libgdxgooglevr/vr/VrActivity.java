@@ -67,7 +67,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     protected Controller controller;
     AndroidClipboard clipboard;
     private GvrLayout gvrLayout;
-    private GvrView gvrView;
+    private VRSurfaceView gvrView;
 //    private int wasFocusChanged = -1;
 //    private boolean isWaitingForAudio = false;
 
@@ -75,7 +75,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setImmersiveSticky();
-        gvrView = new GvrView(this);
+        gvrView = new VRSurfaceView(this);
         gvrLayout = new GvrLayout(this);
         gvrLayout.setPresentationView(gvrView);
         setContentView(gvrLayout);
@@ -485,7 +485,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
 //        });
 //    }
 
-    public GvrView getGvrView() {
+    public VRSurfaceView getGvrView() {
         return gvrView;
     }
 
