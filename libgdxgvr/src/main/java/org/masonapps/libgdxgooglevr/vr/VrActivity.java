@@ -74,6 +74,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setImmersiveSticky();
         gvrView = new GvrView(this);
         gvrLayout = new GvrLayout(this);
         gvrLayout.setPresentationView(gvrView);
