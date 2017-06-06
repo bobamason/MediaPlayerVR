@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -46,6 +45,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
     private final Application app;
     private final Context context;
     protected Quaternion controllerOrientation = new Quaternion();
+    protected Quaternion smoothedOrientation = new Quaternion();
     protected boolean isControllerConnected = false;
     protected Vector3 controllerOffset = new Vector3(0, 0, -0.056f);
     private Vector3 controllerPosition = new Vector3();
@@ -234,6 +234,34 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     public void processEvents() {
         synchronized (this) {
+
+            updateInputRay(smoothedOrientation.slerp(controllerOrientation, 0.25f));
+            if (processor instanceof VrInputProcessor) {
+                ((VrInputProcessor) processor).performRayTest(inputRay);
+                if (((VrInputProcessor) processor).isCursorOver()) {
+//                    Log.d(VrAndroidInput.class.getSimpleName(), event.toString());
+                    final Vector2 hitPoint2D = ((VrInputProcessor) processor).getHitPoint2D();
+                    final int x = (int) hitPoint2D.x;
+                    final int y = (int) hitPoint2D.y;
+                    lastTouch.set(touch);
+                    touch.set(x, y);
+                    if (controller.clickButtonState && !isInputProcessorTouched) {
+                        postTouchEvent(TouchEvent.TOUCH_DOWN, x, y);
+                        isInputProcessorTouched = true;
+                    } else if (!controller.clickButtonState && isInputProcessorTouched) {
+                        postTouchEvent(TouchEvent.TOUCH_UP, x, y);
+                        isInputProcessorTouched = false;
+                    } else {
+                        postTouchEvent(isInputProcessorTouched ? TouchEvent.TOUCH_DRAGGED : TouchEvent.TOUCH_MOVED, x, y);
+                    }
+                } else {
+                    if (isInputProcessorTouched) {
+                        postTouchEvent(TouchEvent.TOUCH_UP, 0, 0);
+                    }
+                    isInputProcessorTouched = false;
+                }
+            }
+
             justTouched = false;
             if (keyJustPressed) {
                 keyJustPressed = false;
@@ -634,32 +662,6 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
             isControllerConnected = true;
             controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
             controllerPosition.set(controller.position);
-            updateInputRay(controller);
-            if (processor instanceof VrInputProcessor) {
-                ((VrInputProcessor) processor).performRayTest(inputRay);
-                if (((VrInputProcessor) processor).isCursorOver()) {
-//                    Log.d(VrAndroidInput.class.getSimpleName(), event.toString());
-                    final Vector2 hitPoint2D = ((VrInputProcessor) processor).getHitPoint2D();
-                    final int x = (int) hitPoint2D.x;
-                    final int y = (int) hitPoint2D.y;
-                    lastTouch.set(touch);
-                    touch.set(x, y);
-                    if (controller.clickButtonState && !isInputProcessorTouched) {
-                        postTouchEvent(TouchEvent.TOUCH_DOWN, x, y);
-                        isInputProcessorTouched = true;
-                    } else if (!controller.clickButtonState && isInputProcessorTouched) {
-                        postTouchEvent(TouchEvent.TOUCH_UP, x, y);
-                        isInputProcessorTouched = false;
-                    } else {
-                        postTouchEvent(isInputProcessorTouched ? TouchEvent.TOUCH_DRAGGED : TouchEvent.TOUCH_MOVED, x, y);
-                    }
-                } else {
-                    if (isInputProcessorTouched) {
-                        postTouchEvent(TouchEvent.TOUCH_UP, 0, 0);
-                    }
-                    isInputProcessorTouched = false;
-                }
-            }
         } else {
             isControllerConnected = false;
         }
@@ -681,9 +683,9 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         return inputRay;
     }
 
-    protected void updateInputRay(@Nullable Controller controller) {
+    protected void updateInputRay(Quaternion orientation) {
         if (isControllerConnected && controller != null) {
-            controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
+            controllerOrientation.set(orientation.x, orientation.y, orientation.z, orientation.w);
             final Vector3 v = Vecs.obtainV3().set(controllerOffset).mul(controllerOrientation);
             inputRay.origin.set(GdxVr.app.getVrApplicationAdapter().getVrCamera().position).add(controllerPosition).add(v).add(handPosition);
             inputRay.direction.set(defaultControllerRayDirection).mul(controllerOrientation);

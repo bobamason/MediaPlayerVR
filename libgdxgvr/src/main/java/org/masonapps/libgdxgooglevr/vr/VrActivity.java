@@ -1,6 +1,7 @@
 package org.masonapps.libgdxgooglevr.vr;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -33,20 +34,18 @@ import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.GdxNativesLoader;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.SnapshotArray;
-import com.google.vr.sdk.base.GvrActivity;
+import com.google.vr.ndk.base.GvrLayout;
 import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 
-import java.lang.reflect.Method;
-
 /**
  * Created by Bob on 10/9/2016.
  */
 
-public class VrActivity extends GvrActivity implements AndroidApplicationBase {
+public class VrActivity extends Activity implements AndroidApplicationBase {
     static {
         GdxNativesLoader.load();
     }
@@ -67,15 +66,18 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     protected ControllerManager controllerManager;
     protected Controller controller;
     AndroidClipboard clipboard;
+    private GvrLayout gvrLayout;
+    private GvrView gvrView;
 //    private int wasFocusChanged = -1;
 //    private boolean isWaitingForAudio = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        GvrView gvrView = new GvrView(this);
-        setContentView(gvrView);
-        setGvrView(gvrView);
+        gvrView = new GvrView(this);
+        gvrLayout = new GvrLayout(this);
+        gvrLayout.setPresentationView(gvrView);
+        setContentView(gvrLayout);
         final EventListener listener = new EventListener();
         controllerManager = new ControllerManager(this, listener);
         controller = controllerManager.getController();
@@ -146,18 +148,19 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     @TargetApi(19)
     @Override
     public void useImmersiveMode(boolean use) {
-        if (!use || getVersion() < Build.VERSION_CODES.KITKAT) return;
+        setImmersiveSticky();
+    }
 
-        View view = getWindow().getDecorView();
-        try {
-            Method m = View.class.getMethod("setSystemUiVisibility", int.class);
-            int code = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            m.invoke(view, code);
-        } catch (Exception e) {
-            log("AndroidApplication", "Can't set immersive mode", e);
-        }
+    private void setImmersiveSticky() {
+        getWindow()
+                .getDecorView()
+                .setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
     @Override
@@ -170,6 +173,7 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
                 graphics.pause();
             }
         });
+        gvrLayout.onPause();
 
         input.onPause();
 
@@ -184,6 +188,7 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
     @Override
     protected void onResume() {
         super.onResume();
+        gvrLayout.onResume();
 
         assert getGvrView() != null;
 
@@ -229,7 +234,17 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
             });
             gvrView.shutdown();
         }
+        if (gvrLayout != null) {
+            gvrLayout.shutdown();
+            gvrLayout = null;
+        }
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        gvrLayout.onBackPressed();
     }
 
     @Override
@@ -458,15 +473,19 @@ public class VrActivity extends GvrActivity implements AndroidApplicationBase {
         return this.handler;
     }
 
-    @Override
-    public void onCardboardTrigger() {
-        getGvrView().queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                input.onCardboardTrigger();
-                VrActivity.this.vrApplicationAdapter.onCardboardTrigger();
-            }
-        });
+//    @Override
+//    public void onCardboardTrigger() {
+//        getGvrView().queueEvent(new Runnable() {
+//            @Override
+//            public void run() {
+//                input.onCardboardTrigger();
+//                VrActivity.this.vrApplicationAdapter.onCardboardTrigger();
+//            }
+//        });
+//    }
+
+    public GvrView getGvrView() {
+        return gvrView;
     }
 
     private class EventListener extends Controller.EventListener
