@@ -28,10 +28,8 @@ public class MainActivity extends VrActivity {
         AndroidCompat.setVrModeEnabled(this, true);
         game = new MediaPlayerGame(this);
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
-        getGvrView().setRenderTargetScale(1.0f);
-        getGvrView().setMultisampling(4);
 
-//        if (getGvrView().setAsyncReprojectionEnabled(true)) {
+//        if (getSurfaceView().setAsyncReprojectionEnabled(true)) {
 ////            // Async reprojection decouples the app framerate from the display framerate,
 ////            // allowing immersive interaction even at the throttled clockrates set by
 ////            // sustained performance mode.
@@ -39,7 +37,6 @@ public class MainActivity extends VrActivity {
 //            AndroidCompat.setSustainedPerformanceMode(this, true);
 //        }
         initialize(game);
-        getGvrView().setTransitionViewEnabled(true);
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
@@ -35,11 +36,8 @@ import com.badlogic.gdx.utils.GdxNativesLoader;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.google.vr.ndk.base.GvrLayout;
-import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
-
-import org.masonapps.libgdxgooglevr.GdxVr;
 
 /**
  * Created by Bob on 10/9/2016.
@@ -67,7 +65,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     protected Controller controller;
     AndroidClipboard clipboard;
     private GvrLayout gvrLayout;
-    private VRSurfaceView gvrView;
+    private GLSurfaceView gvrView;
 //    private int wasFocusChanged = -1;
 //    private boolean isWaitingForAudio = false;
 
@@ -75,7 +73,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setImmersiveSticky();
-        gvrView = new VRSurfaceView(this);
+        gvrView = new GLSurfaceView(this);
         gvrLayout = new GvrLayout(this);
         gvrLayout.setPresentationView(gvrView);
         setContentView(gvrLayout);
@@ -99,7 +97,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
             throw new GdxRuntimeException("LibGDX requires Android API Level " + MINIMUM_SDK + " or later.");
         }
 
-        graphics = new VrGraphics(this, getGvrView(), config);
+        graphics = new VrGraphics(this, getSurfaceView(), gvrLayout.getGvrApi());
         input = VrAndroidInput.newInstance(this);
         input.setController(controller);
 //        audio = new AndroidAudio(this, config);
@@ -168,7 +166,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     protected void onPause() {
         // calls to setContinuousRendering(false) from other thread (ex: GLThread)
         // will be ignored at this point...
-        getGvrView().queueEvent(new Runnable() {
+        getSurfaceView().queueEvent(new Runnable() {
             @Override
             public void run() {
                 graphics.pause();
@@ -191,22 +189,21 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         super.onResume();
         gvrLayout.onResume();
 
-        assert getGvrView() != null;
+        assert getSurfaceView() != null;
 
         Gdx.app = this;
-        Gdx.input = this.getInput();
-        Gdx.audio = this.getAudio();
-        Gdx.files = this.getFiles();
-        Gdx.graphics = this.getGraphics();
-        Gdx.net = this.getNet();
-
-        assert GdxVr.app != null;
+        Gdx.input = getInput();
+        Gdx.audio = getAudio();
+        Gdx.files = getFiles();
+        Gdx.graphics = getGraphics();
+        Gdx.gl = getGraphics().getGL20();
+        Gdx.net = getNet();
 
         input.onResume();
 
 
         if (!firstResume) {
-            getGvrView().queueEvent(new Runnable() {
+            getSurfaceView().queueEvent(new Runnable() {
                 @Override
                 public void run() {
                     graphics.resume();
@@ -225,15 +222,15 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
 
     @Override
     protected void onDestroy() {
-        final GvrView gvrView = getGvrView();
-        if (gvrView != null && graphics != null) {
-            gvrView.queueEvent(new Runnable() {
+        final GLSurfaceView surfaceView = getSurfaceView();
+        if (surfaceView != null && graphics != null) {
+            graphics.shutdown();
+            surfaceView.queueEvent(new Runnable() {
                 @Override
                 public void run() {
                     graphics.destroy();
                 }
             });
-            gvrView.shutdown();
         }
         if (gvrLayout != null) {
             gvrLayout.shutdown();
@@ -476,7 +473,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
 
 //    @Override
 //    public void onCardboardTrigger() {
-//        getGvrView().queueEvent(new Runnable() {
+//        getSurfaceView().queueEvent(new Runnable() {
 //            @Override
 //            public void run() {
 //                input.onCardboardTrigger();
@@ -485,7 +482,11 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
 //        });
 //    }
 
-    public VRSurfaceView getGvrView() {
+    public GvrLayout getGvrLayout() {
+        return gvrLayout;
+    }
+
+    public GLSurfaceView getSurfaceView() {
         return gvrView;
     }
 
@@ -507,7 +508,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         @Override
         public void onConnectionStateChanged(int state) {
             connectionState = state;
-            getGvrView().queueEvent(this);
+            getSurfaceView().queueEvent(this);
         }
 
         @Override
@@ -519,7 +520,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
 
         @Override
         public void onUpdate() {
-            getGvrView().queueEvent(this);
+            getSurfaceView().queueEvent(this);
         }
 
         // Update the various TextViews in the UI thread.

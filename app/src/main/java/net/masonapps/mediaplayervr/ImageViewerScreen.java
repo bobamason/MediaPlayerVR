@@ -63,8 +63,6 @@ public class ImageViewerScreen extends VrWorldScreen implements DaydreamControll
 
     @Override
     public void show() {
-        GdxVr.app.getGvrView().setNeckModelEnabled(false);
-        GdxVr.app.getGvrView().setNeckModelFactor(0f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setProcessor(container);
     }

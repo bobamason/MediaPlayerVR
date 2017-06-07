@@ -154,8 +154,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     @Override
     public void show() {
-        GdxVr.app.getGvrView().setNeckModelEnabled(false);
-        GdxVr.app.getGvrView().setNeckModelFactor(0f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setProcessor(container);
     }
@@ -215,7 +213,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             projectionChanged = false;
         }
 
-        final float ipdHalf = GdxVr.app.getGvrView().getInterpupillaryDistance() * ipd / 2f;
+        final float ipdHalf = 0.064f * ipd / 2f;
 //        if (videoPlayer.useFlatRectangle() || shouldRenderMono()) {
         setCameraViewFromEye(leftEye, leftCamera);
         updateCamera(leftCamera);
@@ -305,7 +303,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 //        final float side = (-l + r) / 2f;
         float left;
         float right;
-//        final float defaultIpd = GdxVr.app.getGvrView().getInterpupillaryDistance();
+//        final float defaultIpd = GdxVr.app.getSurfaceView().getInterpupillaryDistance();
 //        final float ipdHalf = defaultIpd * ipd / 2f;
 //        final float defaultShift = Math.abs(r - side);
 //        final float screenZ = (defaultIpd * 0.5f * camera.near) / defaultShift;

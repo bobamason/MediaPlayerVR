@@ -1,8 +1,14 @@
 package org.masonapps.libgdxgooglevr.vr;
 
+import android.graphics.Point;
+import android.graphics.RectF;
+import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
-import android.view.Display;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -11,9 +17,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.backends.android.AndroidApplicationBase;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AndroidGL20;
-import com.badlogic.gdx.backends.android.surfaceview.GdxEglConfigChooser;
 import com.badlogic.gdx.graphics.Cubemap;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.GL20;
@@ -30,12 +34,18 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.WindowedMean;
 import com.badlogic.gdx.utils.Array;
+import com.google.vr.ndk.base.BufferSpec;
+import com.google.vr.ndk.base.BufferViewport;
+import com.google.vr.ndk.base.BufferViewportList;
+import com.google.vr.ndk.base.Frame;
+import com.google.vr.ndk.base.GvrApi;
+import com.google.vr.ndk.base.SwapChain;
 import com.google.vr.sdk.base.Eye;
-import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.base.HeadTransform;
-import com.google.vr.sdk.base.Viewport;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -48,18 +58,18 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by Bob on 10/9/2016.
  */
 
-public class VrGraphics implements Graphics, GvrView.Renderer {
+public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
 
+    public static final String TAG = VrGraphics.class.getSimpleName();
     private static final String LOG_TAG = VrGraphics.class.getSimpleName();
-
     private static final int OFFSET_RIGHT = 0;
     private static final int OFFSET_UP = OFFSET_RIGHT + 3;
     private static final int OFFSET_FORWARD = OFFSET_UP + 3;
     private static final int OFFSET_TRANSLATION = OFFSET_FORWARD + 3;
     private static final int OFFSET_EULER = OFFSET_TRANSLATION + 3;
     private static final int OFFSET_QUATERNION = OFFSET_EULER + 3;
-    protected final GvrView view;
-    protected final AndroidApplicationConfiguration config;
+    private static final int INDEX_SCENE_BUFFER = 0;
+    protected final GLSurfaceView view;
     final Object synch = new Object();
     private final float[] array = new float[3 * 5 + 4 + 16];
     private final Vector3 forward = new Vector3();
@@ -68,8 +78,19 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
     private final Vector3 headTranslation = new Vector3();
     private final Quaternion headQuaternion = new Quaternion();
     private final Matrix4 headMatrix = new Matrix4();
-    protected int width;
-    protected int height;
+
+    private final GvrApi api;
+    private final BufferViewportList recommendedList;
+    private final BufferViewportList viewportList;
+    private final BufferViewport scratchViewport;
+    private final RectF eyeFov = new RectF();
+    private final RectF eyeUv = new RectF();
+    private final Point targetSize = new Point();
+    private final float[] tempMatrix = new float[16];
+    private final Eye leftEye = new Eye(Eye.Type.LEFT);
+    private final Eye rightEye = new Eye(Eye.Type.RIGHT);
+    private final HeadTransform headTransform = new HeadTransform();
+    private final long predictionOffsetNanos;
     protected AndroidApplicationBase app;
     protected GL20 gl20;
     protected GL30 gl30;
@@ -89,27 +110,64 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
     protected volatile boolean resume = false;
     protected volatile boolean destroy = false;
     int[] value = new int[1];
+    private SwapChain swapChain;
     private float ppiX = 0;
     private float ppiY = 0;
     private float ppcX = 0;
     private float ppcY = 0;
     private float density = 1;
-    private BufferFormat bufferFormat = new BufferFormat(8, 8, 8, 8, 16, 8, 0, false);
-    private boolean isContinuous = true;
 
-    public VrGraphics(AndroidApplicationBase application, GvrView view, AndroidApplicationConfiguration config) {
-        this(application, view, config, true);
+    public VrGraphics(VrActivity application, GLSurfaceView view, GvrApi api) {
+        this.app = application;
+        this.api = api;
+        this.view = view;
+        this.view.setEGLContextClientVersion(2);
+        this.view.setEGLConfigChooser(8, 8, 8, 0, 0, 0);
+        this.view.setRenderer(this);
+        this.view.setPreserveEGLContextOnPause(true);
+        recommendedList = api.createBufferViewportList();
+        viewportList = api.createBufferViewportList();
+        scratchViewport = api.createBufferViewport();
+        predictionOffsetNanos = TimeUnit.MILLISECONDS.toNanos(50);
     }
 
-    public VrGraphics(AndroidApplicationBase application, GvrView view, AndroidApplicationConfiguration config, boolean focusableView) {
-        this.config = config;
-        this.app = application;
-        this.view = view;
-        this.view.setEGLConfigChooser(8, 8, 8, 8, 16, 8);
-        this.view.setRenderer(this);
-        if (focusableView) {
-            this.view.setFocusable(true);
-            this.view.setFocusableInTouchMode(true);
+    /**
+     * Checks GL state for errors and logs a message then throw a RuntimeExecption when one is
+     * encountered. Should be called regularly after calls to GL functions to help with debugging.
+     *
+     * @param tag The tag to use when logging.
+     * @param op  The name of the GL function called before calling checkGlError
+     */
+
+    public static void checkGlError(String tag, String op) {
+        int error;
+        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+            Log.e(tag, op + ": glError " + error);
+            throw new RuntimeException(op + ": glError " + error);
+        }
+    }
+
+    /**
+     * Checks EGL state for errors and log a message when an error is encountered. Should be
+     * called regularly after calls to EGL functions to help with debugging.
+     *
+     * @param egl An EGL object.
+     * @param tag The tag to use when logging.
+     * @param op  The name of the EGL function called before calling checkGlError
+     */
+    public static void checkEGLError(EGL10 egl, String tag, String op) {
+        int error;
+        while ((error = egl.eglGetError()) != EGL10.EGL_SUCCESS) {
+            Log.e(tag, op + ": eglError " + error);
+        }
+    }
+
+    /**
+     * Clears all GL errors.
+     */
+    public static void clearGLErrors() {
+        int error;
+        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
         }
     }
 
@@ -122,24 +180,6 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
         ppcX = metrics.xdpi / 2.54f;
         ppcY = metrics.ydpi / 2.54f;
         density = metrics.density;
-    }
-
-    protected boolean checkGL20() {
-        EGL10 egl = (EGL10) EGLContext.getEGL();
-        EGLDisplay display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
-
-        int[] version = new int[2];
-        egl.eglInitialize(display, version);
-
-        int EGL_OPENGL_ES2_BIT = 4;
-        int[] configAttribs = {EGL10.EGL_RED_SIZE, 4, EGL10.EGL_GREEN_SIZE, 4, EGL10.EGL_BLUE_SIZE, 4, EGL10.EGL_RENDERABLE_TYPE,
-                EGL_OPENGL_ES2_BIT, EGL10.EGL_NONE};
-
-        EGLConfig[] configs = new EGLConfig[10];
-        int[] num_config = new int[1];
-        egl.eglChooseConfig(display, configAttribs, configs, 10, num_config);
-        egl.eglTerminate(display);
-        return num_config[0] > 0;
     }
 
     /**
@@ -155,7 +195,7 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
      */
     @Override
     public int getHeight() {
-        return height;
+        return targetSize.y;
     }
 
     /**
@@ -163,60 +203,17 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
      */
     @Override
     public int getWidth() {
-        return width;
+        return targetSize.x;
     }
 
     @Override
     public int getBackBufferWidth() {
-        return width;
+        return targetSize.x;
     }
 
     @Override
     public int getBackBufferHeight() {
-        return height;
-    }
-
-    private void setupGL() {
-//        if (config.useGL30 && glVersion.getMajorVersion() > 2) {
-//            if (gl30 != null) return;
-//            gl20 = gl30 = new AndroidGL30();
-//
-//            Gdx.gl = gl30;
-//            Gdx.gl20 = gl30;
-//            Gdx.gl30 = gl30;
-//        } else {
-        if (Gdx.gl != null) return;
-            gl20 = new AndroidGL20();
-
-            Gdx.gl = gl20;
-            Gdx.gl20 = gl20;
-//        }
-        String versionString = Gdx.gl.glGetString(GL10.GL_VERSION);
-        String vendorString = Gdx.gl.glGetString(GL10.GL_VENDOR);
-        String rendererString = Gdx.gl.glGetString(GL10.GL_RENDERER);
-        glVersion = new GLVersion(Application.ApplicationType.Android, versionString, vendorString, rendererString);
-    }
-
-    private void logConfig(EGLConfig config) {
-        EGL10 egl = (EGL10) EGLContext.getEGL();
-        EGLDisplay display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
-        int r = getAttrib(egl, display, config, EGL10.EGL_RED_SIZE, 0);
-        int g = getAttrib(egl, display, config, EGL10.EGL_GREEN_SIZE, 0);
-        int b = getAttrib(egl, display, config, EGL10.EGL_BLUE_SIZE, 0);
-        int a = getAttrib(egl, display, config, EGL10.EGL_ALPHA_SIZE, 0);
-        int d = getAttrib(egl, display, config, EGL10.EGL_DEPTH_SIZE, 0);
-        int s = getAttrib(egl, display, config, EGL10.EGL_STENCIL_SIZE, 0);
-        int samples = Math.max(getAttrib(egl, display, config, EGL10.EGL_SAMPLES, 0),
-                getAttrib(egl, display, config, GdxEglConfigChooser.EGL_COVERAGE_SAMPLES_NV, 0));
-        boolean coverageSample = getAttrib(egl, display, config, GdxEglConfigChooser.EGL_COVERAGE_SAMPLES_NV, 0) != 0;
-
-        Gdx.app.log(LOG_TAG, "framebuffer: (" + r + ", " + g + ", " + b + ", " + a + ")");
-        Gdx.app.log(LOG_TAG, "depthbuffer: (" + d + ")");
-        Gdx.app.log(LOG_TAG, "stencilbuffer: (" + s + ")");
-        Gdx.app.log(LOG_TAG, "samples: (" + samples + ")");
-        Gdx.app.log(LOG_TAG, "coverage sampling: (" + coverageSample + ")");
-
-        bufferFormat = new BufferFormat(r, g, b, a, d, s, samples, coverageSample);
+        return targetSize.y;
     }
 
     private int getAttrib(EGL10 egl, EGLDisplay display, EGLConfig config, int attrib, int defValue) {
@@ -290,6 +287,18 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
         }
         app.getApplicationListener().dispose();
         clearManagedCaches();
+    }
+
+    /**
+     * Shuts down the renderer. Can be called from any thread.
+     */
+    public void shutdown() {
+        recommendedList.shutdown();
+        viewportList.shutdown();
+        scratchViewport.shutdown();
+        if (swapChain != null) {
+            swapChain.shutdown();
+        }
     }
 
     @Override
@@ -452,7 +461,7 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
 
     @Override
     public BufferFormat getBufferFormat() {
-        return bufferFormat;
+        return null;
     }
 
     @Override
@@ -508,9 +517,8 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
     public void setSystemCursor(Cursor.SystemCursor systemCursor) {
     }
 
-    @Override
     @CallSuper
-    public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
+    public void onDrawFrame() {
         long time = System.nanoTime();
         deltaTime = (time - lastFrameTime) / 1000000000.0f;
         lastFrameTime = time;
@@ -602,49 +610,6 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
         headMatrix.set(headTransform.getHeadView());
     }
 
-    @Override
-    public void onFinishFrame(Viewport viewport) {
-        ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onFinishFrame(viewport);
-    }
-
-    @Override
-    public void onSurfaceChanged(int width, int height) {
-        this.width = width;
-        this.height = height;
-        updatePpi();
-        if (!created) {
-            app.getApplicationListener().create();
-            created = true;
-            synchronized (this) {
-                running = true;
-            }
-        }
-//        app.getApplicationListener().resize(width, height);
-    }
-
-    @Override
-    public void onSurfaceCreated(EGLConfig eglConfig) {
-        eglContext = ((EGL10) EGLContext.getEGL()).eglGetCurrentContext();
-        setupGL();
-        logConfig(eglConfig);
-        updatePpi();
-
-        Mesh.invalidateAllMeshes(app);
-        Texture.invalidateAllTextures(app);
-        Cubemap.invalidateAllCubemaps(app);
-        ShaderProgram.invalidateAllShaderPrograms(app);
-        FrameBuffer.invalidateAllFrameBuffers(app);
-
-        logManagedCachesStatus();
-
-        Display display = app.getWindowManager().getDefaultDisplay();
-        this.width = display.getWidth();
-        this.height = display.getHeight();
-        this.mean = new WindowedMean(5);
-        this.lastFrameTime = System.nanoTime();
-    }
-
-    @Override
     public void onRendererShutdown() {
         Gdx.app.log(LOG_TAG, "onRendererShutdown");
     }
@@ -671,6 +636,103 @@ public class VrGraphics implements Graphics, GvrView.Renderer {
 
     public Quaternion getHeadQuaternion() {
         return headQuaternion;
+    }
+
+    @Override
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        api.initializeGl();
+        checkGlError(TAG, "initializeGl");
+
+        api.getMaximumEffectiveRenderTargetSize(targetSize);
+
+        BufferSpec[] specList = new BufferSpec[1];
+        BufferSpec bufferSpec = api.createBufferSpec();
+        bufferSpec.setSize(targetSize);
+        specList[INDEX_SCENE_BUFFER] = bufferSpec;
+
+        swapChain = api.createSwapChain(specList);
+        for (BufferSpec spec : specList) {
+            spec.shutdown();
+        }
+        
+        eglContext = ((EGL10) EGLContext.getEGL()).eglGetCurrentContext();
+        gl20 = new AndroidGL20();
+        Gdx.gl = gl20;
+        String versionString = Gdx.gl.glGetString(GL10.GL_VERSION);
+        String vendorString = Gdx.gl.glGetString(GL10.GL_VENDOR);
+        String rendererString = Gdx.gl.glGetString(GL10.GL_RENDERER);
+        glVersion = new GLVersion(Application.ApplicationType.Android, versionString, vendorString, rendererString);
+        updatePpi();
+
+        Mesh.invalidateAllMeshes(app);
+        Texture.invalidateAllTextures(app);
+        Cubemap.invalidateAllCubemaps(app);
+        ShaderProgram.invalidateAllShaderPrograms(app);
+        FrameBuffer.invalidateAllFrameBuffers(app);
+
+        logManagedCachesStatus();
+
+        this.mean = new WindowedMean(5);
+        this.lastFrameTime = System.nanoTime();
+    }
+
+    @Override
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        updatePpi();
+        if (!created) {
+            app.getApplicationListener().create();
+            created = true;
+            synchronized (this) {
+                running = true;
+            }
+        }
+    }
+
+    @Override
+    public void onDrawFrame(GL10 gl) {
+        Frame frame = swapChain.acquireFrame();
+        api.getHeadSpaceFromStartSpaceRotation(headTransform.getHeadView(), System.nanoTime() + predictionOffsetNanos);
+        api.getEyeFromHeadMatrix(0, tempMatrix);
+        Matrix.multiplyMM(leftEye.getEyeView(), 0, tempMatrix, 0, headTransform.getHeadView(), 0);
+        api.getEyeFromHeadMatrix(1, tempMatrix);
+        Matrix.multiplyMM(rightEye.getEyeView(), 0, tempMatrix, 0, headTransform.getHeadView(), 0);
+        // Populate the BufferViewportList to describe to the GvrApi how the color buffer
+        // and video frame ExternalSurface buffer should be rendered. The eyeFromQuad matrix
+        // describes how the video Surface frame should be transformed and rendered in eye space.
+        api.getRecommendedBufferViewports(recommendedList);
+
+        setEye(0, leftEye);
+        setEye(0, rightEye);
+
+        frame.bindBuffer(INDEX_SCENE_BUFFER);
+        // Draw background color
+        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+
+        onDrawFrame();
+        checkGlError(TAG, "new frame");
+
+        frame.unbind();
+        frame.submit(viewportList, headTransform.getHeadView());
+        checkGlError(TAG, "submit frame");
+    }
+
+    @NonNull
+    private Eye setEye(int i, Eye eye) {
+        recommendedList.get(i, scratchViewport);
+        viewportList.set(i, scratchViewport);
+        viewportList.get(i, scratchViewport);
+        scratchViewport.getSourceUv(eyeUv);
+        scratchViewport.getSourceFov(eyeFov);
+
+        eye.getFov().setAngles(eyeFov.left, eyeFov.right, eyeFov.bottom, eyeFov.top);
+
+        eye.getViewport().x = (int) (eyeUv.left * targetSize.x);
+        eye.getViewport().y = (int) (eyeUv.bottom * targetSize.y);
+        eye.getViewport().width = (int) (eyeUv.width() * targetSize.x);
+        eye.getViewport().height = (int) (-eyeUv.height() * targetSize.y);
+        return eye;
     }
 
     private class AndroidDisplayMode extends DisplayMode {

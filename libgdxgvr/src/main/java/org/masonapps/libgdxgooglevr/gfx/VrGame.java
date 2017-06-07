@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import com.badlogic.gdx.graphics.Camera;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
-import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.vr.VrApplicationAdapter;
@@ -34,11 +33,6 @@ public abstract class VrGame extends VrApplicationAdapter {
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         if (screen != null) screen.onDrawFrame(headTransform, leftEye, rightEye);
-    }
-
-    @Override
-    public void onFinishFrame(Viewport viewport) {
-        if (screen != null) screen.onFinishFrame(viewport);
     }
 
     @Override

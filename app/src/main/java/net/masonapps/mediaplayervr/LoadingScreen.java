@@ -49,12 +49,6 @@ public class LoadingScreen extends VrWorldScreen {
 
     @Override
     public void show() {
-        try {
-            GdxVr.app.getGvrView().setNeckModelEnabled(true);
-            GdxVr.app.getGvrView().setNeckModelFactor(1f);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

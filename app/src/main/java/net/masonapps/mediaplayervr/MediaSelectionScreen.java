@@ -162,8 +162,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
     @Override
     public void show() {
-        GdxVr.app.getGvrView().setNeckModelEnabled(true);
-        GdxVr.app.getGvrView().setNeckModelFactor(1f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setProcessor(container);
         getVrCamera().position.set(Vector3.Zero);

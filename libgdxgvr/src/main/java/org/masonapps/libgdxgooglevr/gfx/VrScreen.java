@@ -65,9 +65,6 @@ public abstract class VrScreen implements Disposable {
         renderCursor(getVrCamera());
     }
 
-    public void onFinishFrame(Viewport viewport) {
-    }
-
     public void render(Camera camera, int whichEye) {
 
     }
