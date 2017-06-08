@@ -1,6 +1,7 @@
 package org.masonapps.libgdxgooglevr.gfx;
 
 import android.support.annotation.CallSuper;
+import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
@@ -176,8 +177,12 @@ public abstract class VrWorldScreen extends VrScreen {
     public void dispose() {
         if (disposables != null) {
             for (Disposable d : disposables) {
-                if (d != null)
-                    d.dispose();
+                try {
+                    if (d != null)
+                        d.dispose();
+                } catch (Exception e) {
+                    Log.e(VrWorldScreen.class.getSimpleName(), e.getMessage());
+                }
             }
             if (modelBatch != null) {
                 modelBatch.dispose();

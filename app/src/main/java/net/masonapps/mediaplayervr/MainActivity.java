@@ -7,8 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
-import com.google.vr.sdk.base.AndroidCompat;
-
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 
 import org.masonapps.libgdxgooglevr.vr.VrActivity;
@@ -25,17 +23,8 @@ public class MainActivity extends VrActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        AndroidCompat.setVrModeEnabled(this, true);
         game = new MediaPlayerGame(this);
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
-
-//        if (getSurfaceView().setAsyncReprojectionEnabled(true)) {
-////            // Async reprojection decouples the app framerate from the display framerate,
-////            // allowing immersive interaction even at the throttled clockrates set by
-////            // sustained performance mode.
-//            Log.d(MainActivity.class.getSimpleName(), "Async Reprojection Enabled");
-//            AndroidCompat.setSustainedPerformanceMode(this, true);
-//        }
         initialize(game);
     }
 

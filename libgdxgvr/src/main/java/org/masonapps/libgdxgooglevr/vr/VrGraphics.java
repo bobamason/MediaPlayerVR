@@ -143,7 +143,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
             Log.e(tag, op + ": glError " + error);
-            throw new RuntimeException(op + ": glError " + error);
+//            throw new RuntimeException(op + ": glError " + error);
         }
     }
 
@@ -658,6 +658,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         eglContext = ((EGL10) EGLContext.getEGL()).eglGetCurrentContext();
         gl20 = new AndroidGL20();
         Gdx.gl = gl20;
+        Gdx.gl20 = gl20;
         String versionString = Gdx.gl.glGetString(GL10.GL_VERSION);
         String vendorString = Gdx.gl.glGetString(GL10.GL_VENDOR);
         String rendererString = Gdx.gl.glGetString(GL10.GL_RENDERER);
@@ -702,13 +703,9 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         api.getRecommendedBufferViewports(recommendedList);
 
         setEye(0, leftEye);
-        setEye(0, rightEye);
+        setEye(1, rightEye);
 
         frame.bindBuffer(INDEX_SCENE_BUFFER);
-        // Draw background color
-        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
 
         onDrawFrame();
         checkGlError(TAG, "new frame");

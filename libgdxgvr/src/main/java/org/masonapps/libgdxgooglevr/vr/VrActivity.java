@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 
@@ -23,7 +24,6 @@ import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.backends.android.AndroidApplicationBase;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AndroidClipboard;
 import com.badlogic.gdx.backends.android.AndroidEventListener;
 import com.badlogic.gdx.backends.android.AndroidFiles;
@@ -35,9 +35,12 @@ import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.GdxNativesLoader;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.SnapshotArray;
+import com.google.vr.cardboard.FullscreenMode;
 import com.google.vr.ndk.base.GvrLayout;
+import com.google.vr.sdk.base.AndroidCompat;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
+import com.google.vrtoolkit.cardboard.ScreenOnFlagHelper;
 
 /**
  * Created by Bob on 10/9/2016.
@@ -52,6 +55,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     protected final Array<Runnable> executedRunnables = new Array<Runnable>();
     protected final SnapshotArray<LifecycleListener> lifecycleListeners = new SnapshotArray<>();
     private final Array<AndroidEventListener> androidEventListeners = new Array<AndroidEventListener>();
+    private final ScreenOnFlagHelper screenOnFlagHelper = new ScreenOnFlagHelper(this);
     public Handler handler;
     protected VrGraphics graphics;
     protected VrAndroidInput input;
@@ -65,17 +69,31 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     protected Controller controller;
     AndroidClipboard clipboard;
     private GvrLayout gvrLayout;
-    private GLSurfaceView gvrView;
+    private GLSurfaceView surfaceView;
+    private FullscreenMode fullscreenMode;
 //    private int wasFocusChanged = -1;
 //    private boolean isWaitingForAudio = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setImmersiveSticky();
-        gvrView = new GLSurfaceView(this);
+        this.requestWindowFeature(1);
+        this.fullscreenMode = new FullscreenMode(this.getWindow());
+        this.screenOnFlagHelper.setScreenAlwaysOn(true);
+
+        AndroidCompat.setSustainedPerformanceMode(this, true);
+        AndroidCompat.setVrModeEnabled(this, true);
+        surfaceView = new GLSurfaceView(this);
         gvrLayout = new GvrLayout(this);
-        gvrLayout.setPresentationView(gvrView);
+        gvrLayout.setPresentationView(surfaceView);
+
+//        if (getGvrLayout().setAsyncReprojectionEnabled(true)) {
+////            // Async reprojection decouples the app framerate from the display framerate,
+////            // allowing immersive interaction even at the throttled clockrates set by
+////            // sustained performance mode.
+//            Log.d(VrActivity.class.getSimpleName(), "Async Reprojection Enabled");
+//            AndroidCompat.setSustainedPerformanceMode(this, true);
+//        }
         setContentView(gvrLayout);
         final EventListener listener = new EventListener();
         controllerManager = new ControllerManager(this, listener);
@@ -84,15 +102,6 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     }
 
     public void initialize(VrApplicationAdapter adapter) {
-        AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        initialize(adapter, config);
-    }
-
-    public void initialize(VrApplicationAdapter adapter, AndroidApplicationConfiguration config) {
-        init(adapter, config);
-    }
-
-    private void init(VrApplicationAdapter adapter, AndroidApplicationConfiguration config) {
         if (this.getVersion() < MINIMUM_SDK) {
             throw new GdxRuntimeException("LibGDX requires Android API Level " + MINIMUM_SDK + " or later.");
         }
@@ -115,23 +124,10 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         Gdx.net = this.getNet();
     }
 
-//    protected void hideStatusBar(boolean hide) {
-//        if (!hide || getVersion() < 11) return;
-//
-//        View rootView = getWindow().getDecorView();
-//
-//        try {
-//            Method m = View.class.getMethod("setSystemUiVisibility", int.class);
-//            if (getVersion() <= 13) m.invoke(rootView, 0x0);
-//            m.invoke(rootView, 0x1);
-//        } catch (Exception e) {
-//            log("AndroidApplication", "Can't hide status bar", e);
-//        }
-//    }
-
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+        this.fullscreenMode.onWindowFocusChanged(hasFocus);
 //        if (hasFocus) {
 //            this.wasFocusChanged = 1;
 //            if (this.isWaitingForAudio) {
@@ -173,6 +169,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
             }
         });
         gvrLayout.onPause();
+        this.screenOnFlagHelper.stop();
 
         input.onPause();
 
@@ -189,7 +186,9 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         super.onResume();
         gvrLayout.onResume();
 
-        assert getSurfaceView() != null;
+
+        this.fullscreenMode.goFullscreen();
+        this.screenOnFlagHelper.start();
 
         Gdx.app = this;
         Gdx.input = getInput();
@@ -255,6 +254,16 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     protected void onStop() {
         controllerManager.stop();
         super.onStop();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        return keyCode == 24 || keyCode == 25;
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        return keyCode == 24 || keyCode == 25;
     }
 
     @Override
@@ -471,23 +480,12 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         return this.handler;
     }
 
-//    @Override
-//    public void onCardboardTrigger() {
-//        getSurfaceView().queueEvent(new Runnable() {
-//            @Override
-//            public void run() {
-//                input.onCardboardTrigger();
-//                VrActivity.this.vrApplicationAdapter.onCardboardTrigger();
-//            }
-//        });
-//    }
-
     public GvrLayout getGvrLayout() {
         return gvrLayout;
     }
 
     public GLSurfaceView getSurfaceView() {
-        return gvrView;
+        return surfaceView;
     }
 
     private class EventListener extends Controller.EventListener
