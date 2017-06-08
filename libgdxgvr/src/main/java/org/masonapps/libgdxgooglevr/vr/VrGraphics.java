@@ -56,6 +56,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Created by Bob on 10/9/2016.
+ * based on AndroidGraphics originally written by mzechner
  */
 
 public class VrGraphics implements Graphics, GLSurfaceView.Renderer {

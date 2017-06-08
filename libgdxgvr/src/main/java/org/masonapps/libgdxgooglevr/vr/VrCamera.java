@@ -9,6 +9,7 @@ import com.google.vr.sdk.base.Eye;
 
 /**
  * Created by Bob on 10/14/2016.
+ * based on PerspectiveCamera originally written by mzechner
  */
 
 public class VrCamera extends Camera {

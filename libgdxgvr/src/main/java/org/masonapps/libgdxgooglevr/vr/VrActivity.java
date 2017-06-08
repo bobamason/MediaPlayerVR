@@ -44,6 +44,7 @@ import com.google.vrtoolkit.cardboard.ScreenOnFlagHelper;
 
 /**
  * Created by Bob on 10/9/2016.
+ * based on AndroidApplication originally written by mzechner
  */
 
 public class VrActivity extends Activity implements AndroidApplicationBase {

@@ -37,6 +37,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Bob on 12/29/2016.
+ * based on AndroidInput originally written by mzechner and jshapcot
  */
 
 public class VrAndroidInput extends AndroidInput implements DaydreamControllerInputListener {
