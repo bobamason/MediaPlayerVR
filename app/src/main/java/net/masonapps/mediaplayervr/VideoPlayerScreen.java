@@ -129,7 +129,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         ui.attach(container);
         getVrCamera().near = 0.125f;
         getVrCamera().far = 101f;
-        controllerEntity = getWorld().add(mediaPlayerGame.getControllerEntity());
+        controllerEntity = mediaPlayerGame.getControllerEntity();
         modelBuilder = new ModelBuilder();
         modelBuilder.begin();
         final MeshPartBuilder part = modelBuilder.part("outline", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material(ColorAttribute.createDiffuse(Color.YELLOW)));
@@ -343,6 +343,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void render(Camera camera, int whichEye) {
         container.draw(camera);
         if (isUiVisible()) {
+            getModelBatch().begin(camera);
+            getModelBatch().render(controllerEntity.modelInstance);
+            getModelBatch().end();
             renderCursor(camera);
         }
     }
@@ -351,7 +354,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void setUiVisible(boolean uiVisible) {
         super.setUiVisible(uiVisible);
         ui.setVisible(uiVisible);
-        controllerEntity.setRenderingEnabled(uiVisible);
         invalidateProjection();
     }
 
@@ -362,8 +364,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         super.onDaydreamControllerUpdate(controller, connectionState);
-        if (controllerEntity.isRenderingEnabled())
-            controllerEntity.modelInstance.transform.set(tempV.set(GdxVr.input.getControllerPosition()).add(GdxVr.input.getHandPosition()), GdxVr.input.getControllerOrientation(), controllerScale);
+        if (isUiVisible)
+            controllerEntity.modelInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), controllerScale);
     }
 
     @Override

@@ -42,6 +42,8 @@ import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
 import com.google.vrtoolkit.cardboard.ScreenOnFlagHelper;
 
+import org.masonapps.libgdxgooglevr.GdxVr;
+
 /**
  * Created by Bob on 10/9/2016.
  * based on AndroidApplication originally written by mzechner
@@ -111,18 +113,29 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         input = VrAndroidInput.newInstance(this);
         input.setController(controller);
 //        audio = new AndroidAudio(this, config);
-        this.getFilesDir();
         files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
         net = new AndroidNet(this);
         this.vrApplicationAdapter = adapter;
         this.handler = new Handler();
 
+
         Gdx.app = this;
-        Gdx.input = this.getInput();
-        Gdx.audio = this.getAudio();
-        Gdx.files = this.getFiles();
-        Gdx.graphics = this.getGraphics();
-        Gdx.net = this.getNet();
+        Gdx.input = getInput();
+        Gdx.audio = getAudio();
+        Gdx.files = getFiles();
+        Gdx.graphics = getGraphics();
+        Gdx.gl = getGraphics().getGL20();
+        Gdx.gl20 = getGraphics().getGL20();
+        Gdx.net = getNet();
+
+        GdxVr.app = this;
+        GdxVr.input = input;
+        GdxVr.audio = getAudio();
+        GdxVr.files = getFiles();
+        GdxVr.graphics = graphics;
+        GdxVr.gl = getGraphics().getGL20();
+        GdxVr.gl20 = getGraphics().getGL20();
+        GdxVr.net = getNet();
     }
 
     @Override
@@ -144,19 +157,14 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     @TargetApi(19)
     @Override
     public void useImmersiveMode(boolean use) {
-        setImmersiveSticky();
-    }
-
-    private void setImmersiveSticky() {
-        getWindow()
-                .getDecorView()
-                .setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        if (use)
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
     @Override
@@ -197,7 +205,17 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         Gdx.files = getFiles();
         Gdx.graphics = getGraphics();
         Gdx.gl = getGraphics().getGL20();
+        Gdx.gl20 = getGraphics().getGL20();
         Gdx.net = getNet();
+
+        GdxVr.app = this;
+        GdxVr.input = input;
+        GdxVr.audio = getAudio();
+        GdxVr.files = getFiles();
+        GdxVr.graphics = graphics;
+        GdxVr.gl = getGraphics().getGL20();
+        GdxVr.gl20 = getGraphics().getGL20();
+        GdxVr.net = getNet();
 
         input.onResume();
 

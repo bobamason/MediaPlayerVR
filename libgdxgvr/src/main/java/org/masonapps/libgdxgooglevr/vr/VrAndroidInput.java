@@ -42,13 +42,11 @@ import java.util.ArrayList;
 
 public class VrAndroidInput extends AndroidInput implements DaydreamControllerInputListener {
 
-    protected static final Vector3 defaultControllerRayDirection = new Vector3(0, 0, -1).rotate(Vector3.X, -15);
     private final Application app;
     private final Context context;
+    private final ArmModel armModel;
     protected Quaternion controllerOrientation = new Quaternion();
-    protected Quaternion smoothedOrientation = new Quaternion();
     protected boolean isControllerConnected = false;
-    protected Vector3 controllerOffset = new Vector3(0, 0, -0.056f);
     private Vector3 controllerPosition = new Vector3();
     private Ray inputRay = new Ray();
     private DaydreamControllerHandler daydreamControllerHandler;
@@ -84,7 +82,6 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
     private long currentEventTimeStamp = System.nanoTime();
     private Controller controller;
     private boolean isInputProcessorTouched = false;
-    private Vector3 handPosition = new Vector3(0, -0.45f, -0.3f);
     private GridPoint2 touch = new GridPoint2(-1, -1);
     private GridPoint2 lastTouch = new GridPoint2(-1, -1);
 
@@ -95,6 +92,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         daydreamControllerHandler = new DaydreamControllerHandler();
         this.app = application;
         this.context = context;
+        armModel = ArmModel.getInstance();
     }
 
     public static VrAndroidInput newInstance(VrActivity vrActivity) {
@@ -235,8 +233,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     public void processEvents() {
         synchronized (this) {
-
-            updateInputRay(smoothedOrientation.slerp(controllerOrientation, 0.25f));
+            updateInputRay();
             if (processor instanceof VrInputProcessor) {
                 ((VrInputProcessor) processor).performRayTest(inputRay);
                 if (((VrInputProcessor) processor).isCursorOver()) {
@@ -661,8 +658,10 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         if (connectionState == Controller.ConnectionStates.CONNECTED) {
             isControllerConnected = true;
+            armModel.updateHeadDirection(GdxVr.graphics.getForward());
+            armModel.onControllerUpdate(controller);
             controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
-            controllerPosition.set(controller.position);
+            controllerPosition.set(armModel.pointerPosition);
         } else {
             isControllerConnected = false;
         }
@@ -684,12 +683,10 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         return inputRay;
     }
 
-    protected void updateInputRay(Quaternion orientation) {
+    protected void updateInputRay() {
         if (isControllerConnected && controller != null) {
-            controllerOrientation.set(orientation.x, orientation.y, orientation.z, orientation.w);
-            final Vector3 v = Vecs.obtainV3().set(controllerOffset).mul(controllerOrientation);
-            inputRay.origin.set(GdxVr.app.getVrApplicationAdapter().getVrCamera().position).add(controllerPosition).add(v).add(handPosition);
-            inputRay.direction.set(defaultControllerRayDirection).mul(controllerOrientation);
+            inputRay.origin.set(0, -0.002f, -0.053f).mul(controllerOrientation).add(GdxVr.app.getVrApplicationAdapter().getVrCamera().position).add(armModel.pointerPosition);
+            inputRay.direction.set(ArmModel.WORLD_FORWARD).mul(armModel.pointerRotation);
         } else {
             inputRay.origin.set(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
             inputRay.direction.set(GdxVr.app.getVrApplicationAdapter().getForwardVector());
@@ -697,21 +694,10 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         }
     }
 
-    public Vector3 getControllerOffset() {
-        return controllerOffset;
+    public ArmModel getArmModel() {
+        return armModel;
     }
 
-    public void setControllerOffset(Vector3 controllerOffset) {
-        this.controllerOffset.set(controllerOffset);
-    }
-
-    public Vector3 getHandPosition() {
-        return handPosition;
-    }
-
-    public void setHandPosition(Vector3 handPosition) {
-        this.handPosition.set(handPosition);
-    }
 
     public Vector3 getControllerPosition() {
         return controllerPosition;

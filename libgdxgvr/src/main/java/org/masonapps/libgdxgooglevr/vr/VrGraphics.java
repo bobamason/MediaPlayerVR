@@ -576,8 +576,8 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
             }
             handleHeadTransform(headTransform);
             final VrAndroidInput input = GdxVr.input;
-            if (!input.isControllerConnected())
-                input.updateInputRay(null);
+//            if (!input.isControllerConnected())
+//                input.updateInputRay();
             input.processEvents();
             ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, leftEye, rightEye);
             frameId++;
@@ -644,7 +644,10 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         api.initializeGl();
         checkGlError(TAG, "initializeGl");
 
-        api.getMaximumEffectiveRenderTargetSize(targetSize);
+        api.getScreenTargetSize(targetSize);
+//        Log.d(TAG, "getScreenTargetSize -> " + targetSize.toString());
+//        api.getMaximumEffectiveRenderTargetSize(targetSize);
+//        Log.d(TAG, "getMaximumEffectiveRenderTargetSize -> " + targetSize.toString());
 
         BufferSpec[] specList = new BufferSpec[1];
         BufferSpec bufferSpec = api.createBufferSpec();
@@ -659,7 +662,9 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         eglContext = ((EGL10) EGLContext.getEGL()).eglGetCurrentContext();
         gl20 = new AndroidGL20();
         Gdx.gl = gl20;
+        GdxVr.gl = gl20;
         Gdx.gl20 = gl20;
+        GdxVr.gl20 = gl20;
         String versionString = Gdx.gl.glGetString(GL10.GL_VERSION);
         String vendorString = Gdx.gl.glGetString(GL10.GL_VENDOR);
         String rendererString = Gdx.gl.glGetString(GL10.GL_RENDERER);

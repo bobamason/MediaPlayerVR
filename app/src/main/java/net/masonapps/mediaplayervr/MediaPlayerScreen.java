@@ -1,5 +1,6 @@
 package net.masonapps.mediaplayervr;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -25,6 +26,7 @@ import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
+import org.masonapps.libgdxgooglevr.gfx.World;
 
 /**
  * Created by Bob on 2/7/2017.
@@ -34,7 +36,6 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     private static final Vector3 tempV = new Vector3();
     protected final MediaPlayerGame mediaPlayerGame;
     protected final Entity controllerEntity;
-    protected final Array<Entity> boxes = new Array<>();
     //    protected final Entity roomEntity;
     protected final Entity floorEntity;
     protected final Skin skin;
@@ -48,18 +49,18 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
         mediaPlayerGame = (MediaPlayerGame) game;
         skin = mediaPlayerGame.getSkin();
         floorEntity = getWorld().add(mediaPlayerGame.getFloorEntity());
-        controllerEntity = getWorld().add(mediaPlayerGame.getControllerEntity());
-        final ModelBuilder modelBuilder = new ModelBuilder();
+        controllerEntity = mediaPlayerGame.getControllerEntity();
+    }
 
-//        final Model box = createModel(modelBuilder);
-//        for (int i = 0; i < 20; i++) {
-//            final Entity entity = new Entity(new ModelInstance(box));
-//            entity.modelInstance.userData = 1f / i;
-//            entity.modelInstance.materials.get(0).set(ColorAttribute.createDiffuse(Color.CYAN), ColorAttribute.createAmbient(Color.CYAN), ColorAttribute.createSpecular(Color.WHITE));
-//            updateEntity(0, entity);
-//            boxes.add(getWorld().add(entity));
-//        }
-        
+    @Override
+    protected World createWorld() {
+        return new World() {
+            @Override
+            public void render(ModelBatch batch, Environment lights, Entity entity) {
+                super.render(batch, lights, entity);
+                batch.render(controllerEntity.modelInstance);
+            }
+        };
     }
 
     @Override
@@ -84,7 +85,7 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     @Override
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         super.onDaydreamControllerUpdate(controller, connectionState);
-        controllerEntity.modelInstance.transform.set(tempV.set(GdxVr.input.getControllerPosition()).add(GdxVr.input.getHandPosition()), GdxVr.input.getControllerOrientation(), scale);
+        controllerEntity.modelInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), scale);
     }
 
     private Model createModel(ModelBuilder modelBuilder) {
@@ -106,20 +107,11 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
         super.update();
 
         final float dT = GdxVr.graphics.getDeltaTime() * 0.5f;
-        for (Entity entity : boxes) {
-            updateEntity(dT, entity);
-        }
     }
 
-    private void updateEntity(float dT, Entity entity) {
-        float alpha = (float) entity.modelInstance.userData + dT;
-        if (alpha > 1f) {
-            final float a = alpha % 1f;
-            alpha = a;
-            entity.modelInstance.userData = a;
-        }
-        final float s = MathUtils.lerp(1f, 10f, alpha);
-        entity.transform.idt().translate(tempV.set(startPosition).lerp(endPosition, alpha)).rotate(Vector3.Z, 360 * alpha).scale(s, s, s);
+    @Override
+    public void render(Camera camera, int whichEye) {
+        super.render(camera, whichEye);
     }
 
     public Skin getSkin() {

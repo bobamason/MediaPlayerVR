@@ -165,7 +165,7 @@ public abstract class VrWorldScreen extends VrScreen {
     }
 
     private Vector3 getControllerPosition() {
-        return controllerPosition.set(GdxVr.input.getControllerPosition()).add(GdxVr.input.getControllerOffset());
+        return controllerPosition.set(GdxVr.input.getControllerPosition());
     }
 
     private Quaternion getControllerOrientation() {
