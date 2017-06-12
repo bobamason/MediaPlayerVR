@@ -2,6 +2,7 @@ package org.masonapps.libgdxgooglevr.gfx;
 
 import android.annotation.SuppressLint;
 import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
@@ -28,7 +29,7 @@ import org.masonapps.libgdxgooglevr.vr.VrApplicationAdapter;
  * Created by Bob on 12/22/2016.
  */
 
-public abstract class VrGame extends VrApplicationAdapter {
+public class VrGame extends VrApplicationAdapter {
     private static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
     protected VrScreen screen;
@@ -40,7 +41,8 @@ public abstract class VrGame extends VrApplicationAdapter {
     private ShapeRenderer shapeRenderer;
     private Color cursorColor1 = new Color(1f, 1f, 1f, 1f);
     private Color cursorColor2 = new Color(1f, 1f, 1f, 0f);
-    private ModelInstance controllerInstance;
+    @Nullable
+    private ModelInstance controllerInstance = null;
     private ModelBatch modelBatch;
 
     @Override
@@ -53,8 +55,6 @@ public abstract class VrGame extends VrApplicationAdapter {
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
         loadAsset(CONTROLLER_FILENAME, Model.class);
-
-        controllerInstance = new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class));
     }
 
     protected ModelBatch createModelBatch() {
@@ -85,6 +85,8 @@ public abstract class VrGame extends VrApplicationAdapter {
 
     @CallSuper
     protected void doneLoading(AssetManager assets) {
+        if (controllerInstance == null)
+            controllerInstance = new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class));
         screen.doneLoading(assets);
     }
 
@@ -97,7 +99,7 @@ public abstract class VrGame extends VrApplicationAdapter {
     public void render(Camera camera, int whichEye) {
         if (screen != null) screen.render(camera, whichEye);
         super.render(camera, whichEye);
-        if (GdxVr.input.isControllerConnected() && isUiVisible) {
+        if (controllerInstance != null && GdxVr.input.isControllerConnected() && isUiVisible) {
             modelBatch.begin(camera);
             modelBatch.render(controllerInstance);
             modelBatch.end();
@@ -137,7 +139,9 @@ public abstract class VrGame extends VrApplicationAdapter {
         super.onDaydreamControllerUpdate(controller, connectionState);
         if (GdxVr.input.isControllerConnected()) {
             ray.set(GdxVr.input.getInputRay());
-            controllerInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), controllerScale);
+            if (controllerInstance != null) {
+                controllerInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), controllerScale);
+            }
             final VrInputProcessor vrInputProcessor = GdxVr.input.getVrInputProcessor();
             if (vrInputProcessor != null && vrInputProcessor.isCursorOver()) {
                 cursor.position.set(vrInputProcessor.getHitPoint3D());
