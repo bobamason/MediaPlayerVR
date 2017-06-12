@@ -57,7 +57,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private static final Vector3 NEG_Z = new Vector3(0, 0, -1);
     private static final float NEAR = 1f;
     private static final float FAR = 101f;
-    private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
 
     private final VideoDetails videoDetails;
     private final Entity controllerEntity;
@@ -281,7 +280,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     private boolean shouldRenderMono() {
-        return (videoPlayer.isStereoscopic() && isUiVisible) &&
+        return (videoPlayer.isStereoscopic() && isUiVisible()) &&
                 ui.getCurrentSetting() != GlobalSettings.IPD &&
                 ui.getCurrentSetting() != GlobalSettings.ZOOM;
     }
@@ -342,12 +341,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void render(Camera camera, int whichEye) {
         container.draw(camera);
-        if (isUiVisible()) {
-            getModelBatch().begin(camera);
-            getModelBatch().render(controllerEntity.modelInstance);
-            getModelBatch().end();
-            renderCursor(camera);
-        }
     }
 
     @Override
@@ -364,17 +357,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         super.onDaydreamControllerUpdate(controller, connectionState);
-        if (isUiVisible)
-            controllerEntity.modelInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), controllerScale);
     }
 
     @Override
     public void onConnectionStateChange(int connectionState) {
-        if (connectionState == Controller.ConnectionStates.CONNECTED) {
 
-        } else {
-
-        }
     }
 
     @Override

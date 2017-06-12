@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.BaseLight;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
@@ -26,7 +25,6 @@ import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
-import org.masonapps.libgdxgooglevr.gfx.World;
 
 /**
  * Created by Bob on 2/7/2017.
@@ -35,11 +33,9 @@ import org.masonapps.libgdxgooglevr.gfx.World;
 public abstract class MediaPlayerScreen extends VrWorldScreen {
     private static final Vector3 tempV = new Vector3();
     protected final MediaPlayerGame mediaPlayerGame;
-    protected final Entity controllerEntity;
     //    protected final Entity roomEntity;
     protected final Entity floorEntity;
     protected final Skin skin;
-    private final Vector3 scale = new Vector3(10f, 10f, 10f);
     private final Quaternion tempQ = new Quaternion();
     private Vector3 startPosition = new Vector3(0, 0, -10);
     private Vector3 endPosition = new Vector3(0, 0, 10);
@@ -49,23 +45,6 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
         mediaPlayerGame = (MediaPlayerGame) game;
         skin = mediaPlayerGame.getSkin();
         floorEntity = getWorld().add(mediaPlayerGame.getFloorEntity());
-        controllerEntity = mediaPlayerGame.getControllerEntity();
-    }
-
-    @Override
-    protected World createWorld() {
-        return new World() {
-            @Override
-            public void render(ModelBatch batch, Environment lights, Entity entity) {
-                super.render(batch, lights, entity);
-                batch.render(controllerEntity.modelInstance);
-            }
-        };
-    }
-
-    @Override
-    protected ModelBatch createModelBatch() {
-        return super.createModelBatch();
     }
 
     @Override
@@ -85,7 +64,6 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     @Override
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         super.onDaydreamControllerUpdate(controller, connectionState);
-        controllerEntity.modelInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), scale);
     }
 
     private Model createModel(ModelBuilder modelBuilder) {

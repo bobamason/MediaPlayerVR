@@ -52,7 +52,6 @@ public class MediaPlayerGame extends VrGame {
 //    public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
     public static final String SPHERE_FILENAME = "sphere.vidmodel";
     public static final String CYLINDER_FILENAME = "cylinder.vidmodel";
-    public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private final Context context;
     private Skin skin;
     //    private Entity roomEntity;
@@ -105,9 +104,6 @@ public class MediaPlayerGame extends VrGame {
 //        }).start();
 //        assets.load(ROOM_FILENAME, Model.class);
 //        assets.load(FLOOR_FILENAME, Model.class);
-        assets.load(SPHERE_FILENAME, Model.class);
-        assets.load(CONTROLLER_FILENAME, Model.class);
-        loading = true;
     }
 
     @Override
@@ -141,8 +137,6 @@ public class MediaPlayerGame extends VrGame {
 
                 floorEntity = new Entity(new ModelInstance(createFloorModel(modelBuilder), worldOffset));
                 floorEntity.setLightingEnabled(true);
-
-                controllerEntity = new Entity(new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class)));
                 controllerEntity.setLightingEnabled(false);
                 sphereModel = assets.get(SPHERE_FILENAME, Model.class);
                 cylinderModel = ModelGenerator.createCylinder(modelBuilder, 0.5f, 64, 64);

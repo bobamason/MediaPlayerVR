@@ -131,7 +131,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
 
     private void loadVideoList() {
-        setLoading(true);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -143,7 +142,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
                         layoutVideoList.getList().addAll(list);
                         layoutVideoList.displayList(0);
                         showVideoList();
-                        setLoading(false);
                     }
                 });
             }
