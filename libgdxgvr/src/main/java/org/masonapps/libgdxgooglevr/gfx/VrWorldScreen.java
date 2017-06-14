@@ -158,12 +158,4 @@ public abstract class VrWorldScreen extends VrScreen {
     public Ray getControllerRay() {
         return game.getControllerRay();
     }
-
-    public boolean isUiVisible() {
-        return game.isUiVisible();
-    }
-
-    public void setUiVisible(boolean uiVisible) {
-        game.setUiVisible(uiVisible);
-    }
 }

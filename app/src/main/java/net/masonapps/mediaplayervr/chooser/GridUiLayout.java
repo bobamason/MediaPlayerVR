@@ -85,7 +85,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         prevPageButton = new ImageButtonVR(batch, Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_left_white_48dp, true));
         prevPageButton.getViewport().update((int) prevPageButton.getImageButton().getWidth() + 8, 720, false);
         prevPageButton.getImageButton().center().pad(4).setFillParent(true);
-        prevPageButton.position.set(0f, 0.25f, -2f).rotate(45f, 0, 1, 0);
+        prevPageButton.position.set(0f, 0.25f, -2f).rotate(60f, 0, 1, 0);
         prevPageButton.lookAt(tmp.set(0, 0.25f, 0), Vector3.Y);
         prevPageButton.getImageButton().addListener(new ClickListener() {
             @Override
@@ -98,7 +98,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
         nextPageButton = new ImageButtonVR(batch, Style.createImageButtonStyle(skin, Style.Drawables.ic_chevron_right_white_48dp, true));
         nextPageButton.getViewport().update((int) nextPageButton.getImageButton().getWidth() + 8, 720, false);
         nextPageButton.getImageButton().center().pad(4).setFillParent(true);
-        nextPageButton.position.set(0f, 0.25f, -2f).rotate(-45f, 0, 1, 0);
+        nextPageButton.position.set(0f, 0.25f, -2f).rotate(-60f, 0, 1, 0);
         nextPageButton.lookAt(tmp.set(0, 0.25f, 0), Vector3.Y);
         nextPageButton.getImageButton().addListener(new ClickListener() {
             @Override
@@ -185,8 +185,8 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
 
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLUMNS; c++) {
-                final TableVR table = new TableVR(batch, skin, 420, 360);
-                final float sweep = 80f;
+                final TableVR table = new TableVR(batch, skin, 560, 420);
+                final float sweep = 100f;
                 final float a = sweep / COLUMNS - sweep / COLUMNS * c;
                 final float y = (table.getHeightWorld() + 0.05f) / ROWS + 0.25f - (table.getHeightWorld() + 0.05f) * r;
                 final float z = -2;

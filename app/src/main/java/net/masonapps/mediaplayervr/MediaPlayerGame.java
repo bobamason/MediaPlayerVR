@@ -31,7 +31,6 @@ import com.google.vr.sdk.controller.Controller;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 import net.masonapps.mediaplayervr.loaders.VideoModelLoader;
-import net.masonapps.mediaplayervr.media.ImageDetails;
 import net.masonapps.mediaplayervr.media.SongDetails;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.utils.ModelGenerator;
@@ -56,9 +55,6 @@ public class MediaPlayerGame extends VrGame {
     private Skin skin;
     //    private Entity roomEntity;
     private Entity floorEntity;
-    private Entity controllerEntity;
-    private AssetManager assets;
-    private boolean loading;
     private ModelBatch phongModelBatch;
     private Vector3 worldOffset = new Vector3(0, -1.2f, 0);
     private MediaSelectionScreen mediaSelectionScreen;
@@ -84,26 +80,29 @@ public class MediaPlayerGame extends VrGame {
         globalSettings.contrast = sharedPreferences.getFloat(GlobalSettings.KEY_CONTRAST, globalSettings.contrast);
         globalSettings.colorTemp = sharedPreferences.getFloat(GlobalSettings.KEY_COLOR_TEMP, globalSettings.colorTemp);
         skin = new Skin();
-        assets = new AssetManager();
-        assets.load(Style.ATLAS_FILE, TextureAtlas.class);
-        assets.setLoader(Model.class, "vidmodel", new VideoModelLoader(new InternalFileHandleResolver()));
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                final ModelBuilder modelBuilder = new ModelBuilder();
-//                final Model sphere = ModelGenerator.createSphere(modelBuilder, 0.5f, 128, 64);
-//                final Model cylinder = ModelGenerator.createCylinder(modelBuilder, 0.5f, 128, 2);
-//                GdxVr.app.postRunnable(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        sphereModel = sphere;
-//                        cylinderModel = cylinder;
-//                    }
-//                });
-//            }
-//        }).start();
-//        assets.load(ROOM_FILENAME, Model.class);
-//        assets.load(FLOOR_FILENAME, Model.class);
+        loadAsset(Style.ATLAS_FILE, TextureAtlas.class);
+        getAssets().setLoader(Model.class, "vidmodel", new VideoModelLoader(new InternalFileHandleResolver()));
+        loadAsset(SPHERE_FILENAME, Model.class);
+    }
+
+    @Override
+    protected void doneLoading(AssetManager assets) {
+        super.doneLoading(assets);
+        Log.d(MediaPlayerGame.class.getSimpleName(), "doneLoading()");
+        skin.addRegions(assets.get(Style.ATLAS_FILE, TextureAtlas.class));
+        setupSkin();
+
+        final ModelBuilder modelBuilder = new ModelBuilder();
+
+//                roomEntity = new Entity(new ModelInstance(createWorldModel(modelBuilder), worldOffset));
+//                roomEntity.setLightingEnabled(true);
+
+        floorEntity = new Entity(new ModelInstance(createFloorModel(modelBuilder), worldOffset));
+        floorEntity.setLightingEnabled(true);
+        sphereModel = assets.get(SPHERE_FILENAME, Model.class);
+        cylinderModel = ModelGenerator.createCylinder(modelBuilder, 0.5f, 64, 64);
+
+        goToSelectionScreen();
     }
 
     @Override
@@ -125,26 +124,6 @@ public class MediaPlayerGame extends VrGame {
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         super.onDrawFrame(headTransform, leftEye, rightEye);
-        if (loading) {
-            if (assets.update()) {
-                skin.addRegions(assets.get(Style.ATLAS_FILE, TextureAtlas.class));
-                setupSkin();
-
-                final ModelBuilder modelBuilder = new ModelBuilder();
-
-//                roomEntity = new Entity(new ModelInstance(createWorldModel(modelBuilder), worldOffset));
-//                roomEntity.setLightingEnabled(true);
-
-                floorEntity = new Entity(new ModelInstance(createFloorModel(modelBuilder), worldOffset));
-                floorEntity.setLightingEnabled(true);
-                controllerEntity.setLightingEnabled(false);
-                sphereModel = assets.get(SPHERE_FILENAME, Model.class);
-                cylinderModel = ModelGenerator.createCylinder(modelBuilder, 0.5f, 64, 64);
-
-                goToSelectionScreen();
-                loading = false;
-            }
-        }
     }
 
     private Model createFloorModel(ModelBuilder modelBuilder) {
@@ -240,20 +219,14 @@ public class MediaPlayerGame extends VrGame {
     }
 
     public void goToSelectionScreen() {
+        setInputVisible(true);
         if (mediaSelectionScreen == null)
             mediaSelectionScreen = new MediaSelectionScreen(context, this);
-//        if (getScreen() instanceof MusicVisualizerScreen) {
-//            MusicVisualizerScreen musicVisualizerScreen = (MusicVisualizerScreen) getScreen();
-//            setScreen(mediaSelectionScreen);
-//            musicVisualizerScreen.dispose();
-//            Log.d(MediaPlayerGame.class.getSimpleName(), "MusicVisualizerScreen disposed");
-//        } else 
         if (getScreen() instanceof VideoPlayerScreen) {
             final VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
             getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
             setScreen(mediaSelectionScreen);
             videoPlayerScreen.dispose();
-            Log.d(MediaPlayerGame.class.getSimpleName(), "VideoPlayerScreen disposed");
         } else {
             setScreen(mediaSelectionScreen);
         }
@@ -269,10 +242,6 @@ public class MediaPlayerGame extends VrGame {
 //        if (roomEntity != null)
 //            roomEntity.dispose();
 //        roomEntity = null;
-
-        if (controllerEntity != null)
-            controllerEntity.dispose();
-        controllerEntity = null;
 
         if (sphereModel != null)
             sphereModel.dispose();
@@ -295,10 +264,6 @@ public class MediaPlayerGame extends VrGame {
         return floorEntity;
     }
 
-    public Entity getControllerEntity() {
-        return controllerEntity;
-    }
-
     public Model getSphereModel() {
         return sphereModel;
     }
@@ -309,10 +274,6 @@ public class MediaPlayerGame extends VrGame {
 
     public VideoOptionsDatabaseHelper getVideoOptionsDatabaseHelper() {
         return ((MainActivity) context).getVideoOptionsDatabaseHelper();
-    }
-
-    public void displayImage(ImageDetails imageDetails) {
-        setScreen(new ImageViewerScreen(this, context, imageDetails));
     }
 
     public Model getRectModel() {

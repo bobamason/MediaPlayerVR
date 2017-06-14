@@ -1,6 +1,5 @@
 package org.masonapps.libgdxgooglevr.gfx;
 
-import android.annotation.SuppressLint;
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 
@@ -34,9 +33,9 @@ public class VrGame extends VrApplicationAdapter {
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
     protected VrScreen screen;
     protected Ray ray = new Ray();
-    protected boolean isUiVisible = true;
+    protected boolean isInputVisible = true;
     protected VrCursor cursor;
-    private AssetManager assets;
+    protected AssetManager assets;
     private boolean loading = true;
     private ShapeRenderer shapeRenderer;
     private Color cursorColor1 = new Color(1f, 1f, 1f, 1f);
@@ -93,23 +92,22 @@ public class VrGame extends VrApplicationAdapter {
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         if (screen != null) screen.onDrawFrame(headTransform, leftEye, rightEye);
+        super.onDrawFrame(headTransform, leftEye, rightEye);
     }
 
     @Override
     public void render(Camera camera, int whichEye) {
         if (screen != null) screen.render(camera, whichEye);
-        super.render(camera, whichEye);
-        if (controllerInstance != null && GdxVr.input.isControllerConnected() && isUiVisible) {
+        if (controllerInstance != null && GdxVr.input.isControllerConnected() && isInputVisible) {
             modelBatch.begin(camera);
             modelBatch.render(controllerInstance);
             modelBatch.end();
         }
-        if (isUiVisible)
+        if (isInputVisible)
             renderCursor(camera);
     }
 
     protected void renderCursor(Camera camera) {
-        if (!isUiVisible) return;
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         if (GdxVr.input.isControllerConnected()) {
@@ -123,15 +121,16 @@ public class VrGame extends VrApplicationAdapter {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
-    @SuppressLint("MissingSuperCall")
     @Override
     public void onNewFrame(HeadTransform headTransform) {
-
+        super.onNewFrame(headTransform);
+        if (screen != null) screen.onNewFrame(headTransform);
     }
 
-    @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawEye(Eye eye) {
+        super.onDrawEye(eye);
+        if (screen != null) screen.onDrawEye(eye);
     }
 
     @Override
@@ -226,6 +225,10 @@ public class VrGame extends VrApplicationAdapter {
         }
     }
 
+    public AssetManager getAssets() {
+        return assets;
+    }
+
     public boolean isLoading() {
         return loading;
     }
@@ -234,11 +237,11 @@ public class VrGame extends VrApplicationAdapter {
         return ray;
     }
 
-    public boolean isUiVisible() {
-        return isUiVisible;
+    public boolean isInputVisible() {
+        return isInputVisible;
     }
 
-    public void setUiVisible(boolean uiVisible) {
-        isUiVisible = uiVisible;
+    public void setInputVisible(boolean visible) {
+        isInputVisible = visible;
     }
 }

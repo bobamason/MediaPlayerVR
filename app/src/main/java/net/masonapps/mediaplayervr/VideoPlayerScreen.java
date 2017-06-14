@@ -5,7 +5,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -26,7 +25,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
-import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.database.VideoOptions;
@@ -36,7 +34,6 @@ import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
 import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
@@ -59,7 +56,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private static final float FAR = 101f;
 
     private final VideoDetails videoDetails;
-    private final Entity controllerEntity;
     private final VideoPlayerGUI ui;
     private final VrCamera leftCamera;
     private final VrCamera rightCamera;
@@ -92,6 +88,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private Vector3 right = new Vector3();
     private Vector3 up = new Vector3();
     private Vector3 forward = new Vector3();
+    private boolean isUiVisible = true;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -128,7 +125,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         ui.attach(container);
         getVrCamera().near = 0.125f;
         getVrCamera().far = 101f;
-        controllerEntity = mediaPlayerGame.getControllerEntity();
         modelBuilder = new ModelBuilder();
         modelBuilder.begin();
         final MeshPartBuilder part = modelBuilder.part("outline", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material(ColorAttribute.createDiffuse(Color.YELLOW)));
@@ -185,7 +181,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
-        onNewFrame(headTransform);
 
         leftCamera.viewportWidth = leftEye.getViewport().width;
         leftCamera.viewportHeight = leftEye.getViewport().height;
@@ -244,25 +239,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 //        rightCamera.view.setToLookAt(translation, tempV.set(translation).add(forward), up);
 //        updateCamera(rightCamera);
 ////        }
-
-        Viewport viewport = leftEye.getViewport();
-        Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        getModelBatch().begin(leftCamera);
-
-        videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : leftEye.getType());
-
-        getModelBatch().end();
-
-        viewport = rightEye.getViewport();
-        Gdx.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        getModelBatch().begin(rightCamera);
-
-        videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : rightEye.getType());
-
-        getModelBatch().end();
-
-        onDrawEye(leftEye);
-        onDrawEye(rightEye);
     }
 
     private void createVisualization() {
@@ -280,7 +256,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     private boolean shouldRenderMono() {
-        return (videoPlayer.isStereoscopic() && isUiVisible()) &&
+        return (videoPlayer.isStereoscopic() && isUiVisible) &&
                 ui.getCurrentSetting() != GlobalSettings.IPD &&
                 ui.getCurrentSetting() != GlobalSettings.ZOOM;
     }
@@ -337,16 +313,25 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         Matrix4.mul(camera.combined.val, camera.view.val);
     }
 
-    @SuppressLint("MissingSuperCall")
     @Override
     public void render(Camera camera, int whichEye) {
+        if (whichEye == Eye.Type.LEFT) {
+            getModelBatch().begin(leftCamera);
+            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT);
+            getModelBatch().end();
+        } else {
+            getModelBatch().begin(rightCamera);
+            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT);
+            getModelBatch().end();
+        }
+        super.render(camera, whichEye);
         container.draw(camera);
     }
 
-    @Override
     public void setUiVisible(boolean uiVisible) {
-        super.setUiVisible(uiVisible);
-        ui.setVisible(uiVisible);
+        isUiVisible = uiVisible;
+        ui.setVisible(isUiVisible);
+        game.setInputVisible(uiVisible);
         invalidateProjection();
     }
 
@@ -371,7 +356,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 if (event.action == DaydreamButtonEvent.ACTION_DOWN) {
                     isButtonClicked = true;
                     if (videoPlayer.isPrepared()) {
-                        if (isUiVisible()) {
+                        if (isUiVisible) {
                             if (!container.isCursorOver()) {
                                 setUiVisible(false);
                             }

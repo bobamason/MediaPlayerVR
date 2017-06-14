@@ -65,7 +65,7 @@ public class MainLayout extends BaseUiLayout {
 //        closeButton.addListener(new ClickListener() {
 //            @Override
 //            public void clicked(InputEvent event, float x, float y) {
-//                videoPlayerGUI.getVideoPlayerScreen().setUiVisible(false);
+//                videoPlayerGUI.getVideoPlayerScreen().setInputVisible(false);
 //            }
 //        });
 //        optionsStage.addActor(closeButton);

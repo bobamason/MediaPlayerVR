@@ -1,7 +1,5 @@
 package org.masonapps.libgdxgooglevr.gfx;
 
-import android.support.annotation.CallSuper;
-
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
@@ -10,10 +8,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
-import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
-import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
 /**
@@ -29,11 +25,7 @@ public abstract class VrScreen implements Disposable {
 
     public abstract void resume();
 
-    @CallSuper
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
-        onNewFrame(headTransform);
-        onDrawEye(leftEye);
-        onDrawEye(rightEye);
     }
 
     public abstract void pause();
@@ -51,17 +43,10 @@ public abstract class VrScreen implements Disposable {
     public void onCardboardTrigger() {
     }
 
-    @CallSuper
     public void onNewFrame(HeadTransform headTransform) {
-        update();
     }
 
-    @CallSuper
     public void onDrawEye(Eye eye) {
-        final Viewport viewport = eye.getViewport();
-        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        getVrCamera().onDrawEye(eye);
-        render(getVrCamera(), eye.getType());
     }
 
     public void render(Camera camera, int whichEye) {
