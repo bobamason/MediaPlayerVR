@@ -652,6 +652,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         BufferSpec[] specList = new BufferSpec[1];
         BufferSpec bufferSpec = api.createBufferSpec();
         bufferSpec.setSize(targetSize);
+        bufferSpec.setSamples(4);
         specList[INDEX_SCENE_BUFFER] = bufferSpec;
 
         swapChain = api.createSwapChain(specList);

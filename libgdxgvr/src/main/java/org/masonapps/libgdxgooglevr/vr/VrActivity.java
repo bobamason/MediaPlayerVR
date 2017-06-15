@@ -84,10 +84,11 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         this.fullscreenMode = new FullscreenMode(this.getWindow());
         this.screenOnFlagHelper.setScreenAlwaysOn(true);
 
-        AndroidCompat.setSustainedPerformanceMode(this, true);
         AndroidCompat.setVrModeEnabled(this, true);
-        surfaceView = new GLSurfaceView(this);
         gvrLayout = new GvrLayout(this);
+//        if(gvrLayout.setAsyncReprojectionEnabled(true))
+//            AndroidCompat.setSustainedPerformanceMode(this, true);
+        surfaceView = new GLSurfaceView(this);
         gvrLayout.setPresentationView(surfaceView);
 
 //        if (getGvrLayout().setAsyncReprojectionEnabled(true)) {
