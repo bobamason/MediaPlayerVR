@@ -1,6 +1,5 @@
 package org.masonapps.libgdxgooglevr.vr;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -10,11 +9,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.Files;
@@ -33,9 +34,9 @@ import com.badlogic.gdx.backends.android.AndroidPreferences;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.GdxNativesLoader;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.google.vr.cardboard.FullscreenMode;
+import com.google.vr.ndk.base.GvrApi;
 import com.google.vr.ndk.base.GvrLayout;
 import com.google.vr.sdk.base.AndroidCompat;
 import com.google.vr.sdk.controller.Controller;
@@ -44,36 +45,26 @@ import com.google.vrtoolkit.cardboard.ScreenOnFlagHelper;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by Bob on 10/9/2016.
  * based on AndroidApplication originally written by mzechner
  */
 
-public class VrActivity extends Activity implements AndroidApplicationBase {
+public class VrActivity extends Activity {
     static {
         GdxNativesLoader.load();
     }
 
-    protected final Array<Runnable> runnables = new Array<Runnable>();
-    protected final Array<Runnable> executedRunnables = new Array<Runnable>();
-    protected final SnapshotArray<LifecycleListener> lifecycleListeners = new SnapshotArray<>();
-    private final Array<AndroidEventListener> androidEventListeners = new Array<AndroidEventListener>();
     private final ScreenOnFlagHelper screenOnFlagHelper = new ScreenOnFlagHelper(this);
-    public Handler handler;
-    protected VrGraphics graphics;
-    protected VrAndroidInput input;
-    //    protected AndroidAudio audio;
-    protected AndroidFiles files;
-    protected AndroidNet net;
-    protected VrApplicationAdapter vrApplicationAdapter;
     protected boolean firstResume = true;
-    protected int logLevel = LOG_INFO;
     protected ControllerManager controllerManager;
     protected Controller controller;
-    AndroidClipboard clipboard;
     private GvrLayout gvrLayout;
     private GLSurfaceView surfaceView;
     private FullscreenMode fullscreenMode;
+    private VrApplication app;
 //    private int wasFocusChanged = -1;
 //    private boolean isWaitingForAudio = false;
 
@@ -83,6 +74,7 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         this.requestWindowFeature(1);
         this.fullscreenMode = new FullscreenMode(this.getWindow());
         this.screenOnFlagHelper.setScreenAlwaysOn(true);
+        this.app = new VrApplication(new WeakReference<>(this));
 
         AndroidCompat.setVrModeEnabled(this, true);
         gvrLayout = new GvrLayout(this);
@@ -106,37 +98,34 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     }
 
     public void initialize(VrApplicationAdapter adapter) {
-        if (this.getVersion() < MINIMUM_SDK) {
-            throw new GdxRuntimeException("LibGDX requires Android API Level " + MINIMUM_SDK + " or later.");
-        }
 
-        graphics = new VrGraphics(this, getSurfaceView(), gvrLayout.getGvrApi());
-        input = VrAndroidInput.newInstance(this);
-        input.setController(controller);
+        app.graphics = new VrGraphics(app, new WeakReference<>(getSurfaceView()), gvrLayout.getGvrApi());
+        app.input = new VrAndroidInput(app, new WeakReference<Context>(this));
+        app.input.setController(controller);
 //        audio = new AndroidAudio(this, config);
-        files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
-        net = new AndroidNet(this);
-        this.vrApplicationAdapter = adapter;
-        this.handler = new Handler();
+        app.files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
+        app.net = new AndroidNet(app);
+        app.vrApplicationAdapter = adapter;
+        app.handler = new Handler();
 
 
-        Gdx.app = this;
-        Gdx.input = getInput();
-        Gdx.audio = getAudio();
-        Gdx.files = getFiles();
-        Gdx.graphics = getGraphics();
-        Gdx.gl = getGraphics().getGL20();
-        Gdx.gl20 = getGraphics().getGL20();
-        Gdx.net = getNet();
+        Gdx.app = app;
+        Gdx.input = app.input;
+        Gdx.audio = app.getAudio();
+        Gdx.files = app.getFiles();
+        Gdx.graphics = app.graphics;
+        Gdx.gl = app.graphics.getGL20();
+        Gdx.gl20 = app.graphics.getGL20();
+        Gdx.net = app.getNet();
 
-        GdxVr.app = this;
-        GdxVr.input = input;
-        GdxVr.audio = getAudio();
-        GdxVr.files = getFiles();
-        GdxVr.graphics = graphics;
-        GdxVr.gl = getGraphics().getGL20();
-        GdxVr.gl20 = getGraphics().getGL20();
-        GdxVr.net = getNet();
+        GdxVr.app = app;
+        GdxVr.input = app.input;
+        GdxVr.audio = app.getAudio();
+        GdxVr.files = app.getFiles();
+        GdxVr.graphics = app.graphics;
+        GdxVr.gl = app.graphics.getGL20();
+        GdxVr.gl20 = app.graphics.getGL20();
+        GdxVr.net = app.getNet();
     }
 
     @Override
@@ -155,19 +144,6 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
 //        }
     }
 
-    @TargetApi(19)
-    @Override
-    public void useImmersiveMode(boolean use) {
-        if (use)
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-    }
-
     @Override
     protected void onPause() {
         // calls to setContinuousRendering(false) from other thread (ex: GLThread)
@@ -175,13 +151,13 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         getSurfaceView().queueEvent(new Runnable() {
             @Override
             public void run() {
-                graphics.pause();
+                app.graphics.pause();
             }
         });
         gvrLayout.onPause();
         this.screenOnFlagHelper.stop();
 
-        input.onPause();
+        app.input.onPause();
 
 //        if (isFinishing()) {
 //            graphics.clearManagedCaches();
@@ -200,32 +176,32 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         this.fullscreenMode.goFullscreen();
         this.screenOnFlagHelper.start();
 
-        Gdx.app = this;
-        Gdx.input = getInput();
-        Gdx.audio = getAudio();
-        Gdx.files = getFiles();
-        Gdx.graphics = getGraphics();
-        Gdx.gl = getGraphics().getGL20();
-        Gdx.gl20 = getGraphics().getGL20();
-        Gdx.net = getNet();
+        Gdx.app = app;
+        Gdx.input = app.input;
+        Gdx.audio = app.getAudio();
+        Gdx.files = app.files;
+        Gdx.graphics = app.graphics;
+        Gdx.gl = app.graphics.getGL20();
+        Gdx.gl20 = app.graphics.getGL20();
+        Gdx.net = app.getNet();
 
-        GdxVr.app = this;
-        GdxVr.input = input;
-        GdxVr.audio = getAudio();
-        GdxVr.files = getFiles();
-        GdxVr.graphics = graphics;
-        GdxVr.gl = getGraphics().getGL20();
-        GdxVr.gl20 = getGraphics().getGL20();
-        GdxVr.net = getNet();
+        GdxVr.app = app;
+        GdxVr.input = app.input;
+        GdxVr.audio = app.getAudio();
+        GdxVr.files = app.files;
+        GdxVr.graphics = app.graphics;
+        GdxVr.gl = app.graphics.getGL20();
+        GdxVr.gl20 = app.graphics.getGL20();
+        GdxVr.net = app.getNet();
 
-        input.onResume();
+        app.input.onResume();
 
 
         if (!firstResume) {
             getSurfaceView().queueEvent(new Runnable() {
                 @Override
                 public void run() {
-                    graphics.resume();
+                    app.graphics.resume();
                 }
             });
         } else
@@ -242,12 +218,12 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     @Override
     protected void onDestroy() {
         final GLSurfaceView surfaceView = getSurfaceView();
-        if (surfaceView != null && graphics != null) {
-            graphics.shutdown();
+        if (surfaceView != null && app.graphics != null) {
+            app.graphics.shutdown();
             surfaceView.queueEvent(new Runnable() {
                 @Override
                 public void run() {
-                    graphics.destroy();
+                    app.graphics.destroy();
                 }
             });
         }
@@ -287,87 +263,6 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     }
 
     @Override
-    public ApplicationListener getApplicationListener() {
-        return vrApplicationAdapter;
-    }
-
-    public VrApplicationAdapter getVrApplicationAdapter() {
-        return vrApplicationAdapter;
-    }
-
-    @Override
-    public Audio getAudio() {
-        // TODO: 10/11/2016 fix audio 
-        return null;
-    }
-
-    @Override
-    public Files getFiles() {
-        return files;
-    }
-
-    @Override
-    public Graphics getGraphics() {
-        return graphics;
-    }
-
-    @Override
-    public AndroidInput getInput() {
-        return input;
-    }
-
-    @Override
-    public SnapshotArray<LifecycleListener> getLifecycleListeners() {
-        return lifecycleListeners;
-    }
-
-    @Override
-    public Net getNet() {
-        return net;
-    }
-
-    @Override
-    public ApplicationType getType() {
-        return ApplicationType.Android;
-    }
-
-    @Override
-    public int getVersion() {
-        return Build.VERSION.SDK_INT;
-    }
-
-    @Override
-    public long getJavaHeap() {
-        return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-    }
-
-    @Override
-    public long getNativeHeap() {
-        return Debug.getNativeHeapAllocatedSize();
-    }
-
-    @Override
-    public Preferences getPreferences(String name) {
-        return new AndroidPreferences(getSharedPreferences(name, Context.MODE_PRIVATE));
-    }
-
-    @Override
-    public Clipboard getClipboard() {
-        if (clipboard == null) {
-            clipboard = new AndroidClipboard(this);
-        }
-        return clipboard;
-    }
-
-    @Override
-    public void postRunnable(Runnable runnable) {
-        synchronized (runnables) {
-            runnables.add(runnable);
-            Gdx.graphics.requestRendering();
-        }
-    }
-
-    @Override
     public void onConfigurationChanged(Configuration config) {
         super.onConfigurationChanged(config);
 //        boolean keyboardAvailable = false;
@@ -378,126 +273,9 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
     }
 
     @Override
-    public void exit() {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                VrActivity.this.finish();
-            }
-        });
-    }
-
-    @Override
-    public void debug(String tag, String message) {
-        if (logLevel >= LOG_DEBUG) {
-            Log.d(tag, message);
-        }
-    }
-
-    @Override
-    public void debug(String tag, String message, Throwable exception) {
-        if (logLevel >= LOG_DEBUG) {
-            Log.d(tag, message, exception);
-        }
-    }
-
-    @Override
-    public void log(String tag, String message) {
-        if (logLevel >= LOG_INFO) Log.i(tag, message);
-    }
-
-    @Override
-    public void log(String tag, String message, Throwable exception) {
-        if (logLevel >= LOG_INFO) Log.i(tag, message, exception);
-    }
-
-    @Override
-    public void error(String tag, String message) {
-        if (logLevel >= LOG_ERROR) Log.e(tag, message);
-    }
-
-    @Override
-    public void error(String tag, String message, Throwable exception) {
-        if (logLevel >= LOG_ERROR) Log.e(tag, message, exception);
-    }
-
-    @Override
-    public int getLogLevel() {
-        return logLevel;
-    }
-
-    @Override
-    public void setLogLevel(int logLevel) {
-        this.logLevel = logLevel;
-    }
-
-    @Override
-    public void addLifecycleListener(LifecycleListener listener) {
-        synchronized (lifecycleListeners) {
-            lifecycleListeners.add(listener);
-        }
-    }
-
-    @Override
-    public void removeLifecycleListener(LifecycleListener listener) {
-        synchronized (lifecycleListeners) {
-            lifecycleListeners.removeValue(listener, true);
-        }
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        // forward events to our listeners if there are any installed
-        synchronized (androidEventListeners) {
-            for (int i = 0; i < androidEventListeners.size; i++) {
-                androidEventListeners.get(i).onActivityResult(requestCode, resultCode, data);
-            }
-        }
-    }
-
-    /**
-     * Adds an event vrApplicationAdapter for Android specific event such as onActivityResult(...).
-     */
-    public void addAndroidEventListener(AndroidEventListener listener) {
-        synchronized (androidEventListeners) {
-            androidEventListeners.add(listener);
-        }
-    }
-
-    /**
-     * Removes an event vrApplicationAdapter for Android specific event such as onActivityResult(...).
-     */
-    public void removeAndroidEventListener(AndroidEventListener listener) {
-        synchronized (androidEventListeners) {
-            androidEventListeners.removeValue(listener, true);
-        }
-    }
-
-    @Override
-    public Context getContext() {
-        return this;
-    }
-
-    @Override
-    public Array<Runnable> getRunnables() {
-        return runnables;
-    }
-
-    @Override
-    public Array<Runnable> getExecutedRunnables() {
-        return executedRunnables;
-    }
-
-    @Override
-    public Window getApplicationWindow() {
-        return this.getWindow();
-    }
-
-    @Override
-    public Handler getHandler() {
-        return this.handler;
+        app.onActivityResult(requestCode, resultCode, data);
     }
 
     public GvrLayout getGvrLayout() {
@@ -506,6 +284,272 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
 
     public GLSurfaceView getSurfaceView() {
         return surfaceView;
+    }
+
+    public Application getVrApp() {
+        return app;
+    }
+
+    /**
+     * Moved AndroidApplicationBase implementation to separate class with a WeakReference to the Activity to get rid of static references to the Context in Gdx.app and GdxVr.app
+     */
+    public static class VrApplication implements AndroidApplicationBase {
+
+        protected final Array<Runnable> runnables = new Array<Runnable>();
+        protected final Array<Runnable> executedRunnables = new Array<Runnable>();
+        protected final SnapshotArray<LifecycleListener> lifecycleListeners = new SnapshotArray<>();
+        private final Array<AndroidEventListener> androidEventListeners = new Array<AndroidEventListener>();
+        public Handler handler;
+        protected VrGraphics graphics;
+        protected VrAndroidInput input;
+        //    protected AndroidAudio audio;
+        protected AndroidFiles files;
+        protected AndroidNet net;
+        protected VrApplicationAdapter vrApplicationAdapter;
+        protected int logLevel = LOG_INFO;
+        protected AndroidClipboard clipboard;
+
+        private WeakReference<VrActivity> activityRef;
+
+        private VrApplication(WeakReference<VrActivity> activityRef) {
+            this.activityRef = activityRef;
+        }
+
+        @Override
+        @Nullable
+        public Context getContext() {
+            return activityRef.get();
+        }
+
+        @Override
+        public void runOnUiThread(Runnable runnable) {
+            final VrActivity activity = activityRef.get();
+            if (activity != null)
+                activity.runOnUiThread(runnable);
+        }
+
+        @Override
+        public void startActivity(Intent intent) {
+            final VrActivity activity = activityRef.get();
+            if (activity != null)
+                activity.startActivity(intent);
+        }
+
+        @Override
+        public ApplicationListener getApplicationListener() {
+            return vrApplicationAdapter;
+        }
+
+        public VrApplicationAdapter getVrApplicationAdapter() {
+            return vrApplicationAdapter;
+        }
+
+        protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+            synchronized (androidEventListeners) {
+                for (int i = 0; i < androidEventListeners.size; i++) {
+                    androidEventListeners.get(i).onActivityResult(requestCode, resultCode, data);
+                }
+            }
+        }
+
+        @Override
+        public Audio getAudio() {
+            // TODO: 10/11/2016 fix audio 
+            return null;
+        }
+
+        @Override
+        public Files getFiles() {
+            return files;
+        }
+
+        @Override
+        public Graphics getGraphics() {
+            return graphics;
+        }
+
+        @Override
+        public AndroidInput getInput() {
+            throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        }
+
+        public VrAndroidInput getVrInput() {
+            return input;
+        }
+
+        @Override
+        public SnapshotArray<LifecycleListener> getLifecycleListeners() {
+            return lifecycleListeners;
+        }
+
+        @Override
+        public Net getNet() {
+            return net;
+        }
+
+        @Override
+        public Array<Runnable> getRunnables() {
+            return runnables;
+        }
+
+        @Override
+        public Array<Runnable> getExecutedRunnables() {
+            return executedRunnables;
+        }
+
+        @Override
+        @Nullable
+        public Window getApplicationWindow() {
+            final VrActivity activity = activityRef.get();
+            return activity == null ? null : activity.getWindow();
+        }
+
+        @Override
+        public Handler getHandler() {
+            return this.handler;
+        }
+
+        @Override
+        public void debug(String tag, String message) {
+            if (logLevel >= LOG_DEBUG) {
+                Log.d(tag, message);
+            }
+        }
+
+        @Override
+        public void debug(String tag, String message, Throwable exception) {
+            if (logLevel >= LOG_DEBUG) {
+                Log.d(tag, message, exception);
+            }
+        }
+
+        @Override
+        public void log(String tag, String message) {
+            if (logLevel >= LOG_INFO) Log.i(tag, message);
+        }
+
+        @Override
+        public void log(String tag, String message, Throwable exception) {
+            if (logLevel >= LOG_INFO) Log.i(tag, message, exception);
+        }
+
+        @Override
+        public void error(String tag, String message) {
+            if (logLevel >= LOG_ERROR) Log.e(tag, message);
+        }
+
+        @Override
+        public void error(String tag, String message, Throwable exception) {
+            if (logLevel >= LOG_ERROR) Log.e(tag, message, exception);
+        }
+
+        @Override
+        public int getLogLevel() {
+            return logLevel;
+        }
+
+        @Override
+        public void setLogLevel(int logLevel) {
+            this.logLevel = logLevel;
+        }
+
+        @Override
+        public int getVersion() {
+            return Build.VERSION.SDK_INT;
+        }
+
+        @Override
+        public long getJavaHeap() {
+            return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        }
+
+        @Override
+        public long getNativeHeap() {
+            return Debug.getNativeHeapAllocatedSize();
+        }
+
+        @Override
+        public Preferences getPreferences(String name) {
+            final VrActivity activity = activityRef.get();
+            if (activity != null)
+                return new AndroidPreferences(activity.getSharedPreferences(name, Context.MODE_PRIVATE));
+            else
+                return null;
+        }
+
+        @Override
+        public Clipboard getClipboard() {
+            if (clipboard == null) {
+                final VrActivity activity = activityRef.get();
+                if (activity != null)
+                    clipboard = new AndroidClipboard(activity);
+            }
+            return clipboard;
+        }
+
+        @Override
+        public void postRunnable(Runnable runnable) {
+            synchronized (runnables) {
+                runnables.add(runnable);
+            }
+        }
+
+        @Override
+        public void exit() {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    final VrActivity activity = activityRef.get();
+                    if (activity != null)
+                        activity.finish();
+                    else
+                        System.exit(0);
+                }
+            });
+        }
+
+        @Override
+        public ApplicationType getType() {
+            return ApplicationType.Android;
+        }
+
+        @Override
+        public void addLifecycleListener(LifecycleListener listener) {
+            synchronized (lifecycleListeners) {
+                lifecycleListeners.add(listener);
+            }
+        }
+
+        @Override
+        public void removeLifecycleListener(LifecycleListener listener) {
+            synchronized (lifecycleListeners) {
+                lifecycleListeners.removeValue(listener, true);
+            }
+        }
+
+        @Override
+        @Nullable
+        public WindowManager getWindowManager() {
+            final VrActivity activity = activityRef.get();
+            return activity == null ? null : activity.getWindowManager();
+        }
+
+        @Override
+        public void useImmersiveMode(boolean b) {
+
+        }
+
+        @Nullable
+        public GvrLayout getGvrLayout() {
+            final VrActivity activity = activityRef.get();
+            return activity == null ? null : activity.getGvrLayout();
+        }
+
+        @Nullable
+        public GvrApi getGvrApi() {
+            final VrActivity activity = activityRef.get();
+            return activity == null ? null : activity.getGvrLayout().getGvrApi();
+        }
     }
 
     private class EventListener extends Controller.EventListener
@@ -545,8 +589,8 @@ public class VrActivity extends Activity implements AndroidApplicationBase {
         @Override
         public void run() {
             controller.update();
-            input.onDaydreamControllerUpdate(controller, connectionState);
-            vrApplicationAdapter.onDaydreamControllerUpdate(controller, connectionState);
+            app.input.onDaydreamControllerUpdate(controller, connectionState);
+            app.vrApplicationAdapter.onDaydreamControllerUpdate(controller, connectionState);
         }
     }
 }

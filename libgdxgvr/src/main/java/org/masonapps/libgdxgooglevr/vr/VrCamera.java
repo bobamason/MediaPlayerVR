@@ -1,10 +1,9 @@
 package org.masonapps.libgdxgooglevr.vr;
 
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.google.vr.sdk.base.Eye;
 
 /**
@@ -15,9 +14,11 @@ import com.google.vr.sdk.base.Eye;
 public class VrCamera extends Camera {
 
     private final Matrix4 tempM = new Matrix4();
+    private final Vector3 tempV = new Vector3();
 
     public VrCamera() {
         super();
+        near = 0.1f;
     }
 
     @Override
@@ -31,59 +32,24 @@ public class VrCamera extends Camera {
     }
 
     @Override
-    public void lookAt(Vector3 target) {
-        throw new UnsupportedOperationException("call lookAt() on parent matrix onDrawEye(GdxEye gdxEye, Matrix4 parentMat) or onDrawEye(GdxEye gdxEye, ModelInstance parent) instead");
+    public Ray getPickRay(float screenX, float screenY) {
+        throw new UnsupportedOperationException("use controller ray or head forward");
     }
 
     @Override
-    public void lookAt(float x, float y, float z) {
-        throw new UnsupportedOperationException("call lookAt() on parent matrix onDrawEye(GdxEye gdxEye, Matrix4 parentMat) or onDrawEye(GdxEye gdxEye, ModelInstance parent) instead");
-    }
-
-    @Override
-    public void rotate(float angle, float axisX, float axisY, float axisZ) {
-        throw new UnsupportedOperationException("call rotate() on parent matrix onDrawEye(GdxEye gdxEye, Matrix4 parentMat) or onDrawEye(GdxEye gdxEye, ModelInstance parent) instead");
-    }
-
-    @Override
-    public void rotate(Vector3 axis, float angle) {
-        throw new UnsupportedOperationException("call rotate() on parent matrix onDrawEye(GdxEye gdxEye, Matrix4 parentMat) or onDrawEye(GdxEye gdxEye, ModelInstance parent) instead");
-    }
-
-    @Override
-    public void rotate(Quaternion quat) {
-        throw new UnsupportedOperationException("call rotate() on parent matrix onDrawEye(GdxEye gdxEye, Matrix4 parentMat) or onDrawEye(GdxEye gdxEye, ModelInstance parent) instead");
-    }
-
-    @Override
-    public void rotate(Matrix4 transform) {
-        throw new UnsupportedOperationException("call rotate() on parent matrix onDrawEye(GdxEye gdxEye, Matrix4 parentMat) or onDrawEye(GdxEye gdxEye, ModelInstance parent) instead");
+    public Ray getPickRay(float screenX, float screenY, float viewportX, float viewportY, float viewportWidth, float viewportHeight) {
+        throw new UnsupportedOperationException("use controller ray or head forward");
     }
 
     public void onDrawEye(Eye eye) {
-        onDrawEye(eye, null, true);
-    }
-
-    public void onDrawEye(Eye eye, ModelInstance parent) {
-        onDrawEye(eye, parent.transform, true);
+        onDrawEye(eye, true);
     }
 
     public void onDrawEye(Eye eye, boolean updateFrustum) {
-        onDrawEye(eye, null, updateFrustum);
-    }
-
-    public void onDrawEye(Eye eye, Matrix4 parentMat) {
-        onDrawEye(eye, parentMat, true);
-    }
-
-    public void onDrawEye(Eye eye, Matrix4 parentMat, boolean updateFrustum) {
         viewportWidth = eye.getViewport().width;
         viewportHeight = eye.getViewport().height;
-        android.opengl.Matrix.setLookAtM(view.getValues(), 0, position.x, position.y, position.z, position.x, position.y, position.z - 0.01f, 0f, 1f, 0f);
+        view.setToLookAt(position, tempV.set(position).add(direction), up);
         view.mulLeft(tempM.set(eye.getEyeView()));
-        if (parentMat != null) {
-            view.mulLeft(parentMat);
-        }
         projection.set(eye.getPerspective(near, far));
         combined.set(projection);
         Matrix4.mul(combined.val, view.val);

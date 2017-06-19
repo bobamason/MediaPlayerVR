@@ -19,7 +19,6 @@ import org.masonapps.libgdxgooglevr.GdxVr;
  */
 
 public abstract class VrApplicationAdapter implements ApplicationListener {
-    protected static final Vector3 tempV = new Vector3();
     protected VrCamera vrCamera;
 
     public VrApplicationAdapter() {
