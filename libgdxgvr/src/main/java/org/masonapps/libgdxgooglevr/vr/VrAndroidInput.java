@@ -2,7 +2,6 @@ package org.masonapps.libgdxgooglevr.vr;
 
 import android.content.Context;
 import android.os.Build;
-import android.os.Handler;
 import android.os.Vibrator;
 import android.view.View;
 
@@ -37,7 +36,6 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
 
     public static final int SUPPORTED_KEYS = 260;
     private final Application app;
-    private final WeakReference<Context> contextRef;
     private final ArmModel armModel;
     private final Vibrator vibrator;
     protected Quaternion controllerOrientation = new Quaternion();
@@ -58,17 +56,10 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
     private ArrayList<View.OnKeyListener> keyListeners = new ArrayList();
     private ArrayList<KeyEvent> keyEvents = new ArrayList();
     private ArrayList<TouchEvent> touchEvents = new ArrayList();
-    private boolean keyboardAvailable;
-    private boolean requestFocus = true;
     private int keyCount = 0;
     private boolean[] keys = new boolean[SUPPORTED_KEYS];
     private boolean keyJustPressed = false;
     private boolean[] justPressedKeys = new boolean[SUPPORTED_KEYS];
-    private String text = null;
-    private TextInputListener textListener = null;
-    private Handler handle;
-    //        private final AndroidMultiTouchHandler touchHandler;
-    private int sleepTime = 0;
     private boolean catchBack = false;
     private boolean catchMenu = false;
     private boolean justTouched = false;
@@ -82,10 +73,8 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
 
     public VrAndroidInput(Application application, WeakReference<Context> contextRef) {
 //        this.onscreenKeyboard = new AndroidOnscreenKeyboard(context, new Handler(), this);
-        handle = new Handler();
         daydreamControllerHandler = new DaydreamControllerHandler();
         this.app = application;
-        this.contextRef = contextRef;
         armModel = ArmModel.getInstance();
 
         vibrator = (Vibrator) contextRef.get().getSystemService(Context.VIBRATOR_SERVICE);
@@ -487,7 +476,10 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
         return this.processor;
     }
 
+    @Override
     public void setInputProcessor(InputProcessor processor) {
+        if (processor != null && !(processor instanceof VrInputProcessor))
+            throw new RuntimeException("processor must implement VrInputProcessor");
         synchronized (this) {
             this.processor = processor;
         }
@@ -502,7 +494,6 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
         if (peripheral == Peripheral.Accelerometer) return false;
         if (peripheral == Peripheral.Gyroscope) return false;
         if (peripheral == Peripheral.Compass) return false;
-        if (peripheral == Peripheral.HardwareKeyboard) return keyboardAvailable;
         if (peripheral == Peripheral.OnscreenKeyboard) return true;
         if (peripheral == Peripheral.Vibrator)
             return (Build.VERSION.SDK_INT >= 11 && vibrator != null) ? vibrator.hasVibrator() : vibrator != null;
@@ -577,12 +568,6 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
                 postTap((int) hitPoint2D.x, (int) hitPoint2D.y);
             }
         }
-    }
-
-    public void setProcessor(InputProcessor processor) {
-        if (processor != null && !(processor instanceof VrInputProcessor))
-            throw new RuntimeException("processor must implement VrInputProcessor");
-        this.processor = processor;
     }
 
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {

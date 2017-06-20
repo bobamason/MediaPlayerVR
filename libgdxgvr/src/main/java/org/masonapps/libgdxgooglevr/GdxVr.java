@@ -14,7 +14,7 @@ import org.masonapps.libgdxgooglevr.vr.VrGraphics;
  */
 
 public class GdxVr {
-    public static VrActivity app;
+    public static VrActivity.VrApplication app;
     public static VrGraphics graphics;
     public static VrAndroidInput input;
     public static Audio audio;
