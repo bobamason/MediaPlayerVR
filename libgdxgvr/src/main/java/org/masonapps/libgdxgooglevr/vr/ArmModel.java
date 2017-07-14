@@ -3,6 +3,7 @@ package org.masonapps.libgdxgooglevr.vr;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.google.vr.ndk.base.GvrApi;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.proto.nano.Preferences;
 
@@ -34,7 +35,7 @@ public class ArmModel {
     public float fadeDistanceFromFace = 0.32f;
     public float tooltipMinDistanceFromFace = 0.45f;
     public int tooltipMaxAngleFromCamera = 80;
-    public GazeBehavior followGaze = GazeBehavior.Never;
+    public GazeBehavior followGaze = GazeBehavior.Always;
     public Vector3 pointerPosition = new Vector3();
     public Quaternion pointerRotation = new Quaternion();
     public Vector3 wristPosition = new Vector3();
@@ -83,7 +84,8 @@ public class ArmModel {
     private void updateHandedness() {
         // Update user handedness if the setting has changed
         if (GdxVr.app == null) return;
-        final int handedness = GdxVr.app.getGvrLayout().getGvrApi().getUserPrefs().getControllerHandedness();
+        final GvrApi gvrApi = GdxVr.app.getGvrApi();
+        final int handedness = gvrApi != null ? gvrApi.getUserPrefs().getControllerHandedness() : Preferences.UserPrefs.Handedness.RIGHT_HANDED;
 
         // Determine handedness multiplier.
         handedMultiplier.set(0, 1, 1);

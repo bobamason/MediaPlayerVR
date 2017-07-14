@@ -18,6 +18,7 @@ public class VrCamera extends Camera {
 
     public VrCamera() {
         super();
+        near = 0.1f;
     }
 
     @Override

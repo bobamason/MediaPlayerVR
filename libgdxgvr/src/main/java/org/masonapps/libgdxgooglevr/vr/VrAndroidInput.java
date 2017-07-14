@@ -1,22 +1,13 @@
 package org.masonapps.libgdxgooglevr.vr;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Build;
-import android.os.Handler;
-import android.view.MotionEvent;
+import android.os.Vibrator;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 
 import com.badlogic.gdx.Application;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.badlogic.gdx.backends.android.AndroidGraphics;
-import com.badlogic.gdx.backends.android.AndroidInput;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
@@ -33,6 +24,7 @@ import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
 import org.masonapps.libgdxgooglevr.utils.Vecs;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -40,11 +32,12 @@ import java.util.ArrayList;
  * based on AndroidInput originally written by mzechner and jshapcot
  */
 
-public class VrAndroidInput extends AndroidInput implements DaydreamControllerInputListener {
+public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamControllerInputListener {
 
+    public static final int SUPPORTED_KEYS = 260;
     private final Application app;
-    private final Context context;
     private final ArmModel armModel;
+    private final Vibrator vibrator;
     protected Quaternion controllerOrientation = new Quaternion();
     protected boolean isControllerConnected = false;
     private Vector3 controllerPosition = new Vector3();
@@ -63,17 +56,10 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
     private ArrayList<View.OnKeyListener> keyListeners = new ArrayList();
     private ArrayList<KeyEvent> keyEvents = new ArrayList();
     private ArrayList<TouchEvent> touchEvents = new ArrayList();
-    private boolean keyboardAvailable;
-    private boolean requestFocus = true;
     private int keyCount = 0;
     private boolean[] keys = new boolean[SUPPORTED_KEYS];
     private boolean keyJustPressed = false;
     private boolean[] justPressedKeys = new boolean[SUPPORTED_KEYS];
-    private String text = null;
-    private TextInputListener textListener = null;
-    private Handler handle;
-    //        private final AndroidMultiTouchHandler touchHandler;
-    private int sleepTime = 0;
     private boolean catchBack = false;
     private boolean catchMenu = false;
     private boolean justTouched = false;
@@ -85,22 +71,13 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
     private GridPoint2 touch = new GridPoint2(-1, -1);
     private GridPoint2 lastTouch = new GridPoint2(-1, -1);
 
-    private VrAndroidInput(Application application, Context context, AndroidApplicationConfiguration configuration) {
-        super(application, context, null, configuration);
+    public VrAndroidInput(Application application, WeakReference<Context> contextRef) {
 //        this.onscreenKeyboard = new AndroidOnscreenKeyboard(context, new Handler(), this);
-        handle = new Handler();
         daydreamControllerHandler = new DaydreamControllerHandler();
         this.app = application;
-        this.context = context;
         armModel = ArmModel.getInstance();
-    }
 
-    public static VrAndroidInput newInstance(VrActivity vrActivity) {
-        final AndroidApplicationConfiguration configuration = new AndroidApplicationConfiguration();
-        configuration.useAccelerometer = false;
-        configuration.useCompass = false;
-        configuration.useGyroscope = false;
-        return new VrAndroidInput(vrActivity, vrActivity.getContext(), configuration);
+        vibrator = (Vibrator) contextRef.get().getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     @Override
@@ -135,49 +112,8 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public void getTextInput(final TextInputListener listener, final String title, final String text, final String hint) {
-        handle.post(new Runnable() {
-            public void run() {
-                AlertDialog.Builder alert = new AlertDialog.Builder(context);
-                alert.setTitle(title);
-                final EditText input = new EditText(context);
-                input.setHint(hint);
-                input.setText(text);
-                input.setSingleLine();
-                alert.setView(input);
-                alert.setPositiveButton(context.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Gdx.app.postRunnable(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.input(input.getText().toString());
-                            }
-                        });
-                    }
-                });
-                alert.setNegativeButton(context.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Gdx.app.postRunnable(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.canceled();
-                            }
-                        });
-                    }
-                });
-                alert.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface arg0) {
-                        Gdx.app.postRunnable(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.canceled();
-                            }
-                        });
-                    }
-                });
-                alert.show();
-            }
-        });
+        //// TODO: 6/19/2017 add VR text input 
+        throw new UnsupportedOperationException("text input is not yet supported in " + VrAndroidInput.class.getSimpleName());
     }
 
     @Override
@@ -206,7 +142,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public synchronized boolean isKeyPressed(int key) {
-        if (key == Input.Keys.ANY_KEY) {
+        if (key == Keys.ANY_KEY) {
             return keyCount > 0;
         }
         if (key < 0 || key >= SUPPORTED_KEYS) {
@@ -217,7 +153,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public synchronized boolean isKeyJustPressed(int key) {
-        if (key == Input.Keys.ANY_KEY) {
+        if (key == Keys.ANY_KEY) {
             return keyJustPressed;
         }
         if (key < 0 || key >= SUPPORTED_KEYS) {
@@ -339,25 +275,6 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         }
     }
 
-    @Override
-    public boolean onTouch(View view, MotionEvent event) {
-        return false;
-    }
-
-    //    /** Called in {@link AndroidLiveWallpaperService} on tap
-//     * @param x
-//     * @param y */
-    public void onTap(int x, int y) {
-        postTap(x, y);
-    }
-
-    //    /** Called in {@link AndroidLiveWallpaperService} on drop
-//     * @param x
-//     * @param y */
-    public void onDrop(int x, int y) {
-        postTap(x, y);
-    }
-
     protected void postTap(int x, int y) {
         synchronized (this) {
             TouchEvent event = usedTouchEvents.obtain();
@@ -472,19 +389,21 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public void setOnscreenKeyboardVisible(final boolean visible) {
-        handle.post(new Runnable() {
-            public void run() {
-                InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (visible) {
-                    View view = ((AndroidGraphics) app.getGraphics()).getView();
-                    view.setFocusable(true);
-                    view.setFocusableInTouchMode(true);
-                    manager.showSoftInput(((AndroidGraphics) app.getGraphics()).getView(), 0);
-                } else {
-                    manager.hideSoftInputFromWindow(((AndroidGraphics) app.getGraphics()).getView().getWindowToken(), 0);
-                }
-            }
-        });
+        //// TODO: 6/19/2017 add VR text input 
+        throw new UnsupportedOperationException("text input is not yet supported in " + VrAndroidInput.class.getSimpleName());
+//        handle.post(new Runnable() {
+//            public void run() {
+//                InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+//                if (visible) {
+//                    View view = ((AndroidGraphics) app.getGraphics()).getView();
+//                    view.setFocusable(true);
+//                    view.setFocusableInTouchMode(true);
+//                    manager.showSoftInput(((AndroidGraphics) app.getGraphics()).getView(), 0);
+//                } else {
+//                    manager.hideSoftInputFromWindow(((AndroidGraphics) app.getGraphics()).getView().getWindowToken(), 0);
+//                }
+//            }
+//        });
     }
 
     @Override
@@ -529,7 +448,7 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
 
     @Override
     public boolean isButtonPressed(int button) {
-        return super.isButtonPressed(button);
+        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
     }
 
     @Override
@@ -557,7 +476,10 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         return this.processor;
     }
 
+    @Override
     public void setInputProcessor(InputProcessor processor) {
+        if (processor != null && !(processor instanceof VrInputProcessor))
+            throw new RuntimeException("processor must implement VrInputProcessor");
         synchronized (this) {
             this.processor = processor;
         }
@@ -572,7 +494,6 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         if (peripheral == Peripheral.Accelerometer) return false;
         if (peripheral == Peripheral.Gyroscope) return false;
         if (peripheral == Peripheral.Compass) return false;
-        if (peripheral == Peripheral.HardwareKeyboard) return keyboardAvailable;
         if (peripheral == Peripheral.OnscreenKeyboard) return true;
         if (peripheral == Peripheral.Vibrator)
             return (Build.VERSION.SDK_INT >= 11 && vibrator != null) ? vibrator.hasVibrator() : vibrator != null;
@@ -649,19 +570,13 @@ public class VrAndroidInput extends AndroidInput implements DaydreamControllerIn
         }
     }
 
-    public void setProcessor(InputProcessor processor) {
-        if (processor != null && !(processor instanceof VrInputProcessor))
-            throw new RuntimeException("processor must implement VrInputProcessor");
-        this.processor = processor;
-    }
-
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         if (connectionState == Controller.ConnectionStates.CONNECTED) {
             isControllerConnected = true;
-            armModel.updateHeadDirection(GdxVr.graphics.getForward());
+            armModel.updateHeadDirection(GdxVr.app.getVrApplicationAdapter().getVrCamera().direction);
             armModel.onControllerUpdate(controller);
             controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
-            controllerPosition.set(armModel.pointerPosition);
+            controllerPosition.set(armModel.pointerPosition).add(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
         } else {
             isControllerConnected = false;
         }

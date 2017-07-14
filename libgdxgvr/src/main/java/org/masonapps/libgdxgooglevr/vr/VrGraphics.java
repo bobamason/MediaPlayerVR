@@ -7,9 +7,9 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
 
 import com.badlogic.gdx.Application;
@@ -45,6 +45,7 @@ import com.google.vr.sdk.base.HeadTransform;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 
 import javax.microedition.khronos.egl.EGL10;
@@ -70,7 +71,6 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     private static final int OFFSET_EULER = OFFSET_TRANSLATION + 3;
     private static final int OFFSET_QUATERNION = OFFSET_EULER + 3;
     private static final int INDEX_SCENE_BUFFER = 0;
-    protected final GLSurfaceView view;
     final Object synch = new Object();
     private final float[] array = new float[3 * 5 + 4 + 16];
     private final Vector3 forward = new Vector3();
@@ -92,6 +92,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     private final Eye rightEye = new Eye(Eye.Type.RIGHT);
     private final HeadTransform headTransform = new HeadTransform();
     private final long predictionOffsetNanos;
+    private final WeakReference<GLSurfaceView> surfaceViewRef;
     protected AndroidApplicationBase app;
     protected GL20 gl20;
     protected GL30 gl30;
@@ -118,14 +119,15 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     private float ppcY = 0;
     private float density = 1;
 
-    public VrGraphics(VrActivity application, GLSurfaceView view, GvrApi api) {
+    public VrGraphics(AndroidApplicationBase application, WeakReference<GLSurfaceView> surfaceViewRef, GvrApi api) {
         this.app = application;
         this.api = api;
-        this.view = view;
-        this.view.setEGLContextClientVersion(2);
-        this.view.setEGLConfigChooser(8, 8, 8, 0, 0, 0);
-        this.view.setRenderer(this);
-        this.view.setPreserveEGLContextOnPause(true);
+        this.surfaceViewRef = surfaceViewRef;
+        final GLSurfaceView surfaceView = surfaceViewRef.get();
+        surfaceView.setEGLContextClientVersion(2);
+        surfaceView.setEGLConfigChooser(8, 8, 8, 0, 0, 0);
+        surfaceView.setRenderer(this);
+        surfaceView.setPreserveEGLContextOnPause(true);
         recommendedList = api.createBufferViewportList();
         viewportList = api.createBufferViewportList();
         scratchViewport = api.createBufferViewport();
@@ -363,8 +365,9 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         Gdx.app.log(LOG_TAG, FrameBuffer.getManagedStatus());
     }
 
-    public View getView() {
-        return view;
+    @Nullable
+    public GLSurfaceView getSurfaceView() {
+        return surfaceViewRef.get();
     }
 
     @Override
