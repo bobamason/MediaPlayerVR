@@ -410,12 +410,14 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
                     @Override
                     public void run() {
                         final Texture texture = new Texture(bitmap.getWidth(), bitmap.getHeight(), Pixmap.Format.RGBA8888);
+                        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
                         Gdx.gl.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getTextureObjectHandle());
                         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
                         Gdx.gl.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
                         bitmap.recycle();
                         gridUiLayout.thumbnailTextures.add(texture);
-                        holder.image.setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
+                        final TextureRegion region = new TextureRegion(texture, texture.getWidth() / 2, texture.getHeight());
+                        holder.image.setDrawable(new TextureRegionDrawable(region));
                         gridUiLayout.loading = false;
                     }
                 });

@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
@@ -195,7 +196,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     protected void mapDistortTextureCoordinates() {
-        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
+        modelInstance.transform.idt().rotate(Vector3.X, stretch.y * -90f).scale(modelSize, modelSize, modelSize);
 //        modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
 //        modelInstance.transform.idt().rotate(invHeadRotation).scale(modelSize, modelSize, modelSize * zoom).rotate(headRotation);
     }

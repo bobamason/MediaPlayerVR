@@ -78,7 +78,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private Vector3 translation = new Vector3();
     private boolean projectionChanged;
     private float rotCenterY = 0f;
-    private float sphereDiameter = 50f;
+    private float sphereDiameter = 20f;
     private Frustum frustum0 = new Frustum();
     private Frustum frustum1 = new Frustum();
     private ModelInstance eye0Instance;
@@ -197,10 +197,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
                 rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
             } else {
-//                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
-//                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
-                setCameraProjection(leftEye, leftCamera);
-                setCameraProjection(rightEye, rightCamera);
+                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
+                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
+//                setCameraProjection(leftEye, leftCamera);
+//                setCameraProjection(rightEye, rightCamera);
 
 //                createVisualization();
             }
@@ -262,8 +262,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     private void setCameraViewFromEye(Eye eye, VrCamera camera) {
-        final Vector3 position = camera.position;
-        android.opengl.Matrix.setLookAtM(camera.view.getValues(), 0, position.x, position.y, position.z, position.x, position.y, position.z - 0.01f, 0f, 1f, 0f);
+//        final Vector3 position = camera.position;
+//        android.opengl.Matrix.setLookAtM(camera.view.getValues(), 0, position.x, position.y, position.z, position.x, position.y, position.z - 0.01f, 0f, 1f, 0f);
         camera.view.set(eye.getEyeView());
     }
 
