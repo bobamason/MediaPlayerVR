@@ -244,4 +244,8 @@ public class VrGame extends VrApplicationAdapter {
     public void setInputVisible(boolean visible) {
         isInputVisible = visible;
     }
+
+    public VrCursor getCursor() {
+        return cursor;
+    }
 }
