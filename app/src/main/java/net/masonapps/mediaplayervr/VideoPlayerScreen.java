@@ -150,14 +150,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @Override
     public void show() {
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
-        GdxVr.input.setProcessor(container);
+        GdxVr.input.setInputProcessor(container);
     }
 
     @Override
     public void hide() {
         pause();
         GdxVr.input.getDaydreamControllerHandler().removeListener(this);
-        GdxVr.input.setProcessor(null);
+        GdxVr.input.setInputProcessor(null);
     }
 
     @Override

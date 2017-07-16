@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
+import com.google.vr.ndk.base.GvrLayout;
+
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 
 import org.masonapps.libgdxgooglevr.vr.VrActivity;
@@ -26,6 +28,22 @@ public class MainActivity extends VrActivity {
         game = new MediaPlayerGame(this);
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
         initialize(game);
+    }
+
+    @Override
+    protected void initGvrLayout(GvrLayout layout) {
+        super.initGvrLayout(layout);
+//        layout.enableAsyncReprojectionVideoSurface(new GvrLayout.ExternalSurfaceListener() {
+//            @Override
+//            public void onSurfaceAvailable(Surface surface) {
+//                this.videoSurface = surface;
+//            }
+//
+//            @Override
+//            public void onFrameAvailable() {
+//                
+//            }
+//        }, new Handler(Looper.getMainLooper()), false);
     }
 
     @Override

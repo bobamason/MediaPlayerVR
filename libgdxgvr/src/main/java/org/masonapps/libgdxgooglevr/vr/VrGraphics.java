@@ -728,6 +728,8 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     @NonNull
     private Eye setEye(int i, Eye eye) {
         recommendedList.get(i, scratchViewport);
+        scratchViewport.setReprojection(BufferViewport.Reprojection.FULL);
+        scratchViewport.setSourceBufferIndex(INDEX_SCENE_BUFFER);
         viewportList.set(i, scratchViewport);
         viewportList.get(i, scratchViewport);
         scratchViewport.getSourceUv(eyeUv);

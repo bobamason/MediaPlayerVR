@@ -161,14 +161,14 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     @Override
     public void show() {
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
-        GdxVr.input.setProcessor(container);
+        GdxVr.input.setInputProcessor(container);
         getVrCamera().position.set(Vector3.Zero);
     }
 
     @Override
     public void hide() {
         GdxVr.input.getDaydreamControllerHandler().removeListener(this);
-        GdxVr.input.setProcessor(null);
+        GdxVr.input.setInputProcessor(null);
     }
 
     @Override

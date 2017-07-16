@@ -448,7 +448,7 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
 
     @Override
     public boolean isButtonPressed(int button) {
-        throw new UnsupportedOperationException("method not supported in " + VrAndroidInput.class.getSimpleName());
+        return false;
     }
 
     @Override

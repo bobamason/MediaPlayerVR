@@ -77,24 +77,29 @@ public class VrActivity extends Activity {
         this.app = new VrApplication(new WeakReference<>(this));
 
         AndroidCompat.setVrModeEnabled(this, true);
+        AndroidCompat.setSustainedPerformanceMode(this, true);
+        
         gvrLayout = new GvrLayout(this);
-//        if(gvrLayout.setAsyncReprojectionEnabled(true))
-//            AndroidCompat.setSustainedPerformanceMode(this, true);
         surfaceView = new GLSurfaceView(this);
+
         gvrLayout.setPresentationView(surfaceView);
+        initGvrLayout(gvrLayout);
 
 //        if (getGvrLayout().setAsyncReprojectionEnabled(true)) {
 ////            // Async reprojection decouples the app framerate from the display framerate,
 ////            // allowing immersive interaction even at the throttled clockrates set by
 ////            // sustained performance mode.
 //            Log.d(VrActivity.class.getSimpleName(), "Async Reprojection Enabled");
-//            AndroidCompat.setSustainedPerformanceMode(this, true);
 //        }
         setContentView(gvrLayout);
         final EventListener listener = new EventListener();
         controllerManager = new ControllerManager(this, listener);
         controller = controllerManager.getController();
         controller.setEventListener(listener);
+    }
+
+    protected void initGvrLayout(GvrLayout layout) {
+        gvrLayout.setKeepScreenOn(true);
     }
 
     public void initialize(VrApplicationAdapter adapter) {
