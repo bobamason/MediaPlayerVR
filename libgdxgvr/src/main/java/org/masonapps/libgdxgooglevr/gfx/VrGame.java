@@ -86,7 +86,7 @@ public class VrGame extends VrApplicationAdapter {
     protected void doneLoading(AssetManager assets) {
         if (controllerInstance == null)
             controllerInstance = new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class));
-        screen.doneLoading(assets);
+        if (screen != null) screen.doneLoading(assets);
     }
 
     @Override
