@@ -197,10 +197,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
                 rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
             } else {
-                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
-                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
-//                setCameraProjection(leftEye, leftCamera);
-//                setCameraProjection(rightEye, rightCamera);
+//                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
+//                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
+                setCameraProjection(leftEye, leftCamera);
+                setCameraProjection(rightEye, rightCamera);
 
 //                createVisualization();
             }
@@ -295,8 +295,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 //            left = -side - shift;
 //            right = side - shift;
 //        }
-        final float stretchX = 1f + videoPlayer.getStretch().x;
-        final float stretchY = 1f + videoPlayer.getStretch().y;
         final float shift = (ipd - 1f) * 0.1f;
         if (eye.getType() == Eye.Type.LEFT) {
             left = l + shift;
@@ -305,7 +303,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             left = l - shift;
             right = r - shift;
         }
-        camera.projection.setToProjection(stretchX * left / zoom, stretchX * right / zoom, stretchY * bottom / zoom, stretchY * top / zoom, camera.near, camera.far);
+        camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, camera.near, camera.far);
     }
 
     private void updateCamera(VrCamera camera) {

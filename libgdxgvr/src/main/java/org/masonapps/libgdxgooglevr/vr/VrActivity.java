@@ -74,13 +74,15 @@ public class VrActivity extends Activity {
         this.requestWindowFeature(1);
         this.fullscreenMode = new FullscreenMode(this.getWindow());
         this.screenOnFlagHelper.setScreenAlwaysOn(true);
-        this.app = new VrApplication(new WeakReference<>(this));
+        this.app = new VrApplication(new WeakReference<>((Activity) this));
 
         AndroidCompat.setVrModeEnabled(this, true);
         AndroidCompat.setSustainedPerformanceMode(this, true);
         
         gvrLayout = new GvrLayout(this);
         surfaceView = new GLSurfaceView(this);
+        surfaceView.setEGLContextClientVersion(2);
+        surfaceView.setEGLConfigChooser(8, 8, 8, 0, 0, 0);
 
         gvrLayout.setPresentationView(surfaceView);
         initGvrLayout(gvrLayout);
@@ -104,7 +106,10 @@ public class VrActivity extends Activity {
 
     public void initialize(VrApplicationAdapter adapter) {
 
-        app.graphics = new VrGraphics(app, new WeakReference<>(getSurfaceView()), gvrLayout.getGvrApi());
+        app.graphics = new VrGraphicsGVR(app);
+        // TODO: 7/20/2017 uncomment 
+//        app.graphics = new VrGraphics(app, new WeakReference<>(getSurfaceView()), gvrLayout.getGvrApi());
+//        surfaceView.setRenderer(app.graphics);
         app.input = new VrAndroidInput(app, new WeakReference<Context>(this));
         app.input.setController(controller);
 //        audio = new AndroidAudio(this, config);
@@ -224,7 +229,8 @@ public class VrActivity extends Activity {
     protected void onDestroy() {
         final GLSurfaceView surfaceView = getSurfaceView();
         if (surfaceView != null && app.graphics != null) {
-            app.graphics.shutdown();
+            // TODO: 7/20/2017 uncomment 
+//            app.graphics.shutdown();
             surfaceView.queueEvent(new Runnable() {
                 @Override
                 public void run() {
@@ -305,7 +311,7 @@ public class VrActivity extends Activity {
         protected final SnapshotArray<LifecycleListener> lifecycleListeners = new SnapshotArray<>();
         private final Array<AndroidEventListener> androidEventListeners = new Array<AndroidEventListener>();
         public Handler handler;
-        protected VrGraphics graphics;
+        protected VrGraphicsGVR graphics;
         protected VrAndroidInput input;
         //    protected AndroidAudio audio;
         protected AndroidFiles files;
@@ -314,9 +320,9 @@ public class VrActivity extends Activity {
         protected int logLevel = LOG_INFO;
         protected AndroidClipboard clipboard;
 
-        private WeakReference<VrActivity> activityRef;
+        private WeakReference<Activity> activityRef;
 
-        private VrApplication(WeakReference<VrActivity> activityRef) {
+        public VrApplication(WeakReference<Activity> activityRef) {
             this.activityRef = activityRef;
         }
 
@@ -328,14 +334,14 @@ public class VrActivity extends Activity {
 
         @Override
         public void runOnUiThread(Runnable runnable) {
-            final VrActivity activity = activityRef.get();
+            final Activity activity = activityRef.get();
             if (activity != null)
                 activity.runOnUiThread(runnable);
         }
 
         @Override
         public void startActivity(Intent intent) {
-            final VrActivity activity = activityRef.get();
+            final Activity activity = activityRef.get();
             if (activity != null)
                 activity.startActivity(intent);
         }
@@ -405,7 +411,7 @@ public class VrActivity extends Activity {
         @Override
         @Nullable
         public Window getApplicationWindow() {
-            final VrActivity activity = activityRef.get();
+            final Activity activity = activityRef.get();
             return activity == null ? null : activity.getWindow();
         }
 
@@ -475,7 +481,7 @@ public class VrActivity extends Activity {
 
         @Override
         public Preferences getPreferences(String name) {
-            final VrActivity activity = activityRef.get();
+            final Activity activity = activityRef.get();
             if (activity != null)
                 return new AndroidPreferences(activity.getSharedPreferences(name, Context.MODE_PRIVATE));
             else
@@ -485,7 +491,7 @@ public class VrActivity extends Activity {
         @Override
         public Clipboard getClipboard() {
             if (clipboard == null) {
-                final VrActivity activity = activityRef.get();
+                final Activity activity = activityRef.get();
                 if (activity != null)
                     clipboard = new AndroidClipboard(activity);
             }
@@ -504,7 +510,7 @@ public class VrActivity extends Activity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    final VrActivity activity = activityRef.get();
+                    final Activity activity = activityRef.get();
                     if (activity != null)
                         activity.finish();
                     else
@@ -535,7 +541,7 @@ public class VrActivity extends Activity {
         @Override
         @Nullable
         public WindowManager getWindowManager() {
-            final VrActivity activity = activityRef.get();
+            final Activity activity = activityRef.get();
             return activity == null ? null : activity.getWindowManager();
         }
 
@@ -546,14 +552,14 @@ public class VrActivity extends Activity {
 
         @Nullable
         public GvrLayout getGvrLayout() {
-            final VrActivity activity = activityRef.get();
-            return activity == null ? null : activity.getGvrLayout();
+            final Activity activity = activityRef.get();
+            return activity instanceof VrActivity ? ((VrActivity) activity).getGvrLayout() : null;
         }
 
         @Nullable
         public GvrApi getGvrApi() {
-            final VrActivity activity = activityRef.get();
-            return activity == null ? null : activity.getGvrLayout().getGvrApi();
+            final GvrLayout gvrLayout = getGvrLayout();
+            return gvrLayout == null ? null : gvrLayout.getGvrApi();
         }
     }
 

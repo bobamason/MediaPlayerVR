@@ -1,13 +1,7 @@
 package org.masonapps.libgdxgooglevr.vr;
 
 import android.graphics.Point;
-import android.graphics.RectF;
 import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowManager;
@@ -34,32 +28,26 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.WindowedMean;
 import com.badlogic.gdx.utils.Array;
-import com.google.vr.ndk.base.BufferSpec;
-import com.google.vr.ndk.base.BufferViewport;
-import com.google.vr.ndk.base.BufferViewportList;
-import com.google.vr.ndk.base.Frame;
-import com.google.vr.ndk.base.GvrApi;
-import com.google.vr.ndk.base.SwapChain;
 import com.google.vr.sdk.base.Eye;
+import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.Viewport;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
-
 /**
- * Created by Bob on 10/9/2016.
- * based on AndroidGraphics originally written by mzechner
+ * Created by Bob on 7/20/2017.
  */
 
-public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
+public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
 
     public static final String TAG = VrGraphics.class.getSimpleName();
     private static final String LOG_TAG = VrGraphics.class.getSimpleName();
@@ -78,24 +66,11 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     private final Vector3 headTranslation = new Vector3();
     private final Quaternion headQuaternion = new Quaternion();
     private final Matrix4 headMatrix = new Matrix4();
-
-    private final GvrApi api;
-    private final BufferViewportList recommendedList;
-    private final BufferViewportList viewportList;
-    private final BufferViewport scratchViewport;
-    private final RectF eyeFov = new RectF();
-    private final RectF eyeUv = new RectF();
-    private final Point targetSize = new Point();
-    private final float[] tempMatrix = new float[16];
-    private final Eye leftEye = new Eye(Eye.Type.LEFT);
-    private final Eye rightEye = new Eye(Eye.Type.RIGHT);
-    private final HeadTransform headTransform = new HeadTransform();
     private final long predictionOffsetNanos;
-    private final WeakReference<GLSurfaceView> surfaceViewRef;
     protected AndroidApplicationBase app;
     protected GL20 gl20;
     protected GL30 gl30;
-    //    protected EGLContext eglContext;
+    protected EGLContext eglContext;
     protected GLVersion glVersion;
     protected String extensions;
     protected long lastFrameTime = System.nanoTime();
@@ -111,22 +86,15 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     protected volatile boolean resume = false;
     protected volatile boolean destroy = false;
     int[] value = new int[1];
-    private SwapChain swapChain;
     private float ppiX = 0;
     private float ppiY = 0;
     private float ppcX = 0;
     private float ppcY = 0;
     private float density = 1;
+    private Point targetSize = new Point();
 
-    public VrGraphics(AndroidApplicationBase application, WeakReference<GLSurfaceView> surfaceViewRef, GvrApi api) {
+    public VrGraphicsGVR(AndroidApplicationBase application) {
         this.app = application;
-        this.api = api;
-        this.surfaceViewRef = surfaceViewRef;
-        final GLSurfaceView surfaceView = surfaceViewRef.get();
-//        surfaceView.setPreserveEGLContextOnPause(true);
-        recommendedList = api.createBufferViewportList();
-        viewportList = api.createBufferViewportList();
-        scratchViewport = api.createBufferViewport();
         predictionOffsetNanos = TimeUnit.MILLISECONDS.toNanos(50);
     }
 
@@ -288,15 +256,6 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         clearManagedCaches();
     }
 
-    /**
-     * Shuts down the renderer. Can be called from any thread.
-     */
-    public void shutdown() {
-        recommendedList.shutdown();
-        viewportList.shutdown();
-        scratchViewport.shutdown();
-        swapChain.shutdown();
-    }
 
     @Override
     public long getFrameId() {
@@ -357,11 +316,6 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         Gdx.app.log(LOG_TAG, Cubemap.getManagedStatus());
         Gdx.app.log(LOG_TAG, ShaderProgram.getManagedStatus());
         Gdx.app.log(LOG_TAG, FrameBuffer.getManagedStatus());
-    }
-
-    @Nullable
-    public GLSurfaceView getSurfaceView() {
-        return surfaceViewRef.get();
     }
 
     @Override
@@ -515,8 +469,22 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     public void setSystemCursor(Cursor.SystemCursor systemCursor) {
     }
 
-    @CallSuper
-    public void onDrawFrame() {
+    private void handleHeadTransform(HeadTransform headTransform) {
+        headTransform.getForwardVector(array, OFFSET_FORWARD);
+        forward.set(array[OFFSET_FORWARD], array[OFFSET_FORWARD + 1], array[OFFSET_FORWARD + 2]);
+        headTransform.getUpVector(array, OFFSET_UP);
+        up.set(array[OFFSET_UP], array[OFFSET_UP + 1], array[OFFSET_UP + 2]);
+        headTransform.getRightVector(array, OFFSET_RIGHT);
+        right.set(array[OFFSET_RIGHT], array[OFFSET_RIGHT + 1], array[OFFSET_RIGHT + 2]);
+        headTransform.getTranslation(array, OFFSET_TRANSLATION);
+        headTranslation.set(array[OFFSET_TRANSLATION], array[OFFSET_TRANSLATION + 1], array[OFFSET_TRANSLATION + 2]);
+        headTransform.getQuaternion(array, OFFSET_QUATERNION);
+        headQuaternion.set(array[OFFSET_QUATERNION], array[OFFSET_QUATERNION + 1], array[OFFSET_QUATERNION + 2], array[OFFSET_QUATERNION + 3]);
+        headMatrix.set(headTransform.getHeadView());
+    }
+
+    @Override
+    public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         long time = System.nanoTime();
         deltaTime = (time - lastFrameTime) / 1000000000.0f;
         lastFrameTime = time;
@@ -594,18 +562,49 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         frames++;
     }
 
-    private void handleHeadTransform(HeadTransform headTransform) {
-        headTransform.getForwardVector(array, OFFSET_FORWARD);
-        forward.set(array[OFFSET_FORWARD], array[OFFSET_FORWARD + 1], array[OFFSET_FORWARD + 2]);
-        headTransform.getUpVector(array, OFFSET_UP);
-        up.set(array[OFFSET_UP], array[OFFSET_UP + 1], array[OFFSET_UP + 2]);
-        headTransform.getRightVector(array, OFFSET_RIGHT);
-        right.set(array[OFFSET_RIGHT], array[OFFSET_RIGHT + 1], array[OFFSET_RIGHT + 2]);
-        headTransform.getTranslation(array, OFFSET_TRANSLATION);
-        headTranslation.set(array[OFFSET_TRANSLATION], array[OFFSET_TRANSLATION + 1], array[OFFSET_TRANSLATION + 2]);
-        headTransform.getQuaternion(array, OFFSET_QUATERNION);
-        headQuaternion.set(array[OFFSET_QUATERNION], array[OFFSET_QUATERNION + 1], array[OFFSET_QUATERNION + 2], array[OFFSET_QUATERNION + 3]);
-        headMatrix.set(headTransform.getHeadView());
+    @Override
+    public void onFinishFrame(Viewport viewport) {
+
+    }
+
+    @Override
+    public void onSurfaceChanged(int i, int i1) {
+        targetSize.set(i, i1);
+        updatePpi();
+        if (!created) {
+            app.getApplicationListener().create();
+            created = true;
+            synchronized (this) {
+                running = true;
+            }
+        }
+    }
+
+    @Override
+    public void onSurfaceCreated(EGLConfig eglConfig) {
+
+        eglContext = ((EGL10) EGLContext.getEGL()).eglGetCurrentContext();
+        gl20 = new AndroidGL20();
+        Gdx.gl = gl20;
+        GdxVr.gl = gl20;
+        Gdx.gl20 = gl20;
+        GdxVr.gl20 = gl20;
+        String versionString = Gdx.gl.glGetString(GL10.GL_VERSION);
+        String vendorString = Gdx.gl.glGetString(GL10.GL_VENDOR);
+        String rendererString = Gdx.gl.glGetString(GL10.GL_RENDERER);
+        glVersion = new GLVersion(Application.ApplicationType.Android, versionString, vendorString, rendererString);
+        updatePpi();
+
+        Mesh.invalidateAllMeshes(app);
+        Texture.invalidateAllTextures(app);
+        Cubemap.invalidateAllCubemaps(app);
+        ShaderProgram.invalidateAllShaderPrograms(app);
+        FrameBuffer.invalidateAllFrameBuffers(app);
+
+        logManagedCachesStatus();
+
+        this.mean = new WindowedMean(5);
+        this.lastFrameTime = System.nanoTime();
     }
 
     public void onRendererShutdown() {
@@ -634,112 +633,6 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
 
     public Quaternion getHeadQuaternion() {
         return headQuaternion;
-    }
-
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        api.initializeGl();
-        checkGlError(TAG, "initializeGl");
-
-//        api.getScreenTargetSize(targetSize);
-//        Log.d(TAG, "getScreenTargetSize -> " + targetSize.toString());
-        api.getMaximumEffectiveRenderTargetSize(targetSize);
-        targetSize.x = (7 * targetSize.x) / 10;
-        targetSize.y = (7 * targetSize.y) / 10;
-//        Log.d(TAG, "getMaximumEffectiveRenderTargetSize -> " + targetSize.toString());
-
-        BufferSpec[] specList = new BufferSpec[1];
-        BufferSpec bufferSpec = api.createBufferSpec();
-        bufferSpec.setColorFormat(BufferSpec.ColorFormat.RGBA_8888);
-        bufferSpec.setDepthStencilFormat(BufferSpec.DepthStencilFormat.DEPTH_16);
-        bufferSpec.setSize(targetSize);
-        bufferSpec.setSamples(2);
-        specList[INDEX_SCENE_BUFFER] = bufferSpec;
-
-        swapChain = api.createSwapChain(specList);
-        for (BufferSpec spec : specList) {
-            spec.shutdown();
-        }
-
-//        eglContext = ((EGL10) EGLContext.getEGL()).eglGetCurrentContext();
-        gl20 = new AndroidGL20();
-        Gdx.gl = gl20;
-        GdxVr.gl = gl20;
-        Gdx.gl20 = gl20;
-        GdxVr.gl20 = gl20;
-        String versionString = Gdx.gl.glGetString(GL10.GL_VERSION);
-        String vendorString = Gdx.gl.glGetString(GL10.GL_VENDOR);
-        String rendererString = Gdx.gl.glGetString(GL10.GL_RENDERER);
-        glVersion = new GLVersion(Application.ApplicationType.Android, versionString, vendorString, rendererString);
-        updatePpi();
-
-        Mesh.invalidateAllMeshes(app);
-        Texture.invalidateAllTextures(app);
-        Cubemap.invalidateAllCubemaps(app);
-        ShaderProgram.invalidateAllShaderPrograms(app);
-        FrameBuffer.invalidateAllFrameBuffers(app);
-
-        logManagedCachesStatus();
-
-        this.mean = new WindowedMean(5);
-        this.lastFrameTime = System.nanoTime();
-    }
-
-    @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-        updatePpi();
-        if (!created) {
-            app.getApplicationListener().create();
-            created = true;
-            synchronized (this) {
-                running = true;
-            }
-        }
-    }
-
-    @Override
-    public void onDrawFrame(GL10 gl) {
-        Frame frame = swapChain.acquireFrame();
-        api.getHeadSpaceFromStartSpaceRotation(headTransform.getHeadView(), System.nanoTime() + predictionOffsetNanos);
-        api.getEyeFromHeadMatrix(0, tempMatrix);
-        Matrix.multiplyMM(leftEye.getEyeView(), 0, tempMatrix, 0, headTransform.getHeadView(), 0);
-        api.getEyeFromHeadMatrix(1, tempMatrix);
-        Matrix.multiplyMM(rightEye.getEyeView(), 0, tempMatrix, 0, headTransform.getHeadView(), 0);
-        // Populate the BufferViewportList to describe to the GvrApi how the color buffer
-        // and video frame ExternalSurface buffer should be rendered. The eyeFromQuad matrix
-        // describes how the video Surface frame should be transformed and rendered in eye space.
-        api.getRecommendedBufferViewports(recommendedList);
-
-        setEye(0, leftEye);
-        setEye(1, rightEye);
-
-        frame.bindBuffer(INDEX_SCENE_BUFFER);
-
-        onDrawFrame();
-        checkGlError(TAG, "new frame");
-
-        frame.unbind();
-        frame.submit(viewportList, headTransform.getHeadView());
-        checkGlError(TAG, "submit frame");
-    }
-
-    @NonNull
-    private Eye setEye(int i, Eye eye) {
-        recommendedList.get(i, scratchViewport);
-        scratchViewport.setReprojection(BufferViewport.Reprojection.FULL);
-        scratchViewport.setSourceBufferIndex(INDEX_SCENE_BUFFER);
-        viewportList.set(i, scratchViewport);
-        viewportList.get(i, scratchViewport);
-        scratchViewport.getSourceUv(eyeUv);
-        scratchViewport.getSourceFov(eyeFov);
-
-        eye.getFov().setAngles(eyeFov.left, eyeFov.right, eyeFov.bottom, eyeFov.top);
-
-        eye.getViewport().x = (int) (eyeUv.left * targetSize.x);
-        eye.getViewport().y = (int) (eyeUv.bottom * targetSize.y);
-        eye.getViewport().width = (int) (eyeUv.width() * targetSize.x);
-        eye.getViewport().height = (int) (-eyeUv.height() * targetSize.y);
-        return eye;
     }
 
     private class AndroidDisplayMode extends DisplayMode {
