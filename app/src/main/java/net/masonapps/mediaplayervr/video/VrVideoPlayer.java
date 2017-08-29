@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -215,10 +217,13 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         // Generate the actual texture
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glGenTextures(1, textures, 0);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textures[0]);
-        shader.setTextureId(textures[0]);
+        final int textureId = textures[0];
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
+        shader.setTextureId(textureId);
+        Gdx.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_NEAREST);
+        Gdx.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_NEAREST);
 
-        videoTexture = new SurfaceTexture(textures[0]);
+        videoTexture = new SurfaceTexture(textureId);
         videoTexture.setOnFrameAvailableListener(this);
     }
 
