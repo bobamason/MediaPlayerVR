@@ -2,20 +2,26 @@ package net.masonapps.mediaplayervr;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.opengl.GLES20;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.SphereShapeBuilder;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
@@ -41,6 +47,8 @@ import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
+import java.nio.IntBuffer;
+
 /**
  * Created by Bob on 12/24/2016.
  */
@@ -62,6 +70,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private final Quaternion rotation = new Quaternion();
     private final Vector3 tmp = new Vector3();
     private final Vector3 tmp2 = new Vector3();
+    private final FrameBuffer fbo;
+    private final IntBuffer intBuffer;
     private VideoOptions videoOptions;
     private Context context;
     private VrVideoPlayer videoPlayer;
@@ -130,6 +140,22 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         SphereShapeBuilder.build(part, 1, 1, 1, 12, 12);
         sphereOutlineInstance = new ModelInstance(modelBuilder.end());
         invalidateProjection();
+
+        fbo = new FrameBuffer(Pixmap.Format.RGB888, 128, 128, false);
+        manageDisposable(fbo);
+        intBuffer = IntBuffer.allocate(1);
+    }
+
+    private Model createRect(float r, Texture texture) {
+        final ModelBuilder modelBuilder = new ModelBuilder();
+        final Material material = new Material(TextureAttribute.createDiffuse(texture));
+        return modelBuilder.createRect(
+                -r, -r, 0,
+                r, -r, 0,
+                r, r, 0,
+                -r, r, 0,
+                0, 0, r,
+                material, VertexAttributes.Usage.Position | VertexAttributes.Usage.TextureCoordinates);
     }
 
     @Override
@@ -180,6 +206,15 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
+
+        GLES20.glGetIntegerv(GLES20.GL_FRAMEBUFFER_BINDING, intBuffer);
+        final int defaultBufferAddress = intBuffer.get(0);
+
+        fbo.begin();
+
+        fbo.end();
+
+        GdxVr.gl.glBindFramebuffer(GL20.GL_FRAMEBUFFER, defaultBufferAddress);
 
         leftCamera.viewportWidth = leftEye.getViewport().width;
         leftCamera.viewportHeight = leftEye.getViewport().height;
