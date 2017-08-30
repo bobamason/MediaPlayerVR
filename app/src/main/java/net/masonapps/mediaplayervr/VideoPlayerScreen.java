@@ -15,7 +15,6 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.FrustumShapeBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.SphereShapeBuilder;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
@@ -197,62 +196,22 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
                 rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
             } else {
-//                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
-//                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
-                setCameraProjection(leftEye, leftCamera);
-                setCameraProjection(rightEye, rightCamera);
+                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
+                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
+//                setCameraProjection(leftEye, leftCamera);
+//                setCameraProjection(rightEye, rightCamera);
 
 //                createVisualization();
             }
             projectionChanged = false;
         }
 
-        final float ipdHalf = 0.064f * ipd / 2f;
 //        if (videoPlayer.useFlatRectangle() || shouldRenderMono()) {
         setCameraViewFromEye(leftEye, leftCamera);
         updateCamera(leftCamera);
 
         setCameraViewFromEye(rightEye, rightCamera);
         updateCamera(rightCamera);
-//
-//            leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
-//            rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
-//        } else {
-
-//        headQuat.slerp(getHeadQuaternion(), 0.75f);
-//        right.set(1, 0, 0).mul(headQuat);
-//        up.set(0, 1, 0).mul(headQuat);
-//        forward.set(0, 0, -1).mul(headQuat);
-////            final float a = getHeadQuaternion().getAngleAround(getForwardVector());
-//
-//        tempV.set(right);
-//        tempV.y *= -1;
-//        translation.set(tempV.scl(-ipdHalf));
-////            translation.set(0, -rotCenterY, 0).rotate(Vector3.Z, a).add(0, rotCenterY, 0).add(tempV.set(getRightVector()).scl(-ipdHalf));
-//        leftCamera.view.setToLookAt(translation, tempV.set(translation).add(forward), up);
-//        updateCamera(leftCamera);
-//        
-//        tempV.set(right);
-//        tempV.y *= -1;
-//        translation.set(tempV.scl(ipdHalf));
-////            translation.set(0, -rotCenterY, 0).rotate(Vector3.Z, a).add(0, rotCenterY, 0).add(tempV.set(getRightVector()).scl(ipdHalf));
-//        rightCamera.view.setToLookAt(translation, tempV.set(translation).add(forward), up);
-//        updateCamera(rightCamera);
-////        }
-    }
-
-    private void createVisualization() {
-        final MeshPartBuilder eye0part = modelBuilder.part("eye0", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material());
-        FrustumShapeBuilder.build(eye0part, frustum0, Color.SKY, Color.BLUE);
-        eye0Instance = new ModelInstance(modelBuilder.end());
-
-        final MeshPartBuilder eye1part = modelBuilder.part("eye1", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material());
-        FrustumShapeBuilder.build(eye1part, frustum1, Color.CORAL, Color.RED);
-        eye1Instance = new ModelInstance(modelBuilder.end());
-
-        final MeshPartBuilder spherePart = modelBuilder.part("sphere", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material(ColorAttribute.createDiffuse(Color.YELLOW)));
-        SphereShapeBuilder.build(spherePart, 0.5f, 0.5f, 0.5f, 16, 8);
-        sphereInstance = new ModelInstance(modelBuilder.end());
     }
 
     private boolean shouldRenderMono() {
@@ -262,9 +221,11 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     private void setCameraViewFromEye(Eye eye, VrCamera camera) {
-//        final Vector3 position = camera.position;
-//        android.opengl.Matrix.setLookAtM(camera.view.getValues(), 0, position.x, position.y, position.z, position.x, position.y, position.z - 0.01f, 0f, 1f, 0f);
-        camera.view.set(eye.getEyeView());
+//        camera.view.set(eye.getEyeView());
+        final float ipdHalf = 0.064f / 2f * ipd * ipd;
+        camera.view.idt()
+                .rotate(tempQ.set(getHeadQuaternion()).conjugate())
+                .translate(eye.getType() == Eye.Type.LEFT ? ipdHalf : -ipdHalf, 0, 0);
     }
 
     private void setCameraProjection(Eye eye, VrCamera camera) {
