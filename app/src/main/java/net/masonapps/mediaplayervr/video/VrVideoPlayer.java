@@ -220,8 +220,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         final int textureId = textures[0];
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         shader.setTextureId(textureId);
-        Gdx.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_NEAREST);
-        Gdx.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_NEAREST);
+        Gdx.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_LINEAR);
+        Gdx.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_LINEAR);
 
         videoTexture = new SurfaceTexture(textureId);
         videoTexture.setOnFrameAvailableListener(this);
