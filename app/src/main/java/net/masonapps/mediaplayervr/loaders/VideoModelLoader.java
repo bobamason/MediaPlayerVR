@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g3d.model.data.ModelMesh;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelMeshPart;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNode;
 import com.badlogic.gdx.graphics.g3d.model.data.ModelNodePart;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.FloatArray;
@@ -58,12 +59,16 @@ public class VideoModelLoader extends ModelLoader<ModelLoader.ModelParameters> {
 
         for (int j = 0; j <= divisionsV; ++j) {
             for (int i = 0; i <= divisionsU; ++i) {
+                final float u = (float) i / divisionsU;
+                final float v = (float) j / divisionsV;
 
-                vertices.add(0);
-                vertices.add(0);
-                vertices.add(0);
-                vertices.add((float) i / divisionsU);
-                vertices.add((float) j / divisionsV);
+                float azimuth = -u * MathUtils.PI * 2.0f - MathUtils.PI * 0.5f;
+                float elevation = v * MathUtils.PI;
+                vertices.add((float) (Math.cos(azimuth) * Math.sin(elevation)));
+                vertices.add((float) Math.cos(elevation));
+                vertices.add((float) (-Math.sin(azimuth) * Math.sin(elevation)));
+                vertices.add(u);
+                vertices.add(v);
 
                 if (i < divisionsU && j < divisionsV) {
                     int a = (divisionsU + 1) * j + i;
