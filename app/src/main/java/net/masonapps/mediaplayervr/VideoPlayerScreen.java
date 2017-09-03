@@ -93,6 +93,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private boolean isUiVisible = true;
     private PerspectiveCamera perspectiveCamera = new PerspectiveCamera(100f, 1024, 1024);
     private Matrix3 mat3;
+    private float rectScale = 1f;
+    private float planeZ = 4f;
+    private Vector3 rectPosition = new Vector3();
+    private float perspectiveFOV = 100f;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -139,15 +143,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         fbo = new FrameBuffer(Pixmap.Format.RGB888, 20, 10, false);
         manageDisposable(fbo);
         intBuffer = IntBuffer.allocate(1);
-        rectEntity = new Entity(new ModelInstance(createRect(4f, fbo.getColorBufferTexture())));
-        rectEntity.modelInstance.transform.idt()
-                .translate(0, 0, -4);
+        rectEntity = new Entity(new ModelInstance(createRect(fbo.getColorBufferTexture())));
 //        getWorld().add(rectEntity);
     }
 
-    private Model createRect(float r, Texture texture) {
+    private Model createRect(Texture texture) {
         final ModelBuilder modelBuilder = new ModelBuilder();
         final Material material = new Material(TextureAttribute.createDiffuse(texture));
+        float r = 0.5f;
         final Model rect = modelBuilder.createRect(
                 -r, -r, 0,
                 r, -r, 0,
@@ -210,50 +213,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
-//        GLES20.glGetIntegerv(GLES20.GL_FRAMEBUFFER_BINDING, intBuffer);
-//        final int defaultBufferAddress = intBuffer.get(0);
-//
-//        fbo.begin();
-//        GdxVr.gl.glClearColor(0, 0, 0, 0);
-//        GdxVr.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//        perspectiveCamera.direction.set(getForwardVector());
-//        perspectiveCamera.fieldOfView = 100f * zoom;
-//        perspectiveCamera.update(false);
-//        
-//        GdxVr.gl.glViewport(0, 0, fbo.getWidth() / 2, fbo.getHeight());
-//        getModelBatch().begin(perspectiveCamera);
-//        videoPlayer.render(getModelBatch(), leftEye.getType());
-//        getModelBatch().end();
-//        
-//        GdxVr.gl.glViewport(fbo.getWidth() / 2, 0, fbo.getWidth() / 2, fbo.getHeight());
-//        getModelBatch().begin(perspectiveCamera);
-//        videoPlayer.render(getModelBatch(), rightEye.getType());
-//        getModelBatch().end();
-//        fbo.end();
-//
-//        GdxVr.gl.glBindFramebuffer(GL20.GL_FRAMEBUFFER, defaultBufferAddress);
-//
-//        final Vector3 pos = Pools.obtain(Vector3.class);
-//        final Vector3 dir = Pools.obtain(Vector3.class);
-//        final Vector3 tmp = Pools.obtain(Vector3.class);
-//        final Vector3 tmp2 = Pools.obtain(Vector3.class);
-//        final Quaternion rot = Pools.obtain(Quaternion.class);
-//        pos.set(getForwardVector()).scl(4);
-//        dir.set(Vector3.Zero).sub(pos).nor();
-//        tmp.set(Vector3.Y).crs(dir).nor();
-//        tmp2.set(dir).crs(tmp).nor();
-//        rot.setFromAxes(tmp.x, tmp2.x, dir.x, tmp.y, tmp2.y, dir.y, tmp.z, tmp2.z, dir.z);
-//        rectEntity.modelInstance.transform.set(pos, rot);
-//        Pools.free(pos);
-//        Pools.free(dir);
-//        Pools.free(tmp);
-//        Pools.free(tmp2);
-//        Pools.free(rot);
 
         leftCamera.viewportWidth = leftEye.getViewport().width;
         leftCamera.viewportHeight = leftEye.getViewport().height;
         rightCamera.viewportWidth = rightEye.getViewport().width;
         rightCamera.viewportHeight = rightEye.getViewport().height;
+
 
         videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : sphereDiameter);
 
@@ -261,6 +226,18 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             invalidateProjection();
 
         if (projectionChanged) {
+//            final float left = (float) -Math.tan(Math.toRadians(leftEye.getFov().getLeft())) * planeZ;
+//            final float right = (float) Math.tan(Math.toRadians(rightEye.getFov().getRight())) * planeZ;
+//            final float t = leftEye.getFov().getTop();
+//            final float b = leftEye.getFov().getBottom();
+//            final float top = (float) Math.tan(Math.toRadians(t)) * planeZ;
+//            final float bottom = (float) -Math.tan(Math.toRadians(b)) * planeZ;
+//            
+//            rectScale = Math.max(right - left, top - bottom);
+//            rectPosition.set((right + left) / 2f, (top + bottom) / 2f, -planeZ);
+//            perspectiveFOV = t + b;
+
+
             if (videoPlayer.useFlatRectangle()) {
                 leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
                 rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
@@ -274,6 +251,28 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
             }
             projectionChanged = false;
         }
+//        GLES20.glGetIntegerv(GLES20.GL_FRAMEBUFFER_BINDING, intBuffer);
+//        final int defaultBufferAddress = intBuffer.get(0);
+//
+//        fbo.begin();
+//        GdxVr.gl.glClearColor(0, 0, 0, 0);
+//        GdxVr.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//        perspectiveCamera.direction.set(getForwardVector());
+//        perspectiveCamera.fieldOfView = perspectiveFOV * zoom;
+//        perspectiveCamera.update(false);
+//
+//        GdxVr.gl.glViewport(0, 0, fbo.getWidth() / 2, fbo.getHeight());
+//        getModelBatch().begin(perspectiveCamera);
+//        videoPlayer.render(getModelBatch(), leftEye.getType());
+//        getModelBatch().end();
+//
+//        GdxVr.gl.glViewport(fbo.getWidth() / 2, 0, fbo.getWidth() / 2, fbo.getHeight());
+//        getModelBatch().begin(perspectiveCamera);
+//        videoPlayer.render(getModelBatch(), rightEye.getType());
+//        getModelBatch().end();
+//        fbo.end();
+//
+//        GdxVr.gl.glBindFramebuffer(GL20.GL_FRAMEBUFFER, defaultBufferAddress);
 
 //        if (videoPlayer.useFlatRectangle() || shouldRenderMono()) {
         setCameraViewFromEye(leftEye, leftCamera);
@@ -281,6 +280,23 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
         setCameraViewFromEye(rightEye, rightCamera);
         updateCamera(rightCamera);
+
+//        final Vector3 pos = Pools.obtain(Vector3.class);
+//        final Vector3 dir = Pools.obtain(Vector3.class);
+//        final Vector3 tmp = Pools.obtain(Vector3.class);
+//        final Vector3 tmp2 = Pools.obtain(Vector3.class);
+//        final Quaternion rot = Pools.obtain(Quaternion.class);
+//        pos.set(rectPosition).mul(getHeadQuaternion());
+//        dir.set(getForwardVector()).scl(-1);
+//        tmp.set(Vector3.Y).crs(dir).nor();
+//        tmp2.set(dir).crs(tmp).nor();
+//        rot.setFromAxes(tmp.x, tmp2.x, dir.x, tmp.y, tmp2.y, dir.y, tmp.z, tmp2.z, dir.z);
+//        rectEntity.modelInstance.transform.set(pos, rot).scale(rectScale, rectScale, 1f);
+//        Pools.free(pos);
+//        Pools.free(dir);
+//        Pools.free(tmp);
+//        Pools.free(tmp2);
+//        Pools.free(rot);
     }
 
     private boolean shouldRenderMono() {
