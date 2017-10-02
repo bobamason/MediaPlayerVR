@@ -26,7 +26,6 @@ public class VideoShader extends BaseShader {
     private static String fragmentShader = null;
     private final int u_projTrans = register(new Uniform("u_projTrans"));
     private final int u_worldTrans = register(new Uniform("u_worldTrans"));
-    private final int u_useTexCoords = register(new Uniform("u_useTexCoords"));
     private final int u_useFishEye = register(new Uniform("u_useFishEye"));
     private final int u_srcRect = register(new Uniform("u_srcRect"));
     private final int u_dstRect = register(new Uniform("u_dstRect"));
@@ -43,7 +42,6 @@ public class VideoShader extends BaseShader {
     private float contrast = GlobalSettings.DEFAULT_CONTRAST;
     private float colorTemp = GlobalSettings.DEFAULT_COLOR_TEMP;
     private int textureId = -1;
-    private boolean useTexCoords = true;
     private boolean useFishEye = false;
 
     public VideoShader() {
@@ -102,8 +100,7 @@ public class VideoShader extends BaseShader {
         set(u_brightness, brightness);
         set(u_contrast, contrast);
         set(u_colorTemp, colorTemp);
-        set(u_useTexCoords, useTexCoords ? 1f : 0f);
-        set(u_useFishEye, useFishEye ? 1f : 0f);
+        set(u_useFishEye, useFishEye ? 1 : 0);
         renderable.meshPart.render(program);
     }
 
@@ -168,10 +165,6 @@ public class VideoShader extends BaseShader {
 
     public void setTextureId(int textureId) {
         this.textureId = textureId;
-    }
-
-    public void setUseTexCoords(boolean useTexCoords) {
-        this.useTexCoords = useTexCoords;
     }
 
     public void setUseFishEye(boolean useFishEye) {

@@ -154,8 +154,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public void render(ModelBatch batch, int eyeType) {
         if (!prepared)
             return;
-        shader.setUseTexCoords(true);
-//        shader.setUseTexCoords(useFlatRectangle());
+
         shader.setUseFishEye(useFishEyeProjection);
 
         if (useFlatRectangle())
