@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -147,11 +148,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         }
     }
 
-    public void render(ModelBatch batch) {
-        render(batch, Eye.Type.MONOCULAR);
-    }
-
-    public void render(ModelBatch batch, int eyeType) {
+    public void render(ModelBatch batch, int eyeType, Matrix4 transform) {
         if (!prepared)
             return;
 
@@ -161,6 +158,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             mapDistortModel();
         else
             mapDistortTextureCoordinates();
+
+        modelInstance.transform.mulLeft(transform);
 
         if (isStereoscopic) {
             switch (eyeType) {

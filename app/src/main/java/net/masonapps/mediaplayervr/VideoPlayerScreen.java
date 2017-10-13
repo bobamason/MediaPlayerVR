@@ -28,6 +28,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.Pools;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.controller.Controller;
@@ -46,6 +47,7 @@ import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.vr.VrActivityGVR;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
 import java.nio.IntBuffer;
@@ -97,6 +99,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     private float planeZ = 4f;
     private Vector3 rectPosition = new Vector3();
     private float perspectiveFOV = 100f;
+    private Matrix4 transform = new Matrix4();
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -242,10 +245,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
                 leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
                 rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
             } else {
-//                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
-//                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
-                setCameraProjection(leftEye, leftCamera);
-                setCameraProjection(rightEye, rightCamera);
+                leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
+                rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
+//                setCameraProjection(leftEye, leftCamera);
+//                setCameraProjection(rightEye, rightCamera);
 
 //                createVisualization();
             }
@@ -281,6 +284,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         setCameraViewFromEye(rightEye, rightCamera);
         updateCamera(rightCamera);
 
+        transform.set(rotation.set(getHeadQuaternion()).conjugate());
+
 //        final Vector3 pos = Pools.obtain(Vector3.class);
 //        final Vector3 dir = Pools.obtain(Vector3.class);
 //        final Vector3 tmp = Pools.obtain(Vector3.class);
@@ -306,11 +311,16 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     private void setCameraViewFromEye(Eye eye, VrCamera camera) {
-        camera.view.set(eye.getEyeView());
-//        final float ipdHalf = 0.064f / 2f * ipd * ipd;
-//        camera.view.idt()
-//                .rotate(tempQ.set(getHeadQuaternion()).conjugate())
-//                .translate(eye.getType() == Eye.Type.LEFT ? ipdHalf : -ipdHalf, 0, 0);
+//        camera.view.set(eye.getEyeView());
+        final Vector3 pos = Pools.obtain(Vector3.class);
+        final Vector3 dir = Pools.obtain(Vector3.class);
+        final float defaultIpd = ((VrActivityGVR) GdxVr.app.getContext()).getGvrView().getInterpupillaryDistance();
+        final float ipdHalf = defaultIpd * ipd / 2f;
+        pos.set(eye.getType() == Eye.Type.LEFT ? -ipdHalf : ipdHalf, 0, 0);
+        dir.set(0, 0, -1);
+        camera.view.setToLookAt(pos, dir.add(pos), Vector3.Y);
+        Pools.free(pos);
+        Pools.free(dir);
     }
 
     private void setCameraProjection(Eye eye, VrCamera camera) {
@@ -366,12 +376,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void render(Camera camera, int whichEye) {
         if (whichEye == Eye.Type.LEFT) {
             getModelBatch().begin(leftCamera);
-            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT);
+            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
             getModelBatch().end();
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0f;
         } else {
             getModelBatch().begin(rightCamera);
-            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT);
+            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
             getModelBatch().end();
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
         }
@@ -471,7 +481,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     public void setIpd(float ipd) {
-        this.ipd = MathUtils.clamp(ipd, -1f, 2f);
+        this.ipd = MathUtils.clamp(ipd, VideoOptions.MIN_IPD, VideoOptions.MAX_IPD);
         invalidateProjection();
     }
 
