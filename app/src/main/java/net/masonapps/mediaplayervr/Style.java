@@ -53,7 +53,7 @@ public class Style {
     }
 
     public static Image newBackgroundImage(Skin skin) {
-        final Image bg = new Image(skin.newDrawable(Style.Drawables.window));
+        final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Color.BLACK));
         bg.setFillParent(true);
         return bg;
     }

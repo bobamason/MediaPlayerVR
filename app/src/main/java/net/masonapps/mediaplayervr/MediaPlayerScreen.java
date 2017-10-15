@@ -22,7 +22,6 @@ import com.badlogic.gdx.utils.Array;
 import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 
@@ -34,7 +33,6 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
     private static final Vector3 tempV = new Vector3();
     protected final MediaPlayerGame mediaPlayerGame;
     //    protected final Entity roomEntity;
-    protected final Entity floorEntity;
     protected final Skin skin;
     private final Quaternion tempQ = new Quaternion();
     private Vector3 startPosition = new Vector3(0, 0, -10);
@@ -44,7 +42,6 @@ public abstract class MediaPlayerScreen extends VrWorldScreen {
         super(game);
         mediaPlayerGame = (MediaPlayerGame) game;
         skin = mediaPlayerGame.getSkin();
-        floorEntity = getWorld().add(mediaPlayerGame.getFloorEntity());
     }
 
     @Override

@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -192,7 +193,7 @@ public abstract class GridUiLayout<T> extends BaseUiLayout {
                 final float z = -2;
                 table.position.set(0, y, z).rotate(a, 0, 1, 0);
                 table.lookAt(tmp.set(0, y, 0), Vector3.Y);
-                table.getTable().setBackground(skin.newDrawable(Style.Drawables.window));
+                table.getTable().setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
                 
                 final Label label = new Label("", skin);
                 label.setWrap(false);

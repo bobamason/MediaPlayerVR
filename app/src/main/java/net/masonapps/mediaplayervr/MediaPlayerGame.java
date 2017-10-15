@@ -16,7 +16,6 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
@@ -36,7 +35,6 @@ import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.utils.ModelGenerator;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 
 import java.util.List;
@@ -54,7 +52,6 @@ public class MediaPlayerGame extends VrGame {
     private final Context context;
     private Skin skin;
     //    private Entity roomEntity;
-    private Entity floorEntity;
     private ModelBatch phongModelBatch;
     private Vector3 worldOffset = new Vector3(0, -1.2f, 0);
     private MediaSelectionScreen mediaSelectionScreen;
@@ -93,12 +90,6 @@ public class MediaPlayerGame extends VrGame {
         setupSkin();
 
         final ModelBuilder modelBuilder = new ModelBuilder();
-
-//                roomEntity = new Entity(new ModelInstance(createWorldModel(modelBuilder), worldOffset));
-//                roomEntity.setLightingEnabled(true);
-
-        floorEntity = new Entity(new ModelInstance(createFloorModel(modelBuilder), worldOffset));
-        floorEntity.setLightingEnabled(true);
         sphereModel = assets.get(SPHERE_FILENAME, Model.class);
         cylinderModel = ModelGenerator.createCylinder(modelBuilder, 0.5f, 64, 64);
 
@@ -254,14 +245,6 @@ public class MediaPlayerGame extends VrGame {
 
     public Skin getSkin() {
         return skin;
-    }
-
-//    public Entity getRoomEntity() {
-//        return roomEntity;
-//    }
-
-    public Entity getFloorEntity() {
-        return floorEntity;
     }
 
     public Model getSphereModel() {

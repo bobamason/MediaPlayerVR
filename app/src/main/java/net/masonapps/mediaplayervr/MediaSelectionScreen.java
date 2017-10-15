@@ -6,6 +6,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
+import com.badlogic.gdx.graphics.g3d.model.data.ModelData;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -19,6 +23,7 @@ import net.masonapps.mediaplayervr.media.MediaUtils;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
+import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
@@ -74,6 +79,22 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             loadVideoList();
         }
         setBackgroundColor(Color.SLATE);
+
+        new Thread() {
+            @Override
+            public void run() {
+                final String roomFileName = "room/room_textured.g3db";
+                final ModelData modelData = ((G3dModelLoader) MediaSelectionScreen.this.game.getAssets().getLoader(Model.class, roomFileName)).loadModelData(GdxVr.files.internal(roomFileName));
+                GdxVr.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Entity room = getWorld().add(new Entity(new ModelInstance(new Model(modelData))));
+                        room.modelInstance.transform.rotate(Vector3.Y, -90);
+                        room.setLightingEnabled(false);
+                    }
+                });
+            }
+        }.start();
     }
 
     private void initStage() {
@@ -99,8 +120,6 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
         stagePermissions.setPosition(0.4f, 0, -2f);
         
-//        stageSongList.setPosition(0, 0.5f, -3f);
-
         stagePermissions.addActor(Style.newBackgroundImage(skin));
 
         addPermissionsTable();
