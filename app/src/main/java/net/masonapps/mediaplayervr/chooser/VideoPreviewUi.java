@@ -27,9 +27,9 @@ import net.masonapps.mediaplayervr.video.ui.ModeLayout;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
-import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 import org.masonapps.libgdxgooglevr.ui.ImageButtonVR;
 import org.masonapps.libgdxgooglevr.ui.VirtualStage;
+import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
 
 import java.lang.ref.WeakReference;
 import java.util.List;

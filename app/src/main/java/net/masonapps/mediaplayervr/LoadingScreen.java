@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.math.Vector3;
 
 import net.masonapps.mediaplayervr.utils.ModelGenerator;
 
@@ -48,18 +47,15 @@ public class LoadingScreen extends VrWorldScreen {
     }
 
     @Override
-    public void show() {
-    }
-
-    @Override
     public void hide() {
+        super.hide();
         dispose();
     }
 
     @Override
     public void update() {
         super.update();
-        entity.transform.rotate(Vector3.Z, GdxVr.graphics.getDeltaTime() * SPEED);
+        entity.rotateZ(GdxVr.graphics.getDeltaTime() * SPEED);
     }
 
     @Override

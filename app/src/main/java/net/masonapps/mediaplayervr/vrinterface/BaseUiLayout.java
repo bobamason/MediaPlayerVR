@@ -3,7 +3,8 @@ package net.masonapps.mediaplayervr.vrinterface;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.utils.Disposable;
 
-import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
+
 
 /**
  * Created by Bob on 2/8/2017.

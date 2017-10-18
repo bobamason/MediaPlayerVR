@@ -10,7 +10,6 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.LifecycleListener;
-import com.badlogic.gdx.backends.android.AndroidApplicationBase;
 import com.badlogic.gdx.backends.android.AndroidGL20;
 import com.badlogic.gdx.graphics.Cubemap;
 import com.badlogic.gdx.graphics.Cursor;
@@ -28,6 +27,7 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.WindowedMean;
 import com.badlogic.gdx.utils.Array;
+import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.base.HeadTransform;
@@ -49,8 +49,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
 
-    public static final String TAG = VrGraphics.class.getSimpleName();
-    private static final String LOG_TAG = VrGraphics.class.getSimpleName();
+    public static final String TAG = VrGraphicsGVR.class.getName();
     private static final int OFFSET_RIGHT = 0;
     private static final int OFFSET_UP = OFFSET_RIGHT + 3;
     private static final int OFFSET_FORWARD = OFFSET_UP + 3;
@@ -67,7 +66,7 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
     private final Quaternion headQuaternion = new Quaternion();
     private final Matrix4 headMatrix = new Matrix4();
     private final long predictionOffsetNanos;
-    protected AndroidApplicationBase app;
+    protected VrActivity.VrApplication app;
     protected GL20 gl20;
     protected GL30 gl30;
     protected EGLContext eglContext;
@@ -92,9 +91,13 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
     private float ppcY = 0;
     private float density = 1;
     private Point targetSize = new Point();
+    private GvrAudioEngine gvrAudioEngine;
+    private HeadTransform headTransform;
 
-    public VrGraphicsGVR(AndroidApplicationBase application) {
+    @SuppressWarnings("ConstantConditions")
+    public VrGraphicsGVR(VrActivity.VrApplication application, GvrAudioEngine gvrAudioEngine) {
         this.app = application;
+        this.gvrAudioEngine = gvrAudioEngine;
         predictionOffsetNanos = TimeUnit.MILLISECONDS.toNanos(50);
     }
 
@@ -147,6 +150,8 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
         ppcX = metrics.xdpi / 2.54f;
         ppcY = metrics.ydpi / 2.54f;
         density = metrics.density;
+        targetSize.x = metrics.widthPixels;
+        targetSize.y = metrics.heightPixels;
     }
 
     /**
@@ -202,10 +207,11 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
             }
         }
         app.getApplicationListener().resume();
-        Gdx.app.log(LOG_TAG, "resumed");
+        Log.i(TAG, "resume()");
     }
 
     void pause() {
+        Log.i(TAG, "pause()");
         synchronized (synch) {
             if (!running) return;
             running = false;
@@ -218,7 +224,6 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
             }
         }
         app.getApplicationListener().pause();
-        Gdx.app.log(LOG_TAG, "paused");
 //        synchronized (synch) {
 //            if (!running) return;
 //            running = false;
@@ -253,6 +258,7 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
             }
         }
         app.getApplicationListener().dispose();
+        Log.i(TAG, "destroy()");
         clearManagedCaches();
     }
 
@@ -311,11 +317,11 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
     }
 
     protected void logManagedCachesStatus() {
-        Gdx.app.log(LOG_TAG, Mesh.getManagedStatus());
-        Gdx.app.log(LOG_TAG, Texture.getManagedStatus());
-        Gdx.app.log(LOG_TAG, Cubemap.getManagedStatus());
-        Gdx.app.log(LOG_TAG, ShaderProgram.getManagedStatus());
-        Gdx.app.log(LOG_TAG, FrameBuffer.getManagedStatus());
+        Gdx.app.log(TAG, Mesh.getManagedStatus());
+        Gdx.app.log(TAG, Texture.getManagedStatus());
+        Gdx.app.log(TAG, Cubemap.getManagedStatus());
+        Gdx.app.log(TAG, ShaderProgram.getManagedStatus());
+        Gdx.app.log(TAG, FrameBuffer.getManagedStatus());
     }
 
     @Override
@@ -469,20 +475,6 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
     public void setSystemCursor(Cursor.SystemCursor systemCursor) {
     }
 
-    private void handleHeadTransform(HeadTransform headTransform) {
-        headTransform.getForwardVector(array, OFFSET_FORWARD);
-        forward.set(array[OFFSET_FORWARD], array[OFFSET_FORWARD + 1], array[OFFSET_FORWARD + 2]);
-        headTransform.getUpVector(array, OFFSET_UP);
-        up.set(array[OFFSET_UP], array[OFFSET_UP + 1], array[OFFSET_UP + 2]);
-        headTransform.getRightVector(array, OFFSET_RIGHT);
-        right.set(array[OFFSET_RIGHT], array[OFFSET_RIGHT + 1], array[OFFSET_RIGHT + 2]);
-        headTransform.getTranslation(array, OFFSET_TRANSLATION);
-        headTranslation.set(array[OFFSET_TRANSLATION], array[OFFSET_TRANSLATION + 1], array[OFFSET_TRANSLATION + 2]);
-        headTransform.getQuaternion(array, OFFSET_QUATERNION);
-        headQuaternion.set(array[OFFSET_QUATERNION], array[OFFSET_QUATERNION + 1], array[OFFSET_QUATERNION + 2], array[OFFSET_QUATERNION + 3]);
-        headMatrix.set(headTransform.getHeadView());
-    }
-
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         long time = System.nanoTime();
@@ -526,24 +518,23 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
 //        }
 
         if (lrunning) {
-            synchronized (app.getRunnables()) {
-                app.getExecutedRunnables().clear();
-                app.getExecutedRunnables().addAll(app.getRunnables());
-                app.getRunnables().clear();
-            }
+            this.headTransform = headTransform;
 
-            for (int i = 0; i < app.getExecutedRunnables().size; i++) {
+            while (!app.getRunnableQueue().isEmpty()) {
+                final Runnable runnable = app.getRunnableQueue().poll();
                 try {
-                    app.getExecutedRunnables().get(i).run();
-                } catch (Throwable t) {
-                    t.printStackTrace();
+                    runnable.run();
+                } catch (Exception e) {
+                    Log.e(TAG, e.getMessage());
                 }
             }
-            handleHeadTransform(headTransform);
-            final VrAndroidInput input = GdxVr.input;
-//            if (!input.isControllerConnected())
-//                input.updateInputRay();
-            input.processEvents();
+
+            final Vector3 forward = getForward();
+            gvrAudioEngine.setHeadPosition(forward.x, forward.y, forward.z);
+            final Quaternion rotation = getHeadQuaternion();
+            gvrAudioEngine.setHeadRotation(rotation.x, rotation.y, rotation.z, rotation.w);
+            gvrAudioEngine.update();
+
             ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, leftEye, rightEye);
             frameId++;
         }
@@ -564,7 +555,7 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
 
     @Override
     public void onFinishFrame(Viewport viewport) {
-
+        ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onFinishFrame(viewport);
     }
 
     @Override
@@ -582,7 +573,13 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
 
     @Override
     public void onSurfaceCreated(EGLConfig eglConfig) {
-
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GdxVr.app.getVrApplicationAdapter().preloadSoundFiles(gvrAudioEngine);
+            }
+        }).start();
+        
         eglContext = ((EGL10) EGLContext.getEGL()).eglGetCurrentContext();
         gl20 = new AndroidGL20();
         Gdx.gl = gl20;
@@ -608,31 +605,46 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
     }
 
     public void onRendererShutdown() {
-        Gdx.app.log(LOG_TAG, "onRendererShutdown");
+        Log.i(TAG, "onRendererShutdown()");
     }
 
     public Vector3 getForward() {
+        headTransform.getForwardVector(array, OFFSET_FORWARD);
+        forward.set(array[OFFSET_FORWARD], array[OFFSET_FORWARD + 1], array[OFFSET_FORWARD + 2]);
         return forward;
     }
 
     public Vector3 getUp() {
+        headTransform.getUpVector(array, OFFSET_UP);
+        up.set(array[OFFSET_UP], array[OFFSET_UP + 1], array[OFFSET_UP + 2]);
         return up;
     }
 
     public Vector3 getRight() {
+        headTransform.getRightVector(array, OFFSET_RIGHT);
+        right.set(array[OFFSET_RIGHT], array[OFFSET_RIGHT + 1], array[OFFSET_RIGHT + 2]);
         return right;
     }
 
     public Vector3 getHeadTranslation() {
+        headTransform.getTranslation(array, OFFSET_TRANSLATION);
+        headTranslation.set(array[OFFSET_TRANSLATION], array[OFFSET_TRANSLATION + 1], array[OFFSET_TRANSLATION + 2]);
         return headTranslation;
     }
 
     public Matrix4 getHeadMatrix() {
+        headMatrix.set(headTransform.getHeadView());
         return headMatrix;
     }
 
     public Quaternion getHeadQuaternion() {
+        headTransform.getQuaternion(array, OFFSET_QUATERNION);
+        headQuaternion.set(array[OFFSET_QUATERNION], array[OFFSET_QUATERNION + 1], array[OFFSET_QUATERNION + 2], array[OFFSET_QUATERNION + 3]);
         return headQuaternion;
+    }
+
+    public GvrAudioEngine getGvrAudioEngine() {
+        return gvrAudioEngine;
     }
 
     private class AndroidDisplayMode extends DisplayMode {

@@ -44,20 +44,20 @@ public class LabelVR extends VirtualStage {
         return label;
     }
 
-    public void setStyle (Label.LabelStyle style) {
-        label.setStyle(style);
-    }
-    
     public Label.LabelStyle getStyle () {
         return label.getStyle();
     }
 
-    public void setText (CharSequence newText) {
-        label.setText(newText);
+    public void setStyle(Label.LabelStyle style) {
+        label.setStyle(style);
     }
 
     public StringBuilder getText () {
         return label.getText();
+    }
+
+    public void setText(CharSequence newText) {
+        label.setText(newText);
     }
 
     public GlyphLayout getGlyphLayout () {

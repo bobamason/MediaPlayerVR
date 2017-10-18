@@ -137,7 +137,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         }
     }
 
-    public void update() {
+    public void update(Matrix4 transform) {
         if (!prepared)
             return;
         synchronized (this) {
@@ -146,13 +146,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                 frameAvailable = false;
             }
         }
-    }
-
-    public void render(ModelBatch batch, int eyeType, Matrix4 transform) {
-        if (!prepared)
-            return;
-
-        shader.setUseFishEye(useFishEyeProjection);
 
         if (useFlatRectangle())
             mapDistortModel();
@@ -160,6 +153,13 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             mapDistortTextureCoordinates();
 
         modelInstance.transform.mulLeft(transform);
+    }
+
+    public void render(ModelBatch batch, int eyeType) {
+        if (!prepared)
+            return;
+
+        shader.setUseFishEye(useFishEyeProjection);
 
         if (isStereoscopic) {
             switch (eyeType) {

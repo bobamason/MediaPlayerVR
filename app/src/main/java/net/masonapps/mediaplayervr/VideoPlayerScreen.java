@@ -29,6 +29,7 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Pools;
+import com.google.android.exoplayer2.ext.gvr.GvrAudioProcessor;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.controller.Controller;
@@ -44,9 +45,8 @@ import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
-import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
-import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
 import org.masonapps.libgdxgooglevr.vr.VrActivityGVR;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
@@ -56,7 +56,7 @@ import java.nio.IntBuffer;
  * Created by Bob on 12/24/2016.
  */
 
-public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControllerInputListener, VrVideoPlayer.CompletionListener, VrVideoPlayer.ErrorListener {
+public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.CompletionListener, VrVideoPlayer.ErrorListener {
 
     private static final Vector3 tempV = new Vector3();
     private static final Quaternion tempQ = new Quaternion();
@@ -184,14 +184,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
 
     @Override
     public void show() {
-        GdxVr.input.getDaydreamControllerHandler().addListener(this);
+        super.show();
         GdxVr.input.setInputProcessor(container);
     }
 
     @Override
     public void hide() {
+        super.hide();
         pause();
-        GdxVr.input.getDaydreamControllerHandler().removeListener(this);
         GdxVr.input.setInputProcessor(null);
     }
 
@@ -210,7 +210,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         super.update();
         container.act();
         ui.update();
-        videoPlayer.update();
     }
 
     @SuppressLint("MissingSuperCall")
@@ -284,24 +283,17 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
         setCameraViewFromEye(rightEye, rightCamera);
         updateCamera(rightCamera);
 
-        transform.set(rotation.set(getHeadQuaternion()).conjugate());
+        final Quaternion headQuaternion = getHeadQuaternion();
+        if (videoPlayer instanceof VrVideoPlayerExo) {
+            final GvrAudioProcessor gvrAudioProcessor = ((VrVideoPlayerExo) videoPlayer).getGvrAudioProcessor();
+            if (gvrAudioProcessor != null) {
+                gvrAudioProcessor.updateOrientation(headQuaternion.w, headQuaternion.x, headQuaternion.y, headQuaternion.z);
+            }
+        }
 
-//        final Vector3 pos = Pools.obtain(Vector3.class);
-//        final Vector3 dir = Pools.obtain(Vector3.class);
-//        final Vector3 tmp = Pools.obtain(Vector3.class);
-//        final Vector3 tmp2 = Pools.obtain(Vector3.class);
-//        final Quaternion rot = Pools.obtain(Quaternion.class);
-//        pos.set(rectPosition).mul(getHeadQuaternion());
-//        dir.set(getForwardVector()).scl(-1);
-//        tmp.set(Vector3.Y).crs(dir).nor();
-//        tmp2.set(dir).crs(tmp).nor();
-//        rot.setFromAxes(tmp.x, tmp2.x, dir.x, tmp.y, tmp2.y, dir.y, tmp.z, tmp2.z, dir.z);
-//        rectEntity.modelInstance.transform.set(pos, rot).scale(rectScale, rectScale, 1f);
-//        Pools.free(pos);
-//        Pools.free(dir);
-//        Pools.free(tmp);
-//        Pools.free(tmp2);
-//        Pools.free(rot);
+        transform.set(rotation.set(headQuaternion).conjugate());
+
+        videoPlayer.update(transform);
     }
 
     private boolean shouldRenderMono() {
@@ -376,12 +368,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void render(Camera camera, int whichEye) {
         if (whichEye == Eye.Type.LEFT) {
             getModelBatch().begin(leftCamera);
-            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
+            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT);
             getModelBatch().end();
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0f;
         } else {
             getModelBatch().begin(rightCamera);
-            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
+            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT);
             getModelBatch().end();
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
         }
@@ -392,7 +384,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     public void setUiVisible(boolean uiVisible) {
         isUiVisible = uiVisible;
         ui.setVisible(isUiVisible);
-        game.setInputVisible(uiVisible);
+        game.setCursorVisible(uiVisible);
+        game.setControllerVisible(uiVisible);
         invalidateProjection();
     }
 
@@ -406,12 +399,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     @Override
-    public void onConnectionStateChange(int connectionState) {
-
-    }
-
-    @Override
-    public void onButtonEvent(Controller controller, DaydreamButtonEvent event) {
+    public void onControllerButtonEvent(Controller controller, DaydreamButtonEvent event) {
+        super.onControllerButtonEvent(controller, event);
         switch (event.button) {
             case DaydreamButtonEvent.BUTTON_TOUCHPAD:
                 if (event.action == DaydreamButtonEvent.ACTION_DOWN) {
@@ -438,7 +427,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements DaydreamControll
     }
 
     @Override
-    public void onTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
+    public void onControllerTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
+        super.onControllerTouchPadEvent(controller, event);
         if (!isButtonClicked) {
             if (ui.thumbSeekbarLayout.isVisible())
                 ui.thumbSeekbarLayout.onTouchPadEvent(event);

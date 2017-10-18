@@ -5,21 +5,30 @@ import android.support.annotation.Nullable;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
+import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
+import com.badlogic.gdx.graphics.g3d.model.data.ModelData;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.utils.UBJsonReader;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
+import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
+import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
+import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrCursor;
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
 import org.masonapps.libgdxgooglevr.vr.VrApplicationAdapter;
@@ -28,32 +37,53 @@ import org.masonapps.libgdxgooglevr.vr.VrApplicationAdapter;
  * Created by Bob on 12/22/2016.
  */
 
-public class VrGame extends VrApplicationAdapter {
-    private static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
+public class VrGame extends VrApplicationAdapter implements DaydreamControllerInputListener {
+    public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
     protected VrScreen screen;
     protected Ray ray = new Ray();
-    protected boolean isInputVisible = true;
+    protected boolean isCursorVisible = true;
     protected VrCursor cursor;
-    protected AssetManager assets;
-    private boolean loading = true;
     private ShapeRenderer shapeRenderer;
     private Color cursorColor1 = new Color(1f, 1f, 1f, 1f);
     private Color cursorColor2 = new Color(1f, 1f, 1f, 0f);
     @Nullable
     private ModelInstance controllerInstance = null;
     private ModelBatch modelBatch;
+    private AssetManager assets;
+    private boolean isControllerVisible = true;
+    private boolean loadingAssets = false;
+
+    private static boolean shouldShowCursor(VrInputProcessor vrInputProcessor) {
+        return vrInputProcessor != null && vrInputProcessor.isCursorOver() && vrInputProcessor.getHitPoint3D() != null;
+    }
 
     @Override
     public void create() {
         super.create();
-        modelBatch = createModelBatch();
         assets = new AssetManager();
+        modelBatch = createModelBatch();
         cursor = new VrCursor();
         cursor.setDeactivatedDiameter(0.02f);
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
-        loadAsset(CONTROLLER_FILENAME, Model.class);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GdxVr.app.postRunnable(new Runnable() {
+                    @Override
+                    public void run() {
+                        final ModelData modelData = new G3dModelLoader(new UBJsonReader(), new InternalFileHandleResolver()).loadModelData(GdxVr.files.internal(CONTROLLER_FILENAME));
+                        GdxVr.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                controllerInstance = new ModelInstance(new Model(modelData));
+                            }
+                        });
+                    }
+                });
+            }
+        }).start();
     }
 
     protected ModelBatch createModelBatch() {
@@ -63,30 +93,39 @@ public class VrGame extends VrApplicationAdapter {
     @Override
     public void pause() {
         if (screen != null) screen.pause();
+        GdxVr.input.removeDaydreamControllerListener(this);
     }
 
     @Override
     public void resume() {
         if (screen != null) screen.resume();
+        GdxVr.input.addDaydreamControllerListener(this);
+    }
+
+    protected void doneLoading(AssetManager assets) {
+
     }
 
     @Override
     @CallSuper
     public void update() {
-        if (loading) {
+        if (loadingAssets) {
             if (assets.update()) {
                 doneLoading(assets);
-                loading = false;
+                loadingAssets = false;
             }
         }
+        final VrInputProcessor vrInputProcessor = GdxVr.input.getVrInputProcessor();
+        if (shouldShowCursor(vrInputProcessor)) {
+            cursor.position.set(vrInputProcessor.getHitPoint3D());
+            cursor.lookAtTarget(ray.origin, Vector3.Y);
+            cursor.setVisible(true);
+        } else {
+            cursor.position.set(ray.direction.x + ray.origin.x, ray.direction.y + ray.origin.y, ray.direction.z + ray.origin.z);
+            cursor.lookAtTarget(ray.origin, Vector3.Y);
+            cursor.setVisible(!GdxVr.input.isControllerConnected());
+        }
         if (screen != null) screen.update();
-    }
-
-    @CallSuper
-    protected void doneLoading(AssetManager assets) {
-        if (controllerInstance == null)
-            controllerInstance = new ModelInstance(assets.get(CONTROLLER_FILENAME, Model.class));
-        if (screen != null) screen.doneLoading(assets);
     }
 
     @Override
@@ -97,14 +136,21 @@ public class VrGame extends VrApplicationAdapter {
 
     @Override
     public void render(Camera camera, int whichEye) {
-        if (screen != null) screen.render(camera, whichEye);
-        if (controllerInstance != null && GdxVr.input.isControllerConnected() && isInputVisible) {
+        if (screen != null)
+            screen.render(camera, whichEye);
+
+        renderController(camera);
+
+        if (isCursorVisible)
+            renderCursor(camera);
+    }
+
+    protected void renderController(Camera camera) {
+        if (controllerInstance != null && GdxVr.input.isControllerConnected() && isControllerVisible) {
             modelBatch.begin(camera);
             modelBatch.render(controllerInstance);
             modelBatch.end();
         }
-        if (isInputVisible)
-            renderCursor(camera);
     }
 
     protected void renderCursor(Camera camera) {
@@ -119,6 +165,7 @@ public class VrGame extends VrApplicationAdapter {
         }
         cursor.render(camera);
         Gdx.gl.glDisable(GL20.GL_BLEND);
+        if (screen != null) screen.renderAfterCursor(camera);
     }
 
     @Override
@@ -134,28 +181,34 @@ public class VrGame extends VrApplicationAdapter {
     }
 
     @Override
+    public void onFinishFrame(Viewport viewport) {
+        super.onFinishFrame(viewport);
+        if (screen != null) screen.onFinishFrame(viewport);
+    }
+
+    @Override
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
-        super.onDaydreamControllerUpdate(controller, connectionState);
         if (GdxVr.input.isControllerConnected()) {
             ray.set(GdxVr.input.getInputRay());
             if (controllerInstance != null) {
                 controllerInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), controllerScale);
             }
-            final VrInputProcessor vrInputProcessor = GdxVr.input.getVrInputProcessor();
-            if (vrInputProcessor != null && vrInputProcessor.isCursorOver()) {
-                cursor.position.set(vrInputProcessor.getHitPoint3D());
-                cursor.lookAtTarget(ray.origin, Vector3.Y);
-//                floatAction.restart();
-                cursor.setVisible(true);
-            } else {
-                cursor.position.set(ray.direction.x + ray.origin.x, ray.direction.y + ray.origin.y, ray.direction.z + ray.origin.z);
-                cursor.lookAtTarget(ray.origin, Vector3.Y);
-//                floatAction.setReverse(true);
-//                floatAction.restart();
-                cursor.setVisible(false);
-            }
         }
-        if (screen != null) screen.onDaydreamControllerUpdate(controller, connectionState);
+    }
+
+    @Override
+    public void onControllerButtonEvent(Controller controller, DaydreamButtonEvent event) {
+
+    }
+
+    @Override
+    public void onControllerTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
+
+    }
+
+    @Override
+    public void onControllerConnectionStateChange(int connectionState) {
+
     }
 
     @Override
@@ -164,15 +217,27 @@ public class VrGame extends VrApplicationAdapter {
         if (screen != null) screen.onCardboardTrigger();
     }
 
+    public void loadAsset(String fileName, Class type) {
+        assets.load(fileName, type);
+        loadingAssets = true;
+    }
+
+    public void loadAsset(String fileName, Class type, AssetLoaderParameters params) {
+        assets.load(fileName, type, params);
+        loadingAssets = true;
+    }
+
+    public void loadAsset(AssetDescriptor desc) {
+        assets.load(desc);
+        loadingAssets = true;
+    }
+
     @Override
     public void dispose() {
         super.dispose();
         if (shapeRenderer != null)
             shapeRenderer.dispose();
         shapeRenderer = null;
-        if (assets != null)
-            assets.dispose();
-        assets = null;
         if (modelBatch != null) {
             modelBatch.dispose();
         }
@@ -189,16 +254,6 @@ public class VrGame extends VrApplicationAdapter {
                 e.printStackTrace();
             }
         }
-    }
-
-    public void loadAsset(String filename, Class<?> type) {
-        assets.load(filename, type);
-        loading = true;
-    }
-
-    public void loadAsset(AssetDescriptor desc) {
-        assets.load(desc);
-        loading = true;
     }
 
     public ModelBatch getModelBatch() {
@@ -225,27 +280,27 @@ public class VrGame extends VrApplicationAdapter {
         }
     }
 
-    public AssetManager getAssets() {
-        return assets;
-    }
-
-    public boolean isLoading() {
-        return loading;
-    }
-
     public Ray getControllerRay() {
         return ray;
     }
 
-    public boolean isInputVisible() {
-        return isInputVisible;
+    public boolean isCursorVisible() {
+        return isCursorVisible;
     }
 
-    public void setInputVisible(boolean visible) {
-        isInputVisible = visible;
+    public void setCursorVisible(boolean visible) {
+        isCursorVisible = visible;
+    }
+
+    public void setControllerVisible(boolean controllerVisible) {
+        this.isControllerVisible = controllerVisible;
     }
 
     public VrCursor getCursor() {
         return cursor;
+    }
+
+    public AssetManager getAssets() {
+        return assets;
     }
 }

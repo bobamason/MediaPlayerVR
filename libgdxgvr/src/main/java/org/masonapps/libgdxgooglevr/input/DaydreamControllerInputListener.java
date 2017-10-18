@@ -8,9 +8,11 @@ import com.google.vr.sdk.controller.Controller;
 
 public interface DaydreamControllerInputListener {
 
-    void onConnectionStateChange(int connectionState);
+    void onDaydreamControllerUpdate(Controller controller, int connectionState);
 
-    void onButtonEvent(Controller controller, DaydreamButtonEvent event);
+    void onControllerButtonEvent(Controller controller, DaydreamButtonEvent event);
 
-    void onTouchPadEvent(Controller controller, DaydreamTouchEvent event);
+    void onControllerTouchPadEvent(Controller controller, DaydreamTouchEvent event);
+
+    void onControllerConnectionStateChange(int connectionState);
 }

@@ -9,7 +9,8 @@ import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
-import org.masonapps.libgdxgooglevr.input.VrUiContainer;
+import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
+
 
 /**
  * Created by Bob on 2/8/2017.
@@ -46,8 +47,8 @@ public class VideoPlayerGUI extends BaseUiLayout {
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
         thumbSeekbarLayout = new ThumbSeekbarLayout(spriteBatch, skin);
-        thumbSeekbarLayout.stage.setPosition(0, -1f, -1.5f);
-        thumbSeekbarLayout.stage.recalculateTransform();
+        thumbSeekbarLayout.dialogVR.setPosition(0, -1f, -1.5f);
+        thumbSeekbarLayout.dialogVR.recalculateTransform();
         thumbSeekbarLayout.setVisible(false);
         thumbSeekbarLayout.setListener(new ThumbSeekbarLayout.OnThumbSeekListener() {
             @Override

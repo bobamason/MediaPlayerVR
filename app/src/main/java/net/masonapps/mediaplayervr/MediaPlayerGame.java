@@ -183,19 +183,13 @@ public class MediaPlayerGame extends VrGame {
     public void playVideo(final VideoDetails videoDetails) {
         if (!waitingToPlayVideo) {
             waitingToPlayVideo = true;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    final VideoOptions videoOptions = getVideoOptionsDatabaseHelper().getVideoOptionsByTitle(videoDetails.title);
-                    Log.d(MediaPlayerGame.class.getSimpleName(), (videoOptions == null ? "no save video options found for " : "video options loaded for ") + videoDetails.title);
-                    GdxVr.app.postRunnable(new Runnable() {
-                        @Override
-                        public void run() {
-                            setScreen(new VideoPlayerScreen(MediaPlayerGame.this, context, videoDetails, videoOptions));
-                            waitingToPlayVideo = false;
-                        }
-                    });
-                }
+            new Thread(() -> {
+                final VideoOptions videoOptions = getVideoOptionsDatabaseHelper().getVideoOptionsByTitle(videoDetails.title);
+                Log.d(MediaPlayerGame.class.getSimpleName(), (videoOptions == null ? "no save video options found for " : "video options loaded for ") + videoDetails.title);
+                GdxVr.app.postRunnable(() -> {
+                    setScreen(new VideoPlayerScreen(MediaPlayerGame.this, context, videoDetails, videoOptions));
+                    waitingToPlayVideo = false;
+                });
             }).start();
         }
     }
@@ -210,7 +204,8 @@ public class MediaPlayerGame extends VrGame {
     }
 
     public void goToSelectionScreen() {
-        setInputVisible(true);
+        setCursorVisible(true);
+        setControllerVisible(true);
         if (mediaSelectionScreen == null)
             mediaSelectionScreen = new MediaSelectionScreen(context, this);
         if (getScreen() instanceof VideoPlayerScreen) {

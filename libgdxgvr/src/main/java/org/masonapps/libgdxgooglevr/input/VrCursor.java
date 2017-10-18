@@ -9,9 +9,9 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Pools;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.utils.Vecs;
 
 /**
  * Created by Bob on 12/28/2016.
@@ -108,16 +108,19 @@ public class VrCursor {
     }
 
     public void lookAtTarget(Vector3 target, Vector3 up) {
-        lookAt(Vecs.obtainV3().set(target).sub(this.position), up);
+        final Vector3 temp = Pools.obtain(Vector3.class);
+        lookAt(temp.set(target).sub(this.position), up);
+        Pools.free(temp);
     }
 
     public void lookAt(Vector3 direction, Vector3 up) {
-        final Vector3 temp = Vecs.obtainV3();
-        final Vector3 temp2 = Vecs.obtainV3();
+        final Vector3 temp = Pools.obtain(Vector3.class);
+        final Vector3 temp2 = Pools.obtain(Vector3.class);
         temp.set(up).crs(direction).nor();
         temp2.set(direction).crs(temp).nor();
         rotation.setFromAxes(temp.x, temp2.x, direction.x, temp.y, temp2.y, direction.y, temp.z, temp2.z, direction.z);
-        Vecs.freeAll();
+        Pools.free(temp);
+        Pools.free(temp2);
     }
 
     public Color getColor() {

@@ -44,7 +44,7 @@ public class BulletEntity extends Entity {
                 this.motionState = new MotionState(this.modelInstance != null ? this.modelInstance.transform : new Matrix4());
                 ((btRigidBody) this.body).setMotionState(motionState);
             } else {
-                body.setWorldTransform(transform);
+                body.setWorldTransform(modelInstance.transform);
             }
         }
     }

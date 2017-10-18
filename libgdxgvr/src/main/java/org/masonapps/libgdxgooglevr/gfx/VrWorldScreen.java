@@ -4,7 +4,6 @@ import android.support.annotation.CallSuper;
 import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -17,12 +16,18 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.controller.Controller;
+
+import org.masonapps.libgdxgooglevr.GdxVr;
+import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
+import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
+import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 
 /**
  * Created by Bob on 10/9/2016.
  */
 
-public abstract class VrWorldScreen extends VrScreen {
+public abstract class VrWorldScreen extends VrScreen implements DaydreamControllerInputListener {
     protected Environment environment;
     protected World world;
     private Array<Disposable> disposables = new Array<>();
@@ -82,12 +87,28 @@ public abstract class VrWorldScreen extends VrScreen {
     public void resume() {
     }
 
-    public void loadAsset(String filename, Class<?> type) {
-        game.loadAsset(filename, type);
+    public void runOnGLThread(Runnable runnable) {
+        GdxVr.app.postRunnable(runnable);
     }
 
-    public void loadAsset(AssetDescriptor desc) {
-        game.loadAsset(desc);
+    @Override
+    public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
+
+    }
+
+    @Override
+    public void onControllerButtonEvent(Controller controller, DaydreamButtonEvent event) {
+
+    }
+
+    @Override
+    public void onControllerTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
+
+    }
+
+    @Override
+    public void onControllerConnectionStateChange(int connectionState) {
+
     }
 
     @Override
@@ -149,10 +170,6 @@ public abstract class VrWorldScreen extends VrScreen {
 
     public void manageDisposable(Disposable disposable) {
         this.disposables.add(disposable);
-    }
-
-    public boolean isLoading() {
-        return game.isLoading();
     }
 
     public Ray getControllerRay() {

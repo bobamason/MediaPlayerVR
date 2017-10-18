@@ -2,22 +2,26 @@ package net.masonapps.mediaplayervr.video;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Surface;
 
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.google.android.exoplayer2.C;
+import com.badlogic.gdx.math.Matrix4;
 import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
-import com.google.android.exoplayer2.Renderer;
+import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
+import com.google.android.exoplayer2.audio.AudioProcessor;
+import com.google.android.exoplayer2.ext.gvr.GvrAudioProcessor;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -32,10 +36,12 @@ import java.io.IOException;
  * Created by Bob on 12/21/2016.
  */
 
-public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventListener, ExtractorMediaSource.EventListener {
+public class VrVideoPlayerExo extends VrVideoPlayer implements Player.EventListener, ExtractorMediaSource.EventListener {
 
     public static final String TAG = VrVideoPlayerExo.class.getSimpleName();
-    private ExoPlayer exoPlayer;
+    @Nullable
+    private GvrAudioProcessor gvrAudioProcessor;
+    private SimpleExoPlayer exoPlayer;
 
     public VrVideoPlayerExo(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
         super(context, uri, width, height, rectModel, sphereModel, cylinderModel);
@@ -50,15 +56,16 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
         final TrackSelector trackSelector = new DefaultTrackSelector();
 //                    final LoadControl loadControl = new DefaultLoadControl(new DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE * 4),DefaultLoadControl.DEFAULT_MIN_BUFFER_MS / 8, DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 8, DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS, DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS);
         final LoadControl loadControl = new DefaultLoadControl();
-        Renderer[] renderers = new Renderer[2];
-        final MediaCodecVideoRendererNoDrop mediaCodecVideoRendererNoDrop = new MediaCodecVideoRendererNoDrop(context, MediaCodecSelector.DEFAULT);
-        mediaCodecVideoRendererNoDrop.setDropLateFrames(false);
+//        Renderer[] renderers = new Renderer[2];
+//        final MediaCodecVideoRendererNoDrop mediaCodecVideoRendererNoDrop = new MediaCodecVideoRendererNoDrop(context, MediaCodecSelector.DEFAULT);
+//        mediaCodecVideoRendererNoDrop.setDropLateFrames(false);
 //        mediaCodecVideoRendererNoDrop.setDropLateFrames(true);
-        mediaCodecVideoRendererNoDrop.setDropLateMs(30);
-        renderers[0] = mediaCodecVideoRendererNoDrop;
-        renderers[1] = new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT);
-        exoPlayer = ExoPlayerFactory.newInstance(renderers, trackSelector, loadControl);
-        exoPlayer.sendMessages(new ExoPlayer.ExoPlayerMessage(renderers[0], C.MSG_SET_SURFACE, new Surface(videoTexture)));
+//        mediaCodecVideoRendererNoDrop.setDropLateMs(30);
+//        renderers[0] = mediaCodecVideoRendererNoDrop;
+//        renderers[1] = new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT);
+        gvrAudioProcessor = new GvrAudioProcessor();
+        exoPlayer = ExoPlayerFactory.newSimpleInstance(new GvrRenderersFactory(context, gvrAudioProcessor), trackSelector, loadControl);
+        exoPlayer.setVideoSurface(new Surface(videoTexture));
         exoPlayer.addListener(VrVideoPlayerExo.this);
     }
 
@@ -85,7 +92,7 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
         return true;
     }
 
-    public void update() {
+    public void update(Matrix4 transform) {
         if (!prepared) {
             return;
         }
@@ -127,6 +134,8 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
         if (exoPlayer != null) {
             exoPlayer.removeListener(this);
             exoPlayer.release();
+            exoPlayer = null;
+            gvrAudioProcessor = null;
         }
         super.dispose();
     }
@@ -138,6 +147,11 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
 
     public ExoPlayer getExoPlayer() {
         return exoPlayer;
+    }
+
+    @Nullable
+    public GvrAudioProcessor getGvrAudioProcessor() {
+        return gvrAudioProcessor;
     }
 
     @Override
@@ -168,18 +182,23 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
-            case ExoPlayer.STATE_READY:
+            case Player.STATE_READY:
                 break;
-            case ExoPlayer.STATE_IDLE:
+            case Player.STATE_IDLE:
                 break;
-            case ExoPlayer.STATE_BUFFERING:
+            case Player.STATE_BUFFERING:
                 break;
-            case ExoPlayer.STATE_ENDED:
+            case Player.STATE_ENDED:
                 if (completionListener != null) {
                     completionListener.onCompletion();
                 }
                 break;
         }
+    }
+
+    @Override
+    public void onRepeatModeChanged(int repeatMode) {
+
     }
 
     @Override
@@ -192,7 +211,12 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
 
     @Override
     public void onPositionDiscontinuity() {
-        Log.e(TAG, "onPositionDiscontinuity() called");
+//        Log.e(TAG, "onPositionDiscontinuity() called");
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+
     }
 
     @Override
@@ -216,5 +240,26 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements ExoPlayer.EventLi
     @Override
     public long getDuration() {
         return exoPlayer.getDuration();
+    }
+
+    private static final class GvrRenderersFactory extends DefaultRenderersFactory {
+
+        private final GvrAudioProcessor gvrAudioProcessor;
+
+        private GvrRenderersFactory(Context context, GvrAudioProcessor gvrAudioProcessor) {
+            super(context);
+            this.gvrAudioProcessor = gvrAudioProcessor;
+        }
+
+        @Override
+        public AudioProcessor[] buildAudioProcessors() {
+            return new AudioProcessor[]{gvrAudioProcessor};
+        }
+
+//        @Override
+//        protected void buildVideoRenderers(Context context, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, long allowedVideoJoiningTimeMs, Handler eventHandler, VideoRendererEventListener eventListener, int extensionRendererMode, ArrayList<Renderer> out) {
+//            super.buildVideoRenderers(context, drmSessionManager, allowedVideoJoiningTimeMs, eventHandler, eventListener, extensionRendererMode, out);
+//            out.add(new MediaCodecVideoRendererNoDrop());
+//        }
     }
 }

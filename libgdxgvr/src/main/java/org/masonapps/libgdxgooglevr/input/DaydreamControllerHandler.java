@@ -24,10 +24,14 @@ public class DaydreamControllerHandler {
     }
 
     public void process(Controller controller, int connectionState) {
+        for (DaydreamControllerInputListener listener : listeners) {
+            listener.onDaydreamControllerUpdate(controller, connectionState);
+        }
+        
         if (currentConnectionState != connectionState) {
             currentConnectionState = connectionState;
             for (DaydreamControllerInputListener listener : listeners) {
-                listener.onConnectionStateChange(connectionState);
+                listener.onControllerConnectionStateChange(connectionState);
             }
         }
 
@@ -78,13 +82,13 @@ public class DaydreamControllerHandler {
             }
             if (controller.isTouching) {
                 if (!isTouching) {
-                    postTouchpadEvent(controller, DaydreamTouchEvent.ACTION_DOWN, controller.touch.x, controller.touch.y);
+                    postTouchPadEvent(controller, DaydreamTouchEvent.ACTION_DOWN, controller.touch.x, controller.touch.y);
                 }
                 isTouching = true;
-                postTouchpadEvent(controller, DaydreamTouchEvent.ACTION_MOVE, controller.touch.x, controller.touch.y);
+                postTouchPadEvent(controller, DaydreamTouchEvent.ACTION_MOVE, controller.touch.x, controller.touch.y);
             } else {
                 if (isTouching) {
-                    postTouchpadEvent(controller, DaydreamTouchEvent.ACTION_UP, controller.touch.x, controller.touch.y);
+                    postTouchPadEvent(controller, DaydreamTouchEvent.ACTION_UP, controller.touch.x, controller.touch.y);
                 }
                 isTouching = false;
             }
@@ -96,19 +100,19 @@ public class DaydreamControllerHandler {
         event.action = action;
         event.button = button;
         for (DaydreamControllerInputListener listener : listeners) {
-            listener.onButtonEvent(controller, event);
+            listener.onControllerButtonEvent(controller, event);
         }
         Pools.free(event);
 
     }
 
-    private void postTouchpadEvent(Controller controller, int action, float x, float y) {
+    private void postTouchPadEvent(Controller controller, int action, float x, float y) {
         DaydreamTouchEvent event = Pools.obtain(DaydreamTouchEvent.class);
         event.action = action;
         event.x = x;
         event.y = y;
         for (DaydreamControllerInputListener listener : listeners) {
-            listener.onTouchPadEvent(controller, event);
+            listener.onControllerTouchPadEvent(controller, event);
         }
         Pools.free(event);
     }
@@ -116,7 +120,7 @@ public class DaydreamControllerHandler {
     public void addListener(DaydreamControllerInputListener listener) {
         listeners.add(listener);
         if (currentConnectionState == Controller.ConnectionStates.CONNECTED)
-            listener.onConnectionStateChange(currentConnectionState);
+            listener.onControllerConnectionStateChange(currentConnectionState);
     }
 
     public void removeListener(DaydreamControllerInputListener listener) {

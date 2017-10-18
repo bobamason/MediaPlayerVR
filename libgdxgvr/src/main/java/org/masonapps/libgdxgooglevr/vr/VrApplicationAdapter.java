@@ -7,10 +7,10 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
-import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 
@@ -30,11 +30,16 @@ public abstract class VrApplicationAdapter implements ApplicationListener {
     public void create() {
     }
 
+    public void preloadSoundFiles(GvrAudioEngine gvrAudioEngine) {
+    }
+
     @CallSuper
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
         onNewFrame(headTransform);
-        onDrawEye(leftEye);
-        onDrawEye(rightEye);
+        if (leftEye != null)
+            onDrawEye(leftEye);
+        if (rightEye != null)
+            onDrawEye(rightEye);
     }
 
     @CallSuper
@@ -54,10 +59,6 @@ public abstract class VrApplicationAdapter implements ApplicationListener {
     }
 
     public void render(Camera camera, int whichEye) {
-    }
-
-    @CallSuper
-    public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
     }
 
     public void onCardboardTrigger() {
@@ -106,5 +107,13 @@ public abstract class VrApplicationAdapter implements ApplicationListener {
 
     public VrCamera getVrCamera() {
         return vrCamera;
+    }
+
+    public void onFinishFrame(Viewport viewport) {
+
+    }
+
+    public GvrAudioEngine getGvrAudioEngine() {
+        return GdxVr.graphics.getGvrAudioEngine();
     }
 }

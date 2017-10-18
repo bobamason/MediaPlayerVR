@@ -38,6 +38,7 @@ import com.badlogic.gdx.utils.SnapshotArray;
 import com.google.vr.cardboard.FullscreenMode;
 import com.google.vr.ndk.base.GvrApi;
 import com.google.vr.ndk.base.GvrLayout;
+import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.AndroidCompat;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
@@ -46,6 +47,8 @@ import com.google.vrtoolkit.cardboard.ScreenOnFlagHelper;
 import org.masonapps.libgdxgooglevr.GdxVr;
 
 import java.lang.ref.WeakReference;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by Bob on 10/9/2016.
@@ -53,6 +56,9 @@ import java.lang.ref.WeakReference;
  */
 
 public class VrActivity extends Activity {
+
+    public static final String TAG = VrActivity.class.getName();
+
     static {
         GdxNativesLoader.load();
     }
@@ -65,6 +71,7 @@ public class VrActivity extends Activity {
     private GLSurfaceView surfaceView;
     private FullscreenMode fullscreenMode;
     private VrApplication app;
+    private GvrAudioEngine gvrAudioEngine;
 //    private int wasFocusChanged = -1;
 //    private boolean isWaitingForAudio = false;
 
@@ -78,7 +85,7 @@ public class VrActivity extends Activity {
 
         AndroidCompat.setVrModeEnabled(this, true);
         AndroidCompat.setSustainedPerformanceMode(this, true);
-        
+
         gvrLayout = new GvrLayout(this);
         surfaceView = new GLSurfaceView(this);
         surfaceView.setEGLContextClientVersion(2);
@@ -106,7 +113,8 @@ public class VrActivity extends Activity {
 
     public void initialize(VrApplicationAdapter adapter) {
 
-        app.graphics = new VrGraphicsGVR(app);
+        gvrAudioEngine = new GvrAudioEngine(this, GvrAudioEngine.RenderingMode.BINAURAL_HIGH_QUALITY);
+        app.graphics = new VrGraphicsGVR(app, gvrAudioEngine);
         // TODO: 7/20/2017 uncomment 
 //        app.graphics = new VrGraphics(app, new WeakReference<>(getSurfaceView()), gvrLayout.getGvrApi());
 //        surfaceView.setRenderer(app.graphics);
@@ -165,6 +173,7 @@ public class VrActivity extends Activity {
             }
         });
         gvrLayout.onPause();
+        gvrAudioEngine.pause();
         this.screenOnFlagHelper.stop();
 
         app.input.onPause();
@@ -173,6 +182,7 @@ public class VrActivity extends Activity {
 //            graphics.clearManagedCaches();
 //            graphics.destroy();
 //        }
+        Log.i(TAG, "onPause()");
 
         super.onPause();
     }
@@ -180,8 +190,9 @@ public class VrActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i(TAG, "onResume()");
         gvrLayout.onResume();
-
+        gvrAudioEngine.resume();
 
         this.fullscreenMode.goFullscreen();
         this.screenOnFlagHelper.start();
@@ -242,6 +253,7 @@ public class VrActivity extends Activity {
             gvrLayout.shutdown();
             gvrLayout = null;
         }
+        Log.i(TAG, "onDestroy()");
         super.onDestroy();
     }
 
@@ -254,11 +266,13 @@ public class VrActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        Log.i(TAG, "onStart()");
         controllerManager.start();
     }
 
     @Override
     protected void onStop() {
+        Log.i(TAG, "onStop()");
         controllerManager.stop();
         super.onStop();
     }
@@ -306,9 +320,8 @@ public class VrActivity extends Activity {
      */
     public static class VrApplication implements AndroidApplicationBase {
 
-        protected final Array<Runnable> runnables = new Array<Runnable>();
-        protected final Array<Runnable> executedRunnables = new Array<Runnable>();
         protected final SnapshotArray<LifecycleListener> lifecycleListeners = new SnapshotArray<>();
+        private final Queue<Runnable> runnables = new LinkedBlockingQueue<>();
         private final Array<AndroidEventListener> androidEventListeners = new Array<AndroidEventListener>();
         public Handler handler;
         protected VrGraphicsGVR graphics;
@@ -324,12 +337,31 @@ public class VrActivity extends Activity {
 
         public VrApplication(WeakReference<Activity> activityRef) {
             this.activityRef = activityRef;
+            clipboard = (AndroidClipboard) getClipboard();
         }
 
         @Override
         @Nullable
         public Context getContext() {
             return activityRef.get();
+        }
+
+        public Queue<Runnable> getRunnableQueue() {
+            return runnables;
+        }
+
+        @Override
+        public Array<Runnable> getRunnables() {
+            throw new UnsupportedOperationException("method not supported in " + VrApplication.class.getSimpleName() + " use Queue<Runnable> getRunnableQueue() instead");
+        }
+
+        @Override
+        public Array<Runnable> getExecutedRunnables() {
+            throw new UnsupportedOperationException("method not supported in " + VrApplication.class.getSimpleName() + " use Queue<Runnable> getRunnableQueue() instead");
+        }
+
+        public WeakReference<Activity> getActivityWeakReference() {
+            return activityRef;
         }
 
         @Override
@@ -396,16 +428,6 @@ public class VrActivity extends Activity {
         @Override
         public Net getNet() {
             return net;
-        }
-
-        @Override
-        public Array<Runnable> getRunnables() {
-            return runnables;
-        }
-
-        @Override
-        public Array<Runnable> getExecutedRunnables() {
-            return executedRunnables;
         }
 
         @Override
@@ -500,9 +522,7 @@ public class VrActivity extends Activity {
 
         @Override
         public void postRunnable(Runnable runnable) {
-            synchronized (runnables) {
-                runnables.add(runnable);
-            }
+            runnables.offer(runnable);
         }
 
         @Override
@@ -581,7 +601,7 @@ public class VrActivity extends Activity {
         @Override
         public void onConnectionStateChanged(int state) {
             connectionState = state;
-            getSurfaceView().queueEvent(this);
+            app.postRunnable(this);
         }
 
         @Override
@@ -593,7 +613,7 @@ public class VrActivity extends Activity {
 
         @Override
         public void onUpdate() {
-            getSurfaceView().queueEvent(this);
+            app.postRunnable(this);
         }
 
         // Update the various TextViews in the UI thread.
@@ -601,7 +621,6 @@ public class VrActivity extends Activity {
         public void run() {
             controller.update();
             app.input.onDaydreamControllerUpdate(controller, connectionState);
-            app.vrApplicationAdapter.onDaydreamControllerUpdate(controller, connectionState);
         }
     }
 }

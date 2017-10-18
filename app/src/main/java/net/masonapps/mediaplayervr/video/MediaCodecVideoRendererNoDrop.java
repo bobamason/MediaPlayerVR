@@ -300,8 +300,7 @@ public class MediaCodecVideoRendererNoDrop extends MediaCodecRenderer {
                 requiresSecureDecryption |= drmInitData.get(i).requiresSecureDecryption;
             }
         }
-        MediaCodecInfo decoderInfo = mediaCodecSelector.getDecoderInfo(mimeType,
-                requiresSecureDecryption, false);
+        MediaCodecInfo decoderInfo = mediaCodecSelector.getDecoderInfo(mimeType, requiresSecureDecryption);
         if (decoderInfo == null) {
             return FORMAT_UNSUPPORTED_SUBTYPE;
         }
@@ -309,12 +308,7 @@ public class MediaCodecVideoRendererNoDrop extends MediaCodecRenderer {
         boolean decoderCapable = decoderInfo.isCodecSupported(format.codecs);
         if (decoderCapable && format.width > 0 && format.height > 0) {
             if (Util.SDK_INT >= 21) {
-                if (format.frameRate > 0) {
-                    decoderCapable = decoderInfo.isVideoSizeAndRateSupportedV21(format.width, format.height,
-                            format.frameRate);
-                } else {
-                    decoderCapable = decoderInfo.isVideoSizeSupportedV21(format.width, format.height);
-                }
+                decoderCapable = decoderInfo.isVideoSizeAndRateSupportedV21(format.width, format.height, format.frameRate == 0 ? Format.NO_VALUE : format.frameRate);
             } else {
                 decoderCapable = format.width * format.height <= MediaCodecUtil.maxH264DecodableFrameSize();
                 if (!decoderCapable) {
@@ -330,16 +324,15 @@ public class MediaCodecVideoRendererNoDrop extends MediaCodecRenderer {
     }
 
     @Override
+    protected void configureCodec(MediaCodecInfo codecInfo, MediaCodec codec, Format format, MediaCrypto crypto) throws MediaCodecUtil.DecoderQueryException {
+
+    }
+
+    @Override
     protected void onEnabled(boolean joining) throws ExoPlaybackException {
         super.onEnabled(joining);
         eventDispatcher.enabled(decoderCounters);
         frameReleaseTimeHelper.enable();
-    }
-
-    @Override
-    protected void onStreamChanged(Format[] formats) throws ExoPlaybackException {
-        streamFormats = formats;
-        super.onStreamChanged(formats);
     }
 
     @Override
@@ -353,7 +346,7 @@ public class MediaCodecVideoRendererNoDrop extends MediaCodecRenderer {
 
     @Override
     public boolean isReady() {
-        if ((renderedFirstFrame || super.shouldInitCodec()) && super.isReady()) {
+        if ((renderedFirstFrame || super.shouldInitCodec(null)) && super.isReady()) {
             // Ready. If we were joining then we've now joined, so clear the joining deadline.
             joiningDeadlineMs = C.TIME_UNSET;
             return true;
@@ -429,18 +422,6 @@ public class MediaCodecVideoRendererNoDrop extends MediaCodecRenderer {
                 maybeInitCodec();
             }
         }
-    }
-
-    @Override
-    protected boolean shouldInitCodec() {
-        return super.shouldInitCodec() && surface != null && surface.isValid();
-    }
-
-    @Override
-    protected void configureCodec(MediaCodec codec, Format format, MediaCrypto crypto) {
-        codecMaxValues = getCodecMaxValues(format, streamFormats);
-        MediaFormat mediaFormat = getMediaFormat(format, codecMaxValues, deviceNeedsAutoFrcWorkaround);
-        codec.configure(mediaFormat, surface, crypto, 0);
     }
 
     @Override

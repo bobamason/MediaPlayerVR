@@ -1,5 +1,6 @@
 package net.masonapps.mediaplayervr.video.ui;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -11,8 +12,6 @@ import net.masonapps.mediaplayervr.R;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
-
-import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.util.ArrayList;
 
@@ -28,10 +27,9 @@ public class AspectRatioLayout extends SingleStageUi {
     private ArrayList<TextButton> textButtons = new ArrayList<>();
 
     public AspectRatioLayout(final VideoPlayerGUI videoPlayerGUI) {
-        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 360), videoPlayerGUI.getSkin());
+        super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
-        stage.setPosition(0, 0, -2.5f);
-        stage.addActor(Style.newBackgroundImage(skin));
+        dialogVR.setPosition(0, 0, -2.5f);
 
         final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
         closeButton.addListener(new ClickListener() {
@@ -40,9 +38,9 @@ public class AspectRatioLayout extends SingleStageUi {
                 setVisible(false);
             }
         });
-        stage.addActor(closeButton);
+        dialogVR.addActor(closeButton);
 
-        closeButton.setPosition(stage.getWidth() - padding, stage.getHeight() - padding, Align.topRight);
+        closeButton.setPosition(dialogVR.getWidth() - padding, dialogVR.getHeight() - padding, Align.topRight);
         table.padTop(closeButton.getHeight());
         table.setFillParent(true);
         table.center();
@@ -77,5 +75,8 @@ public class AspectRatioLayout extends SingleStageUi {
             }
         });
         table.add(customButton).expandX().fill().center().pad(padding);
+        dialogVR.setVisible(false);
+        dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
+        dialogVR.resizeToFitTable();
     }
 }

@@ -1,5 +1,6 @@
 package net.masonapps.mediaplayervr.video.ui;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -11,7 +12,6 @@ import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
-import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 /**
  * Created by Bob on 3/13/2017.
@@ -30,9 +30,9 @@ public class ThumbSeekbarLayout extends SingleStageUi {
     private OnThumbSeekListener listener = null;
 
     public ThumbSeekbarLayout(Batch spriteBatch, Skin skin) {
-        super(new VirtualStage(spriteBatch, 720, 160), skin);
-        stage.setTouchable(false);
-        stage.addActor(Style.newBackgroundImage(skin));
+        super(spriteBatch, skin);
+        dialogVR.setSize(720, 160);
+        dialogVR.setTouchable(false);
 
         labelLow = new Label("-", skin);
         table.add(labelLow).pad(padding);
@@ -72,6 +72,8 @@ public class ThumbSeekbarLayout extends SingleStageUi {
             case DaydreamTouchEvent.ACTION_UP:
                 break;
         }
+        dialogVR.setVisible(false);
+        dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
     }
 
     public interface OnThumbSeekListener {

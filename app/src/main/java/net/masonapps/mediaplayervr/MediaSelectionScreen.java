@@ -27,9 +27,8 @@ import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
-import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
-import org.masonapps.libgdxgooglevr.input.VrUiContainer;
 import org.masonapps.libgdxgooglevr.ui.VirtualStage;
+import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -179,6 +178,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
     @Override
     public void show() {
+        super.show();
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setInputProcessor(container);
         getVrCamera().position.set(Vector3.Zero);
@@ -186,6 +186,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
     @Override
     public void hide() {
+        super.hide();
         GdxVr.input.getDaydreamControllerHandler().removeListener(this);
         GdxVr.input.setInputProcessor(null);
     }
@@ -218,20 +219,12 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
 
     @Override
-    public void onConnectionStateChange(int connectionState) {
-
-    }
-
-    @Override
-    public void onButtonEvent(Controller controller, DaydreamButtonEvent event) {
+    public void onControllerButtonEvent(Controller controller, DaydreamButtonEvent event) {
+        super.onControllerButtonEvent(controller, event);
         if (event.button == DaydreamButtonEvent.BUTTON_APP) {
             if (event.action == DaydreamButtonEvent.ACTION_UP) {
             }
         }
-    }
-
-    @Override
-    public void onTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
     }
 
     private boolean isPermissionGranted() {

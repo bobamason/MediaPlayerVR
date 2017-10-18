@@ -3,6 +3,7 @@ package org.masonapps.libgdxgooglevr.vr;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Pools;
 import com.google.vr.ndk.base.GvrApi;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.proto.nano.Preferences;
@@ -106,7 +107,7 @@ public class ArmModel {
             return;
         }
 
-        Vector3 gazeDirection = new Vector3(cameraForward);
+        Vector3 gazeDirection = Pools.obtain(Vector3.class).set(cameraForward);
         gazeDirection.y = 0.0f;
         gazeDirection.nor();
 
@@ -120,6 +121,7 @@ public class ArmModel {
 
         shoulderRotation.setFromCross(WORLD_FORWARD, torsoDirection);
         shoulderPosition.mul(shoulderRotation);
+        Pools.free(gazeDirection);
     }
 
     private void resetState() {
@@ -128,7 +130,7 @@ public class ArmModel {
 
     private void applyArmModel(Controller controller) {
         // Find the controller's orientation relative to the player
-        Quaternion controllerOrientation = new Quaternion(shoulderRotation);
+        Quaternion controllerOrientation = Pools.obtain(Quaternion.class).set(shoulderRotation);
         controllerOrientation.mul(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
 
         // Get the relative positions of the joints
@@ -138,11 +140,11 @@ public class ArmModel {
         Vector3 armExtensionOffset = new Vector3(ARM_EXTENSION_OFFSET).scl(handedMultiplier);
 
         // Extract just the x rotation angle
-        Vector3 controllerForward = new Vector3(WORLD_FORWARD).mul(controllerOrientation);
+        Vector3 controllerForward = Pools.obtain(Vector3.class).set(WORLD_FORWARD).mul(controllerOrientation);
         float xAngle = 90.0f - (float) Math.acos(Vector3.dot(controllerForward.x, controllerForward.y, controllerForward.z, 0, 1, 0));
 
         // Remove the z rotation from the controller
-        Quaternion xyRotation = new Quaternion().setFromCross(WORLD_FORWARD, controllerForward);
+        Quaternion xyRotation = Pools.obtain(Quaternion.class).setFromCross(WORLD_FORWARD, controllerForward);
 
         // Offset the elbow by the extension
         float normalizedAngle = (xAngle - MIN_EXTENSION_ANGLE) / (MAX_EXTENSION_ANGLE - MIN_EXTENSION_ANGLE);
@@ -155,13 +157,18 @@ public class ArmModel {
         float lerpValue = lerpSuppresion * (0.4f + 0.6f * extensionRatio * EXTENSION_WEIGHT);
 
         // Apply the absolute rotations to the joints
-        Quaternion lerpRotation = new Quaternion().slerp(xyRotation, lerpValue).conjugate();
+        Quaternion lerpRotation = Pools.obtain(Quaternion.class).slerp(xyRotation, lerpValue).conjugate();
         elbowRotation.set(shoulderRotation).mul(lerpRotation).mul(controllerOrientation);
         wristRotation.set(shoulderRotation).mul(controllerOrientation);
 
         // Determine the relative positions
         elbowPosition.mul(shoulderRotation);
         wristPosition.set(wristPosition).mul(elbowRotation).add(elbowPosition);
+
+        Pools.free(controllerForward);
+        Pools.free(controllerOrientation);
+        Pools.free(xyRotation);
+        Pools.free(lerpRotation);
     }
 
     private void updatePointer() {

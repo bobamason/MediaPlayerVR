@@ -33,10 +33,10 @@ public class Style {
         imageButtonStyle.imageDown = skin.newDrawable(name, useBackground ? COLOR_UP_2 : COLOR_DOWN_2);
         imageButtonStyle.imageOver = skin.newDrawable(name, useBackground ? COLOR_UP_2 : COLOR_OVER_2);
         imageButtonStyle.imageDisabled = useBackground ? skin.newDrawable(name, COLOR_DISABLED) : null;
-        imageButtonStyle.up = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_UP) : null;
-        imageButtonStyle.down = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_DOWN) : null;
-        imageButtonStyle.over = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_OVER) : null;
-        imageButtonStyle.disabled = useBackground ? skin.newDrawable(Drawables.round_button, COLOR_UP) : null;
+        imageButtonStyle.up = useBackground ? skin.newDrawable(Drawables.button, COLOR_UP) : null;
+        imageButtonStyle.down = useBackground ? skin.newDrawable(Drawables.button, COLOR_DOWN) : null;
+        imageButtonStyle.over = useBackground ? skin.newDrawable(Drawables.button, COLOR_OVER) : null;
+        imageButtonStyle.disabled = useBackground ? skin.newDrawable(Drawables.button, COLOR_UP) : null;
         return imageButtonStyle;
     }
 

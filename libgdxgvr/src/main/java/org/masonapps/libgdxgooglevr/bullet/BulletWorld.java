@@ -30,13 +30,13 @@ import org.masonapps.libgdxgooglevr.gfx.World;
  */
 public class BulletWorld extends World {
 
-    protected final ObjectMap<String, Constructor<BulletEntity>> bulletConstructors = new ObjectMap<>();
     public final btCollisionConfiguration collisionConfiguration;
     public final btCollisionDispatcher dispatcher;
     public final btBroadphaseInterface broadphase;
     public final btConstraintSolver solver;
     public final btCollisionWorld collisionWorld;
     public final Vector3 gravity;
+    protected final ObjectMap<String, Constructor<BulletEntity>> bulletConstructors = new ObjectMap<>();
     public DebugDrawer debugDrawer = null;
     public boolean renderMeshes = true;
     public PerformanceCounter performanceCounter;

@@ -1,5 +1,6 @@
 package net.masonapps.mediaplayervr.video.ui;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -15,8 +16,6 @@ import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
-
-import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 
 import java.text.DecimalFormat;
 
@@ -34,11 +33,10 @@ public class PlaybackSettingsLayout extends SingleStageUi {
     private float shift = 0f;
 
     public PlaybackSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
-        super(new VirtualStage(videoPlayerGUI.getSpriteBatch(), 360, 500), videoPlayerGUI.getSkin());
+        super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
         final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
-        stage.setPosition(0, 0, -2.5f);
-        stage.addActor(Style.newBackgroundImage(skin));
+        dialogVR.setPosition(0, 0, -2.5f);
 
         final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
         closeButton.addListener(new ClickListener() {
@@ -47,9 +45,9 @@ public class PlaybackSettingsLayout extends SingleStageUi {
                 setVisible(false);
             }
         });
-        stage.addActor(closeButton);
+        dialogVR.addActor(closeButton);
 
-        closeButton.setPosition(stage.getWidth() - padding, stage.getHeight() - padding, Align.topRight);
+        closeButton.setPosition(dialogVR.getWidth() - padding, dialogVR.getHeight() - padding, Align.topRight);
         table.padTop(closeButton.getHeight());
         table.setFillParent(true);
         table.center();
@@ -160,5 +158,8 @@ public class PlaybackSettingsLayout extends SingleStageUi {
             }
         });
         table.add(cylinderBtn).pad(padding).colspan(3).row();
+        dialogVR.setVisible(false);
+        dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
+        dialogVR.resizeToFitTable();
     }
 }

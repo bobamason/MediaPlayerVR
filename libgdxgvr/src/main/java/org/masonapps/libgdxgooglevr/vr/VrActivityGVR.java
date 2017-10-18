@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import com.badlogic.gdx.Application;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidFiles;
 import com.badlogic.gdx.backends.android.AndroidNet;
 import com.badlogic.gdx.utils.GdxNativesLoader;
+import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.AndroidCompat;
 import com.google.vr.sdk.base.GvrActivity;
 import com.google.vr.sdk.base.GvrView;
@@ -29,6 +31,9 @@ import java.lang.ref.WeakReference;
  */
 
 public class VrActivityGVR extends GvrActivity {
+
+    public static final String TAG = VrActivityGVR.class.getName();
+
     static {
         GdxNativesLoader.load();
     }
@@ -39,6 +44,7 @@ public class VrActivityGVR extends GvrActivity {
     private GLSurfaceView surfaceView;
     private VrActivity.VrApplication app;
     private GvrView gvrView;
+    private GvrAudioEngine gvrAudioEngine;
 //    private int wasFocusChanged = -1;
 //    private boolean isWaitingForAudio = false;
 
@@ -52,6 +58,7 @@ public class VrActivityGVR extends GvrActivity {
 
         gvrView = new GvrView(this);
         initGvrView(gvrView);
+        Log.d(TAG, "Gvr Viewer Params: " + gvrView.getGvrViewerParams().toString());
 
         final EventListener listener = new EventListener();
         controllerManager = new ControllerManager(this, listener);
@@ -64,7 +71,8 @@ public class VrActivityGVR extends GvrActivity {
 
     public void initialize(VrApplicationAdapter adapter) {
 
-        app.graphics = new VrGraphicsGVR(app);
+        gvrAudioEngine = new GvrAudioEngine(this, GvrAudioEngine.RenderingMode.BINAURAL_HIGH_QUALITY);
+        app.graphics = new VrGraphicsGVR(app, gvrAudioEngine);
         gvrView.setRenderer(app.graphics);
 
         app.input = new VrAndroidInput(app, new WeakReference<Context>(this));
@@ -122,6 +130,7 @@ public class VrActivityGVR extends GvrActivity {
                 app.graphics.pause();
             }
         });
+        gvrAudioEngine.pause();
 
         app.input.onPause();
 
@@ -130,12 +139,15 @@ public class VrActivityGVR extends GvrActivity {
 //            graphics.destroy();
 //        }
 
+        Log.i(TAG, "onPause()");
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i(TAG, "onResume()");
+        gvrAudioEngine.resume();
 
         Gdx.app = app;
         Gdx.input = app.input;
@@ -187,6 +199,7 @@ public class VrActivityGVR extends GvrActivity {
                 }
             });
         }
+        Log.i(TAG, "onDestroy()");
         super.onDestroy();
     }
 
@@ -197,12 +210,14 @@ public class VrActivityGVR extends GvrActivity {
 
     @Override
     protected void onStart() {
+        Log.i(TAG, "onStart()");
         super.onStart();
         controllerManager.start();
     }
 
     @Override
     protected void onStop() {
+        Log.i(TAG, "onStop()");
         controllerManager.stop();
         super.onStop();
     }
@@ -237,6 +252,20 @@ public class VrActivityGVR extends GvrActivity {
         return app;
     }
 
+    @Override
+    public void onCardboardTrigger() {
+        super.onCardboardTrigger();
+        if (!GdxVr.input.isControllerConnected()) {
+            GdxVr.app.postRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    GdxVr.input.onCardboardTrigger();
+                    GdxVr.app.getVrApplicationAdapter().onCardboardTrigger();
+                }
+            });
+        }
+    }
+
     private class EventListener extends Controller.EventListener
             implements ControllerManager.EventListener, Runnable {
 
@@ -255,7 +284,7 @@ public class VrActivityGVR extends GvrActivity {
         @Override
         public void onConnectionStateChanged(int state) {
             connectionState = state;
-            getGvrView().queueEvent(this);
+            app.postRunnable(this);
         }
 
         @Override
@@ -267,7 +296,7 @@ public class VrActivityGVR extends GvrActivity {
 
         @Override
         public void onUpdate() {
-            getGvrView().queueEvent(this);
+            app.postRunnable(this);
         }
 
         // Update the various TextViews in the UI thread.
@@ -275,7 +304,6 @@ public class VrActivityGVR extends GvrActivity {
         public void run() {
             controller.update();
             app.input.onDaydreamControllerUpdate(controller, connectionState);
-            app.vrApplicationAdapter.onDaydreamControllerUpdate(controller, connectionState);
         }
     }
 }

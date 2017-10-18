@@ -15,7 +15,7 @@ import org.masonapps.libgdxgooglevr.gfx.World;
 /**
  * Created by Bob on 8/11/2015.
  */
-public class VrBulletScreen extends VrWorldScreen {
+public abstract class VrBulletScreen extends VrWorldScreen {
     
     private static final Vector3 tempV = new Vector3();
     private static boolean initialized = false;
@@ -66,12 +66,12 @@ public class VrBulletScreen extends VrWorldScreen {
 
     @Override
     public void show() {
-
+        super.show();
     }
 
     @Override
     public void hide() {
-
+        super.hide();
     }
 
     @Override

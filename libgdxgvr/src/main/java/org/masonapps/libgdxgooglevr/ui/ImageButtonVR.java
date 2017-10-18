@@ -1,6 +1,7 @@
 package org.masonapps.libgdxgooglevr.ui;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -67,5 +68,10 @@ public class ImageButtonVR extends VirtualStage {
     @Override
     public void act(float delta) {
         super.act(delta);
+    }
+
+    @Override
+    public boolean addListener(EventListener listener) {
+        return imageButton.addListener(listener);
     }
 }

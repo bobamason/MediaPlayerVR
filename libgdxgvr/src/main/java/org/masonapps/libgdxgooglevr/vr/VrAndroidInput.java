@@ -1,5 +1,6 @@
 package org.masonapps.libgdxgooglevr.vr;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.Vibrator;
@@ -17,12 +18,9 @@ import com.badlogic.gdx.utils.Pool;
 import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerHandler;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
-import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
-import org.masonapps.libgdxgooglevr.utils.Vecs;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -32,7 +30,7 @@ import java.util.ArrayList;
  * based on AndroidInput originally written by mzechner and jshapcot
  */
 
-public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamControllerInputListener {
+public class VrAndroidInput implements Input, View.OnKeyListener {
 
     public static final int SUPPORTED_KEYS = 260;
     private final Application app;
@@ -171,22 +169,23 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
         synchronized (this) {
             updateInputRay();
             if (processor instanceof VrInputProcessor) {
-                ((VrInputProcessor) processor).performRayTest(inputRay);
-                if (((VrInputProcessor) processor).isCursorOver()) {
+                if (((VrInputProcessor) processor).performRayTest(inputRay)) {
 //                    Log.d(VrAndroidInput.class.getSimpleName(), event.toString());
                     final Vector2 hitPoint2D = ((VrInputProcessor) processor).getHitPoint2D();
-                    final int x = (int) hitPoint2D.x;
-                    final int y = (int) hitPoint2D.y;
-                    lastTouch.set(touch);
-                    touch.set(x, y);
-                    if (controller.clickButtonState && !isInputProcessorTouched) {
-                        postTouchEvent(TouchEvent.TOUCH_DOWN, x, y);
-                        isInputProcessorTouched = true;
-                    } else if (!controller.clickButtonState && isInputProcessorTouched) {
-                        postTouchEvent(TouchEvent.TOUCH_UP, x, y);
-                        isInputProcessorTouched = false;
-                    } else {
-                        postTouchEvent(isInputProcessorTouched ? TouchEvent.TOUCH_DRAGGED : TouchEvent.TOUCH_MOVED, x, y);
+                    if (hitPoint2D != null) {
+                        final int x = (int) hitPoint2D.x;
+                        final int y = (int) hitPoint2D.y;
+                        lastTouch.set(touch);
+                        touch.set(x, y);
+                        if (controller.clickButtonState && !isInputProcessorTouched) {
+                            postTouchEvent(TouchEvent.TOUCH_DOWN, x, y);
+                            isInputProcessorTouched = true;
+                        } else if (!controller.clickButtonState && isInputProcessorTouched) {
+                            postTouchEvent(TouchEvent.TOUCH_UP, x, y);
+                            isInputProcessorTouched = false;
+                        } else {
+                            postTouchEvent(isInputProcessorTouched ? TouchEvent.TOUCH_DRAGGED : TouchEvent.TOUCH_MOVED, x, y);
+                        }
                     }
                 } else {
                     if (isInputProcessorTouched) {
@@ -390,7 +389,7 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
     @Override
     public void setOnscreenKeyboardVisible(final boolean visible) {
         //// TODO: 6/19/2017 add VR text input 
-        throw new UnsupportedOperationException("text input is not yet supported in " + VrAndroidInput.class.getSimpleName());
+//        throw new UnsupportedOperationException("text input is not yet supported in " + VrAndroidInput.class.getSimpleName());
 //        handle.post(new Runnable() {
 //            public void run() {
 //                InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -426,16 +425,19 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
         this.catchMenu = catchMenu;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void vibrate(int milliseconds) {
         vibrator.vibrate(milliseconds);
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void vibrate(long[] pattern, int repeat) {
         vibrator.vibrate(pattern, repeat);
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void cancelVibrate() {
         vibrator.cancel();
@@ -481,6 +483,10 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
         if (processor != null && !(processor instanceof VrInputProcessor))
             throw new RuntimeException("processor must implement VrInputProcessor");
         synchronized (this) {
+            if (processor == null && this.processor instanceof DaydreamControllerInputListener)
+                removeDaydreamControllerListener((DaydreamControllerInputListener) this.processor);
+            if (processor != null && processor instanceof DaydreamControllerInputListener)
+                addDaydreamControllerListener((DaydreamControllerInputListener) processor);
             this.processor = processor;
         }
     }
@@ -553,11 +559,9 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
     }
 
     public void onPause() {
-        daydreamControllerHandler.removeListener(this);
     }
 
     public void onResume() {
-        daydreamControllerHandler.addListener(this);
     }
 
     public void onCardboardTrigger() {
@@ -565,7 +569,7 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
             final VrInputProcessor vrInputProcessor = (VrInputProcessor) this.processor;
             if (vrInputProcessor.performRayTest(inputRay)) {
                 final Vector2 hitPoint2D = vrInputProcessor.getHitPoint2D();
-                postTap((int) hitPoint2D.x, (int) hitPoint2D.y);
+                if (hitPoint2D != null) postTap((int) hitPoint2D.x, (int) hitPoint2D.y);
             }
         }
     }
@@ -580,6 +584,7 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
         } else {
             isControllerConnected = false;
         }
+        processEvents();
         daydreamControllerHandler.process(controller, connectionState);
     }
 
@@ -605,7 +610,6 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
         } else {
             inputRay.origin.set(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
             inputRay.direction.set(GdxVr.app.getVrApplicationAdapter().getForwardVector());
-            Vecs.freeAll();
         }
     }
 
@@ -626,26 +630,20 @@ public class VrAndroidInput implements Input, View.OnKeyListener, DaydreamContro
         return isControllerConnected;
     }
 
-    @Override
-    public void onConnectionStateChange(int connectionState) {
-        isControllerConnected = connectionState == Controller.ConnectionStates.CONNECTED;
-    }
-
-    @Override
-    public void onButtonEvent(Controller controller, DaydreamButtonEvent event) {
-    }
-
-    @Override
-    public void onTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
-
-    }
-
     public void setController(Controller controller) {
         this.controller = controller;
     }
 
     public DaydreamControllerHandler getDaydreamControllerHandler() {
         return daydreamControllerHandler;
+    }
+
+    public void addDaydreamControllerListener(DaydreamControllerInputListener listener) {
+        getDaydreamControllerHandler().addListener(listener);
+    }
+
+    public void removeDaydreamControllerListener(DaydreamControllerInputListener listener) {
+        getDaydreamControllerHandler().removeListener(listener);
     }
 
     static class KeyEvent {

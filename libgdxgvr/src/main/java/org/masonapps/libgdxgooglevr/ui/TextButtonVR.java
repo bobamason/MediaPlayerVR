@@ -1,6 +1,7 @@
 package org.masonapps.libgdxgooglevr.ui;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -36,12 +37,12 @@ public class TextButtonVR extends VirtualStage {
         return textButton;
     }
 
-    public void setStyle (Button.ButtonStyle style) {
-        textButton.setStyle(style);
-    }
-
     public TextButton.TextButtonStyle getStyle () {
         return textButton.getStyle();
+    }
+
+    public void setStyle(Button.ButtonStyle style) {
+        textButton.setStyle(style);
     }
 
     public Label getLabel () {
@@ -52,11 +53,16 @@ public class TextButtonVR extends VirtualStage {
         return textButton.getLabelCell();
     }
 
-    public void setText (String text) {
+    public CharSequence getText () {
+        return textButton.getText();
+    }
+
+    public void setText(String text) {
         textButton.setText(text);
     }
 
-    public CharSequence getText () {
-        return textButton.getText();
+    @Override
+    public boolean addListener(EventListener listener) {
+        return textButton.addListener(listener);
     }
 }

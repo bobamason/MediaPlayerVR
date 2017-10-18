@@ -8,19 +8,28 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 /**
- * Created by Bob on 3/31/2017.
+ * Created by Bob Mason on 10/4/2017.
  */
 
-public class TableVR extends VirtualStage {
+public class WindowTableVR extends WindowVR {
+
 
     protected final Table table;
 
-    public TableVR(Batch batch, int tableWidth, int tableHeight) {
-        this(batch, null, tableWidth, tableHeight);
+    public WindowTableVR(Batch batch, int virtualPixelWidth, int virtualPixelHeight, String title, WindowVrStyle windowStyle) {
+        this(batch, null, virtualPixelWidth, virtualPixelHeight, title, windowStyle);
     }
 
-    public TableVR(Batch batch, Skin skin, int tableWidth, int tableHeight) {
-        super(batch, tableWidth, tableHeight);
+    public WindowTableVR(Batch batch, int virtualPixelWidth, int virtualPixelHeight, WindowVrStyle windowStyle) {
+        this(batch, null, virtualPixelWidth, virtualPixelHeight, windowStyle);
+    }
+
+    public WindowTableVR(Batch batch, Skin skin, int virtualPixelWidth, int virtualPixelHeight, WindowVrStyle windowStyle) {
+        this(batch, skin, virtualPixelWidth, virtualPixelHeight, "", windowStyle);
+    }
+
+    public WindowTableVR(Batch batch, Skin skin, int virtualPixelWidth, int virtualPixelHeight, String title, WindowVrStyle windowStyle) {
+        super(batch, virtualPixelWidth, virtualPixelHeight, title, windowStyle);
         table = new Table(skin);
         table.setFillParent(true);
         addActor(table);
@@ -42,8 +51,8 @@ public class TableVR extends VirtualStage {
         table.setFillParent(false);
         table.layout();
         final int w = Math.round(table.getPrefWidth());
-        final int h = Math.round(table.getPrefHeight());
-        Log.d(TableVR.class.getSimpleName(), "size: " + w + " x " + h);
+        final int h = Math.round(table.getPrefHeight() + getTitleBarHeight());
+        Log.d(WindowTableVR.class.getSimpleName(), "size: " + w + " x " + h);
         table.setFillParent(true);
         setSize(w, h);
     }
