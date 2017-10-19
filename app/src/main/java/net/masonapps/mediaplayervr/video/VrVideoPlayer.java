@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -22,6 +21,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
+
+import org.masonapps.libgdxgooglevr.GdxVr;
 
 /**
  * Created by Bob on 12/21/2016.
@@ -219,8 +220,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         final int textureId = textures[0];
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         shader.setTextureId(textureId);
-        Gdx.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_LINEAR);
-        Gdx.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_LINEAR);
+        GdxVr.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_LINEAR);
+        GdxVr.gl.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_LINEAR);
 
         videoTexture = new SurfaceTexture(textureId);
         videoTexture.setOnFrameAvailableListener(this);

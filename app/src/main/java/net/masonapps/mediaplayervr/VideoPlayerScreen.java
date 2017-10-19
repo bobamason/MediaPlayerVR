@@ -29,7 +29,6 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Pools;
-import com.google.android.exoplayer2.ext.gvr.GvrAudioProcessor;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.controller.Controller;
@@ -37,7 +36,7 @@ import com.google.vr.sdk.controller.Controller;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
-import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
+import net.masonapps.mediaplayervr.video.VrVideoPlayerMP;
 import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -119,7 +118,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         rightCamera.near = NEAR;
         rightCamera.far = FAR;
         final MediaPlayerGame mediaPlayerGame = (MediaPlayerGame) game;
-        videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
+        videoPlayer = new VrVideoPlayerMP(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
         final GlobalSettings globalSettings = GlobalSettings.getInstance();
@@ -284,12 +283,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         updateCamera(rightCamera);
 
         final Quaternion headQuaternion = getHeadQuaternion();
-        if (videoPlayer instanceof VrVideoPlayerExo) {
-            final GvrAudioProcessor gvrAudioProcessor = ((VrVideoPlayerExo) videoPlayer).getGvrAudioProcessor();
-            if (gvrAudioProcessor != null) {
-                gvrAudioProcessor.updateOrientation(headQuaternion.w, headQuaternion.x, headQuaternion.y, headQuaternion.z);
-            }
-        }
+//        if (videoPlayer instanceof VrVideoPlayerExo) {
+//            final GvrAudioProcessor gvrAudioProcessor = ((VrVideoPlayerExo) videoPlayer).getGvrAudioProcessor();
+//            if (gvrAudioProcessor != null) {
+//                gvrAudioProcessor.updateOrientation(headQuaternion.w, headQuaternion.x, headQuaternion.y, headQuaternion.z);
+//            }
+//        }
 
         transform.set(rotation.set(headQuaternion).conjugate());
 
