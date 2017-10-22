@@ -59,12 +59,9 @@ public class VrVideoPlayerMP extends VrVideoPlayer implements MediaPlayer.OnErro
             }
             return false;
         }
-        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                prepared = true;
-                mp.start();
-            }
+        player.setOnPreparedListener(mp -> {
+            prepared = true;
+            mp.start();
         });
         player.setOnErrorListener(this);
         player.setOnCompletionListener(this);

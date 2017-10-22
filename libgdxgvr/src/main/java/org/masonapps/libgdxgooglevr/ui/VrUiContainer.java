@@ -230,6 +230,11 @@ public class VrUiContainer implements VrInputProcessor, Disposable {
                 focusedProcessor.touchUp(Math.round(focusedProcessor.getHitPoint2D().x), Math.round(focusedProcessor.getHitPoint2D().y), 0, 0);
             else
                 focusedProcessor.touchUp(0, 0, 0, 0);
+
+            if (focusedProcessor instanceof VirtualStage)
+                ((VirtualStage) focusedProcessor).isCursorOver = false;
+            else if (focusedProcessor instanceof VrUiContainer)
+                ((VrUiContainer) focusedProcessor).isCursorOver = false;
         }
 
         focusedProcessor = newFocusedProcessor;

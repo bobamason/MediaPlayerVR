@@ -46,6 +46,8 @@ public class ThumbSeekbarLayout extends SingleStageUi {
         slider = new Slider(0f, 1f, 1f / 10000f, false, skin);
         slider.setValue(0.5f);
         table.add(slider).colspan(3).expandX().fillX().pad(padding);
+        dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
+        dialogVR.setVisible(false);
     }
 
     public void setListener(OnThumbSeekListener listener) {
@@ -72,8 +74,6 @@ public class ThumbSeekbarLayout extends SingleStageUi {
             case DaydreamTouchEvent.ACTION_UP:
                 break;
         }
-        dialogVR.setVisible(false);
-        dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
     }
 
     public interface OnThumbSeekListener {

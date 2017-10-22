@@ -47,12 +47,12 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     protected boolean updated = false;
     @Nullable
     protected Drawable background = null;
+    protected boolean isCursorOver = false;
     private Plane plane = new Plane(Vector3.Z, 0);
     private boolean visible = true;
     private int mouseScreenX;
     private int mouseScreenY;
     private Actor mouseOverActor = null;
-    private boolean isCursorOver = false;
     private Vector2 hitPoint2DPixels = new Vector2();
     private Vector3 hitPoint3D = new Vector3();
     private boolean touchable = true;
