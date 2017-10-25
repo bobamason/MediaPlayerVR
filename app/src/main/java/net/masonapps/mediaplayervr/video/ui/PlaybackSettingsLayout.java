@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
+import net.masonapps.mediaplayervr.GlobalSettings;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
@@ -145,6 +146,12 @@ public class PlaybackSettingsLayout extends SingleStageUi {
                 player.setStretch(stretch);
                 videoOptions.textureStretch.set(stretch);
                 shift = 0;
+                final GlobalSettings gs = GlobalSettings.getInstance();
+                gs.restoreDefault();
+                player.getShader().setBrightness(gs.brightness);
+                player.getShader().setColorTemp(gs.colorTemp);
+                player.getShader().setContrast(gs.contrast);
+                player.getShader().setTint(gs.tint);
 //                player.set3dShift(shift);
             }
         });
