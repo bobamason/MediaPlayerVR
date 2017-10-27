@@ -22,6 +22,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
 
+import net.masonapps.mediaplayervr.database.VideoOptions;
+
 import org.masonapps.libgdxgooglevr.GdxVr;
 
 /**
@@ -431,6 +433,14 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public void setHeadRotation(Quaternion headRotation) {
         this.headRotation.set(headRotation);
         invHeadRotation.set(headRotation).conjugate();
+    }
+
+    public void setVideoOptions(VideoOptions videoOptions) {
+        setStretch(videoOptions.textureStretch);
+        getShader().setTint(videoOptions.tint);
+        getShader().setBrightness(videoOptions.brightness);
+        getShader().setContrast(videoOptions.contrast);
+        getShader().setColorTemp(videoOptions.colorTemp);
     }
 
     public interface VideoSizeListener {

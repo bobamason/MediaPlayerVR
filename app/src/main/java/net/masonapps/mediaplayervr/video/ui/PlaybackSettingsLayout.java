@@ -11,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
-import net.masonapps.mediaplayervr.GlobalSettings;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
@@ -136,26 +135,6 @@ public class PlaybackSettingsLayout extends SingleStageUi {
 //            }
 //        });
 //        table.add(shiftRight).pad(padding).row();
-        setVisible(false);
-
-        final TextButton resetBtn = new TextButton("reset", skin);
-        resetBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                stretch.set(0, 0);
-                player.setStretch(stretch);
-                videoOptions.textureStretch.set(stretch);
-                shift = 0;
-                final GlobalSettings gs = GlobalSettings.getInstance();
-                gs.restoreDefault();
-                player.getShader().setBrightness(gs.brightness);
-                player.getShader().setColorTemp(gs.colorTemp);
-                player.getShader().setContrast(gs.contrast);
-                player.getShader().setTint(gs.tint);
-//                player.set3dShift(shift);
-            }
-        });
-        table.add(resetBtn).pad(padding).colspan(3).row();
 
         final TextButton cylinderBtn = new TextButton("use fish eye", skin, Style.TOGGLE);
         cylinderBtn.addListener(new ChangeListener() {
@@ -168,5 +147,6 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         dialogVR.setVisible(false);
         dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
         dialogVR.resizeToFitTable();
+        setVisible(false);
     }
 }

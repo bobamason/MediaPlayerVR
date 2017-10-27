@@ -10,6 +10,31 @@ import com.badlogic.gdx.math.Vector2;
  */
 
 public class VideoOptions {
+    public static final int KEY_NONE = 0;
+    public static final int KEY_ZOOM = 1;
+    public static final int KEY_TINT = 2;
+    public static final int KEY_BRIGHTNESS = 3;
+    public static final int KEY_CONTRAST = 4;
+    public static final int KEY_COLOR_TEMPERATURE = 5;
+    public static final int KEY_IPD = 6;
+
+    public static final float MIN_TINT = -0.2f;
+    public static final float MAX_TINT = 0.2f;
+
+    public static final float MIN_BRIGHTNESS = -0.5f;
+    public static final float MAX_BRIGHTNESS = 0.5f;
+
+    public static final float MIN_CONTRAST = 0f;
+    public static final float MAX_CONTRAST = 2f;
+
+    public static final float MIN_COLOR_TEMP = -0.2f;
+    public static final float MAX_COLOR_TEMP = 0.2f;
+
+    public static final float DEFAULT_TINT = 0f;
+    public static final float DEFAULT_CONTRAST = 1f;
+    public static final float DEFAULT_BRIGHTNESS = 0f;
+    public static final float DEFAULT_COLOR_TEMP = 0f;
+
     public static final float MIN_ZOOM = 0.1f;
     public static final float MAX_ZOOM = 2f;
     public static final float MIN_IPD = -20f;
@@ -28,16 +53,16 @@ public class VideoOptions {
     public Vector2 textureStretch;
     public float zoom;
     public float ipd;
+    public float tint;
+    public float brightness;
+    public float contrast;
+    public float colorTemp;
 
     public VideoOptions() {
         title = null;
         id = -1;
-        useCustomCamera = false;
         modeSelection = DEFAULT_MODE_SELECTION;
-        aspectRatioSelection = DEFAULT_ASPECT_SELECTION;
-        textureStretch = new Vector2(DEFAULT_TEXTURE_STRETCH);
-        ipd = DEFAULT_IPD;
-        zoom = DEFAULT_ZOOM;
+        restoreDefaults();
     }
 
     public void restoreDefaults() {
@@ -46,6 +71,10 @@ public class VideoOptions {
         textureStretch = new Vector2(DEFAULT_TEXTURE_STRETCH);
         ipd = DEFAULT_IPD;
         zoom = DEFAULT_ZOOM;
+        tint = DEFAULT_TINT;
+        brightness = DEFAULT_BRIGHTNESS;
+        contrast = DEFAULT_CONTRAST;
+        colorTemp = DEFAULT_COLOR_TEMP;
     }
 
     @Override
@@ -57,7 +86,11 @@ public class VideoOptions {
                 "aspectRatioSelection = " + aspectRatioSelection + "\n" +
                 "textureStretch = " + textureStretch.toString() + "\n" +
                 "zoom = " + zoom + "\n" +
-                "ipd = " + ipd + "\n";
+                "ipd = " + ipd + "\n" +
+                "tint = " + tint + "\n" +
+                "brightness = " + brightness + "\n" +
+                "contrast = " + contrast + "\n" +
+                "colorTemp = " + colorTemp + "\n";
     }
 
     public static class Columns implements BaseColumns {
@@ -69,6 +102,10 @@ public class VideoOptions {
         public static final String TEXTURE_STRETCH_Y = "textureStretchY";
         public static final String IPD = "ipd";
         public static final String ZOOM = "zoom";
+        public static final String TINT = "tint";
+        public static final String BRIGHTNESS = "brightness";
+        public static final String CONTRAST = "contrast";
+        public static final String COLOR_TEMP = "colorTemp";
 
         public static final String[] ALL_COLUMNS = new String[]{
                 _ID,
@@ -79,6 +116,10 @@ public class VideoOptions {
                 TEXTURE_STRETCH_X,
                 TEXTURE_STRETCH_Y,
                 IPD,
-                ZOOM};
+                ZOOM,
+                TINT,
+                BRIGHTNESS,
+                CONTRAST,
+                COLOR_TEMP};
     }
 }

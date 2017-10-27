@@ -33,6 +33,10 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
         values.put(VideoOptions.Columns.TEXTURE_STRETCH_Y, videoOptions.textureStretch.y);
         values.put(VideoOptions.Columns.IPD, videoOptions.ipd);
         values.put(VideoOptions.Columns.ZOOM, videoOptions.zoom);
+        values.put(VideoOptions.Columns.TINT, videoOptions.tint);
+        values.put(VideoOptions.Columns.BRIGHTNESS, videoOptions.brightness);
+        values.put(VideoOptions.Columns.CONTRAST, videoOptions.contrast);
+        values.put(VideoOptions.Columns.COLOR_TEMP, videoOptions.colorTemp);
         return values;
     }
 
@@ -53,6 +57,10 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
                 VideoOptions.Columns.TEXTURE_STRETCH_Y + " REAL," +
                 VideoOptions.Columns.IPD + " REAL," +
                 VideoOptions.Columns.ZOOM + " REAL" +
+                VideoOptions.Columns.TINT + " REAL" +
+                VideoOptions.Columns.BRIGHTNESS + " REAL" +
+                VideoOptions.Columns.CONTRAST + " REAL" +
+                VideoOptions.Columns.COLOR_TEMP + " REAL" +
                 ")";
         sqLiteDatabase.execSQL(rawSql);
     }
@@ -108,11 +116,18 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
                 videoOptions.textureStretch.y = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.TEXTURE_STRETCH_Y));
                 videoOptions.ipd = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.IPD));
                 videoOptions.zoom = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.ZOOM));
+                try {
+                    videoOptions.tint = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.TINT));
+                    videoOptions.brightness = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.BRIGHTNESS));
+                    videoOptions.contrast = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.CONTRAST));
+                    videoOptions.colorTemp = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.COLOR_TEMP));
+                } catch (Exception e) {
+                    Log.e(VideoOptionsDatabaseHelper.class.getSimpleName(), "no video color settings saved");
+                }
                 Log.d(VideoOptionsDatabaseHelper.class.getSimpleName(), "loading videoOptions successful");
             } catch (Exception e) {
                 Log.e(VideoOptionsDatabaseHelper.class.getSimpleName(), "loading existing videoOptions failed");
                 e.printStackTrace();
-                videoOptions = null;
             }
         } else {
             Log.d(VideoOptionsDatabaseHelper.class.getSimpleName(), "no existing videoOptions found for: " + getEscapedTitleString(title));

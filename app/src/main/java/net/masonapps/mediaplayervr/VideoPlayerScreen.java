@@ -121,11 +121,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         videoPlayer = new VrVideoPlayerMP(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
-        final GlobalSettings globalSettings = GlobalSettings.getInstance();
-        videoPlayer.getShader().setBrightness(globalSettings.brightness);
-        videoPlayer.getShader().setContrast(globalSettings.contrast);
-        videoPlayer.getShader().setTint(globalSettings.tint);
-        videoPlayer.getShader().setColorTemp(globalSettings.colorTemp);
+        videoPlayer.setVideoOptions(videoOptions);
         setBackgroundColor(Color.BLACK);
         final SpriteBatch spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);
@@ -297,8 +293,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 
     private boolean shouldRenderMono() {
         return (videoPlayer.isStereoscopic() && isUiVisible) &&
-                ui.getCurrentSetting() != GlobalSettings.IPD &&
-                ui.getCurrentSetting() != GlobalSettings.ZOOM;
+                ui.getCurrentSettingKey() != VideoOptions.KEY_IPD &&
+                ui.getCurrentSettingKey() != VideoOptions.KEY_ZOOM;
     }
 
     private void setCameraViewFromEye(Eye eye, VrCamera camera) {
@@ -488,10 +484,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 
     public void restoreDefaultVideoOptions() {
         videoOptions.restoreDefaults();
-    }
-
-    public void restoreDefaultGlobalSettings() {
-        GlobalSettings.getInstance().restoreDefault();
+        setIpd(videoOptions.ipd);
+        setZoom(videoOptions.zoom);
+        videoPlayer.setVideoOptions(videoOptions);
     }
 
     public void setUseCustomCamera(boolean useCustomCamera) {

@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
-import net.masonapps.mediaplayervr.GlobalSettings;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
@@ -27,7 +26,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     private final PlaybackSettingsLayout playbackSettingsLayout;
     private final SpriteBatch spriteBatch;
     private VideoOptions videoOptions;
-    private int currentSetting = GlobalSettings.NONE;
+    private int currentSettingKey = VideoOptions.KEY_NONE;
 
     public VideoPlayerGUI(VideoPlayerScreen videoPlayerScreen, SpriteBatch spriteBatch, Skin skin, VideoOptions videoOptions) {
         this.videoPlayerScreen = videoPlayerScreen;
@@ -51,41 +50,40 @@ public class VideoPlayerGUI extends BaseUiLayout {
         thumbSeekbarLayout.dialogVR.recalculateTransform();
         thumbSeekbarLayout.setVisible(false);
         thumbSeekbarLayout.setListener(value -> {
-            final GlobalSettings globalSettings = GlobalSettings.getInstance();
-            switch (currentSetting) {
-                case GlobalSettings.IPD:
+            switch (currentSettingKey) {
+                case VideoOptions.KEY_IPD:
                     final float ipd = MathUtils.lerp(VideoOptions.MIN_IPD, VideoOptions.MAX_IPD, value);
                     VideoPlayerGUI.this.videoOptions.ipd = ipd;
                     thumbSeekbarLayout.label.setText("Eye Spacing " + Math.round(ipd * 100) + "%");
                     VideoPlayerGUI.this.videoPlayerScreen.setIpd(ipd);
                     break;
-                case GlobalSettings.ZOOM:
+                case VideoOptions.KEY_ZOOM:
                     final float z = MathUtils.lerp(VideoOptions.MIN_ZOOM, VideoOptions.MAX_ZOOM, value);
                     VideoPlayerGUI.this.videoOptions.zoom = z;
                     thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
                     VideoPlayerGUI.this.videoPlayerScreen.setZoom(z);
                     break;
-                case GlobalSettings.TINT:
-                    final float tint = MathUtils.lerp(GlobalSettings.MIN_TINT, GlobalSettings.MAX_TINT, value);
-                    globalSettings.tint = tint;
+                case VideoOptions.KEY_TINT:
+                    final float tint = MathUtils.lerp(VideoOptions.MIN_TINT, VideoOptions.MAX_TINT, value);
+                    videoOptions.tint = tint;
                     thumbSeekbarLayout.label.setText("Tint");
                     VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setTint(tint);
                     break;
-                case GlobalSettings.BRIGHTNESS:
-                    final float brightness = MathUtils.lerp(GlobalSettings.MIN_BRIGHTNESS, GlobalSettings.MAX_BRIGHTNESS, value);
-                    globalSettings.brightness = brightness;
+                case VideoOptions.KEY_BRIGHTNESS:
+                    final float brightness = MathUtils.lerp(VideoOptions.MIN_BRIGHTNESS, VideoOptions.MAX_BRIGHTNESS, value);
+                    videoOptions.brightness = brightness;
                     thumbSeekbarLayout.label.setText("Brightness");
                     VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setBrightness(brightness);
                     break;
-                case GlobalSettings.CONTRAST:
-                    final float contrast = MathUtils.lerp(GlobalSettings.MIN_CONTRAST, GlobalSettings.MAX_CONTRAST, value);
-                    globalSettings.contrast = contrast;
+                case VideoOptions.KEY_CONTRAST:
+                    final float contrast = MathUtils.lerp(VideoOptions.MIN_CONTRAST, VideoOptions.MAX_CONTRAST, value);
+                    videoOptions.contrast = contrast;
                     thumbSeekbarLayout.label.setText("Contrast");
                     VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setContrast(contrast);
                     break;
-                case GlobalSettings.COLOR_TEMPERATURE:
-                    final float colorTemp = MathUtils.lerp(GlobalSettings.MIN_COLOR_TEMP, GlobalSettings.MAX_COLOR_TEMP, value);
-                    globalSettings.colorTemp = colorTemp;
+                case VideoOptions.KEY_COLOR_TEMPERATURE:
+                    final float colorTemp = MathUtils.lerp(VideoOptions.MIN_COLOR_TEMP, VideoOptions.MAX_COLOR_TEMP, value);
+                    videoOptions.colorTemp = colorTemp;
                     thumbSeekbarLayout.label.setText("Color Temperature");
                     VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setColorTemp(colorTemp);
                     break;
@@ -126,7 +124,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         if (visible) {
             switchToMainLayout();
         } else {
-            currentSetting = GlobalSettings.NONE;
+            currentSettingKey = VideoOptions.KEY_NONE;
             mainLayout.setVisible(false);
             modeLayout.setVisible(false);
             aspectRatioLayout.setVisible(false);
@@ -171,7 +169,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToMainLayout() {
-        currentSetting = GlobalSettings.NONE;
+        currentSettingKey = VideoOptions.KEY_NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
@@ -181,7 +179,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToModeLayout() {
-        currentSetting = GlobalSettings.NONE;
+        currentSettingKey = VideoOptions.KEY_NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(true);
         aspectRatioLayout.setVisible(false);
@@ -191,7 +189,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToAspectRatioLayout() {
-        currentSetting = GlobalSettings.NONE;
+        currentSettingKey = VideoOptions.KEY_NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(true);
@@ -201,7 +199,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToCameraSettingsLayout() {
-        currentSetting = GlobalSettings.NONE;
+        currentSettingKey = VideoOptions.KEY_NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
@@ -211,7 +209,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void switchToPlaybackSettingsLayout() {
-        currentSetting = GlobalSettings.NONE;
+        currentSettingKey = VideoOptions.KEY_NONE;
         mainLayout.setVisible(true);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
@@ -221,38 +219,37 @@ public class VideoPlayerGUI extends BaseUiLayout {
     }
 
     public void showThumbSeekbarLayout(int setting) {
-        currentSetting = setting;
-        final GlobalSettings globalSettings = GlobalSettings.getInstance();
-        switch (currentSetting) {
-            case GlobalSettings.IPD:
+        currentSettingKey = setting;
+        switch (currentSettingKey) {
+            case VideoOptions.KEY_IPD:
                 final float ipd = videoOptions.ipd;
                 thumbSeekbarLayout.label.setText("Eye Spacing " + Math.round(ipd * 100) + "%");
                 thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_IPD, VideoOptions.MAX_IPD, ipd));
                 break;
-            case GlobalSettings.ZOOM:
+            case VideoOptions.KEY_ZOOM:
                 final float z = videoOptions.zoom;
                 thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
                 thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_ZOOM, VideoOptions.MAX_ZOOM, z));
                 break;
-            case GlobalSettings.TINT:
-                final float tint = globalSettings.tint;
+            case VideoOptions.KEY_TINT:
+                final float tint = videoOptions.tint;
 //                thumbSeekbarLayout.label.setText("Tint");
-                thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_TINT, GlobalSettings.MAX_TINT, tint));
+                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_TINT, VideoOptions.MAX_TINT, tint));
                 break;
-            case GlobalSettings.BRIGHTNESS:
-                final float brightness = globalSettings.brightness;
+            case VideoOptions.KEY_BRIGHTNESS:
+                final float brightness = videoOptions.brightness;
 //                thumbSeekbarLayout.label.setText("Brightness");
-                thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_BRIGHTNESS, GlobalSettings.MAX_BRIGHTNESS, brightness));
+                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_BRIGHTNESS, VideoOptions.MAX_BRIGHTNESS, brightness));
                 break;
-            case GlobalSettings.CONTRAST:
-                final float contrast = globalSettings.contrast;
+            case VideoOptions.KEY_CONTRAST:
+                final float contrast = videoOptions.contrast;
 //                thumbSeekbarLayout.label.setText("Contrast");
-                thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_CONTRAST, GlobalSettings.MAX_CONTRAST, contrast));
+                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_CONTRAST, VideoOptions.MAX_CONTRAST, contrast));
                 break;
-            case GlobalSettings.COLOR_TEMPERATURE:
-                final float colorTemp = globalSettings.colorTemp;
+            case VideoOptions.KEY_COLOR_TEMPERATURE:
+                final float colorTemp = videoOptions.colorTemp;
 //                thumbSeekbarLayout.label.setText("Color Temperature");
-                thumbSeekbarLayout.slider.setValue(unLerp(GlobalSettings.MIN_COLOR_TEMP, GlobalSettings.MAX_COLOR_TEMP, colorTemp));
+                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_COLOR_TEMP, VideoOptions.MAX_COLOR_TEMP, colorTemp));
                 break;
             default:
                 return;
@@ -265,12 +262,12 @@ public class VideoPlayerGUI extends BaseUiLayout {
         thumbSeekbarLayout.setVisible(true);
     }
 
-    public int getCurrentSetting() {
-        return currentSetting;
+    public int getCurrentSettingKey() {
+        return currentSettingKey;
     }
 
     public void hideThumbSeekbarLayout() {
-        currentSetting = GlobalSettings.NONE;
+        currentSettingKey = VideoOptions.KEY_NONE;
         thumbSeekbarLayout.setVisible(false);
     }
 
