@@ -43,7 +43,7 @@ public class MainActivity extends VrActivityGVR {
             AndroidCompat.setSustainedPerformanceMode(this, true);
             Log.d(VrActivity.class.getSimpleName(), "Async Reprojection Enabled");
         }
-        gvrView.setMultisampling(2);
+        gvrView.setMultisampling(1);
         gvrView.setNeckModelEnabled(false);
     }
 

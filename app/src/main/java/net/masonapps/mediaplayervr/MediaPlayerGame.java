@@ -1,8 +1,6 @@
 package net.masonapps.mediaplayervr;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.badlogic.gdx.Gdx;
@@ -70,12 +68,6 @@ public class MediaPlayerGame extends VrGame {
         super.create();
         setScreen(new LoadingScreen(this));
         rectModel = ModelGenerator.createRect(new ModelBuilder());
-        final GlobalSettings globalSettings = GlobalSettings.getInstance();
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        globalSettings.tint = sharedPreferences.getFloat(GlobalSettings.KEY_TINT, globalSettings.tint);
-        globalSettings.brightness = sharedPreferences.getFloat(GlobalSettings.KEY_BRIGHTNESS, globalSettings.brightness);
-        globalSettings.contrast = sharedPreferences.getFloat(GlobalSettings.KEY_CONTRAST, globalSettings.contrast);
-        globalSettings.colorTemp = sharedPreferences.getFloat(GlobalSettings.KEY_COLOR_TEMP, globalSettings.colorTemp);
         skin = new Skin();
         loadAsset(Style.ATLAS_FILE, TextureAtlas.class);
         getAssets().setLoader(Model.class, "vidmodel", new VideoModelLoader(new InternalFileHandleResolver()));
@@ -102,13 +94,6 @@ public class MediaPlayerGame extends VrGame {
             final VideoPlayerScreen videoPlayerScreen = (VideoPlayerScreen) getScreen();
             getVideoOptionsDatabaseHelper().saveVideoOptions(videoPlayerScreen.getVideoOptions());
         }
-        final GlobalSettings globalSettings = GlobalSettings.getInstance();
-        final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
-        editor.putFloat(GlobalSettings.KEY_TINT, globalSettings.tint);
-        editor.putFloat(GlobalSettings.KEY_BRIGHTNESS, globalSettings.brightness);
-        editor.putFloat(GlobalSettings.KEY_CONTRAST, globalSettings.contrast);
-        editor.putFloat(GlobalSettings.KEY_COLOR_TEMP, globalSettings.colorTemp);
-        editor.apply();
         super.pause();
     }
 

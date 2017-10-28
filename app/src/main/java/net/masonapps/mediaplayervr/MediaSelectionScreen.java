@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.google.vr.sdk.base.GvrView;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.chooser.GridUiLayout;
@@ -29,6 +30,7 @@ import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
+import org.masonapps.libgdxgooglevr.vr.VrActivityGVR;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -179,6 +181,9 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     @Override
     public void show() {
         super.show();
+        final GvrView gvrView = ((VrActivityGVR) GdxVr.app.getContext()).getGvrView();
+        gvrView.setNeckModelEnabled(true);
+        gvrView.setNeckModelFactor(1f);
         GdxVr.input.getDaydreamControllerHandler().addListener(this);
         GdxVr.input.setInputProcessor(container);
         getVrCamera().position.set(Vector3.Zero);
@@ -187,6 +192,9 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     @Override
     public void hide() {
         super.hide();
+        final GvrView gvrView = ((VrActivityGVR) GdxVr.app.getContext()).getGvrView();
+        gvrView.setNeckModelEnabled(false);
+        gvrView.setNeckModelFactor(0f);
         GdxVr.input.getDaydreamControllerHandler().removeListener(this);
         GdxVr.input.setInputProcessor(null);
     }

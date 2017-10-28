@@ -14,7 +14,7 @@ import android.util.Log;
  */
 
 public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
     public static final String TABLE_NAME = "video_options";
 
     public VideoOptionsDatabaseHelper(Context context) {
@@ -56,10 +56,10 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
                 VideoOptions.Columns.TEXTURE_STRETCH_X + " REAL," +
                 VideoOptions.Columns.TEXTURE_STRETCH_Y + " REAL," +
                 VideoOptions.Columns.IPD + " REAL," +
-                VideoOptions.Columns.ZOOM + " REAL" +
-                VideoOptions.Columns.TINT + " REAL" +
-                VideoOptions.Columns.BRIGHTNESS + " REAL" +
-                VideoOptions.Columns.CONTRAST + " REAL" +
+                VideoOptions.Columns.ZOOM + " REAL," +
+                VideoOptions.Columns.TINT + " REAL," +
+                VideoOptions.Columns.BRIGHTNESS + " REAL," +
+                VideoOptions.Columns.CONTRAST + " REAL," +
                 VideoOptions.Columns.COLOR_TEMP + " REAL" +
                 ")";
         sqLiteDatabase.execSQL(rawSql);

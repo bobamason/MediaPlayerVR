@@ -7,7 +7,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
-import net.masonapps.mediaplayervr.GlobalSettings;
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
@@ -54,7 +53,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         ipdButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.IPD);
+                videoPlayerGUI.showThumbSeekbarLayout(VideoOptions.KEY_IPD);
             }
         });
         table.add(ipdButton).colspan(3).padBottom(padding).row();
@@ -63,7 +62,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         zoomButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.ZOOM);
+                videoPlayerGUI.showThumbSeekbarLayout(VideoOptions.KEY_ZOOM);
             }
         });
         table.add(zoomButton).colspan(3).padBottom(padding).row();
@@ -72,7 +71,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         brightnessButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.BRIGHTNESS);
+                videoPlayerGUI.showThumbSeekbarLayout(VideoOptions.KEY_BRIGHTNESS);
             }
         });
         table.add(brightnessButton).colspan(3).padBottom(padding).row();
@@ -81,7 +80,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         contrastButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.CONTRAST);
+                videoPlayerGUI.showThumbSeekbarLayout(VideoOptions.KEY_CONTRAST);
             }
         });
         table.add(contrastButton).colspan(3).padBottom(padding).row();
@@ -90,7 +89,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         saturationButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.COLOR_TEMPERATURE);
+                videoPlayerGUI.showThumbSeekbarLayout(VideoOptions.KEY_COLOR_TEMPERATURE);
             }
         });
         table.add(saturationButton).colspan(3).padBottom(padding).row();
@@ -99,7 +98,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         tintButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.showThumbSeekbarLayout(GlobalSettings.TINT);
+                videoPlayerGUI.showThumbSeekbarLayout(VideoOptions.KEY_TINT);
             }
         });
         table.add(tintButton).colspan(3).padBottom(padding).row();

@@ -14,7 +14,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-import net.masonapps.mediaplayervr.GlobalSettings;
+import net.masonapps.mediaplayervr.database.VideoOptions;
 
 /**
  * Created by Bob on 11/11/2016.
@@ -37,10 +37,10 @@ public class VideoShader extends BaseShader {
     private final ShaderProgram program;
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
-    private float tint = GlobalSettings.DEFAULT_TINT;
-    private float brightness = GlobalSettings.DEFAULT_BRIGHTNESS;
-    private float contrast = GlobalSettings.DEFAULT_CONTRAST;
-    private float colorTemp = GlobalSettings.DEFAULT_COLOR_TEMP;
+    private float tint = VideoOptions.DEFAULT_TINT;
+    private float brightness = VideoOptions.DEFAULT_BRIGHTNESS;
+    private float contrast = VideoOptions.DEFAULT_CONTRAST;
+    private float colorTemp = VideoOptions.DEFAULT_COLOR_TEMP;
     private int textureId = -1;
     private boolean useFishEye = false;
 

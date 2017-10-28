@@ -121,7 +121,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         videoPlayer = new VrVideoPlayerMP(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
-        videoPlayer.setVideoOptions(videoOptions);
+        videoPlayer.setVideoOptions(this.videoOptions);
         setBackgroundColor(Color.BLACK);
         final SpriteBatch spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);

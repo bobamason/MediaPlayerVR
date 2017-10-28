@@ -525,7 +525,13 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
                 try {
                     runnable.run();
                 } catch (Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    final StringBuilder stringBuilder = new StringBuilder();
+                    final StackTraceElement[] stackTrace = e.getStackTrace();
+                    for (StackTraceElement stackTraceElement : stackTrace) {
+                        stringBuilder.append("\nat ");
+                        stringBuilder.append(stackTraceElement);
+                    }
+                    Log.e(TAG, e.getMessage() + stringBuilder.toString());
                 }
             }
 

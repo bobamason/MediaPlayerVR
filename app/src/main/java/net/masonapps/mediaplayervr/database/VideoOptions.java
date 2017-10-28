@@ -50,7 +50,7 @@ public class VideoOptions {
     public boolean useCustomCamera;
     public int modeSelection;
     public int aspectRatioSelection;
-    public Vector2 textureStretch;
+    public Vector2 textureStretch = new Vector2(DEFAULT_TEXTURE_STRETCH);
     public float zoom;
     public float ipd;
     public float tint;
@@ -68,7 +68,7 @@ public class VideoOptions {
     public void restoreDefaults() {
         useCustomCamera = false;
         aspectRatioSelection = DEFAULT_ASPECT_SELECTION;
-        textureStretch = new Vector2(DEFAULT_TEXTURE_STRETCH);
+        textureStretch.set(DEFAULT_TEXTURE_STRETCH);
         ipd = DEFAULT_IPD;
         zoom = DEFAULT_ZOOM;
         tint = DEFAULT_TINT;
