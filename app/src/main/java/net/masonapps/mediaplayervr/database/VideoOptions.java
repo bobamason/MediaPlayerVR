@@ -43,6 +43,7 @@ public class VideoOptions {
     public static final int DEFAULT_MODE_SELECTION = 0;
     public static final int DEFAULT_ASPECT_SELECTION = 0;
     public static final float DEFAULT_IPD = 1f;
+    public static final float DEFAULT_EYE_ANGLE = 0f;
     public static final float DEFAULT_ZOOM = 1f;
     public static final float MIN_EYE_ANGLE = -5f;
     public static final float MAX_EYE_ANGLE = 5f;
@@ -60,7 +61,7 @@ public class VideoOptions {
     public float brightness;
     public float contrast;
     public float colorTemp;
-    public float eyeAngle = 0f;
+    public float eyeAngle;
 
     public VideoOptions() {
         title = null;
@@ -74,6 +75,7 @@ public class VideoOptions {
         aspectRatioSelection = DEFAULT_ASPECT_SELECTION;
         textureStretch.set(DEFAULT_TEXTURE_STRETCH);
         ipd = DEFAULT_IPD;
+        eyeAngle = DEFAULT_EYE_ANGLE;
         zoom = DEFAULT_ZOOM;
         tint = DEFAULT_TINT;
         brightness = DEFAULT_BRIGHTNESS;
@@ -105,6 +107,7 @@ public class VideoOptions {
         public static final String TEXTURE_STRETCH_X = "textureStretchX";
         public static final String TEXTURE_STRETCH_Y = "textureStretchY";
         public static final String IPD = "ipd";
+        public static final String EYE_ANGLE = "eyeAngle";
         public static final String ZOOM = "zoom";
         public static final String TINT = "tint";
         public static final String BRIGHTNESS = "brightness";
@@ -120,6 +123,7 @@ public class VideoOptions {
                 TEXTURE_STRETCH_X,
                 TEXTURE_STRETCH_Y,
                 IPD,
+                EYE_ANGLE,
                 ZOOM,
                 TINT,
                 BRIGHTNESS,
