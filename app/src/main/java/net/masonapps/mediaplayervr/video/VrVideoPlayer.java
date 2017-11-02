@@ -18,7 +18,6 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
@@ -67,7 +66,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
     private Quaternion headRotation = new Quaternion();
     private Quaternion invHeadRotation = new Quaternion();
-    private float zoom = 1f;
     private boolean useFishEyeProjection = false;
     private boolean useCylinder = false;
 
@@ -132,12 +130,12 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             dstRect.set(0, 0, 1, 1);
         } else if (is180Video() && !useFishEyeProjection) {
             srcRect.set(0, 0, 1, 1);
-            dstRect.set(0.25f, 0f, 0.5f, 1f);
-//            dstRect.set(0.25f - stretch.x * 0.5f, -stretch.y * 0.5f, 0.5f + stretch.x, 1f + stretch.y);
+//            dstRect.set(0.25f, 0f, 0.5f, 1f);
+            dstRect.set(0.25f - stretch.x * 0.5f, -stretch.y * 0.5f, 0.5f + stretch.x, 1f + stretch.y);
         } else {
             srcRect.set(0, 0, 1, 1);
-            dstRect.set(0, 0, 1, 1);
-//            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1f + stretch.x, 1f + stretch.y);
+//            dstRect.set(0, 0, 1, 1);
+            dstRect.set(-stretch.x * 0.5f, -stretch.y * 0.5f, 1f + stretch.x, 1f + stretch.y);
         }
     }
 
@@ -201,9 +199,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     protected void mapDistortTextureCoordinates() {
-        modelInstance.transform.idt().rotate(Vector3.X, stretch.y * -90f).scale(modelSize, modelSize, modelSize);
-//        modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
-//        modelInstance.transform.idt().rotate(invHeadRotation).scale(modelSize, modelSize, modelSize * zoom).rotate(headRotation);
+        modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
     }
 
     protected void mapDistortModel() {
@@ -415,10 +411,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public void setUseCylinder(boolean useCylinder) {
         this.useCylinder = useCylinder;
         setDisplayMode(displayMode);
-    }
-
-    public void setZoom(float zoom) {
-        this.zoom = zoom;
     }
 
     public float getModelSize() {

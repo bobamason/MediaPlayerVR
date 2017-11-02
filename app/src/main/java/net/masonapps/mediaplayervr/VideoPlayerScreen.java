@@ -100,6 +100,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     private float perspectiveFOV = 100f;
     private Matrix4 transform = new Matrix4();
     private float eyeAngle = 0f;
+    private float tilt = 0f;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -287,7 +288,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //            }
 //        }
 
-        transform.set(rotation.set(headQuaternion).conjugate());
+        transform.idt()
+                .rotate(Vector3.X, tilt * -90f)
+                .rotate(rotation.set(headQuaternion).conjugate());
 
         videoPlayer.update(transform);
     }
@@ -469,6 +472,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         invalidateProjection();
     }
 
+    public void setTilt(float tilt) {
+        this.tilt = tilt;
+    }
+
     public void setEyeAngle(float angle) {
         this.eyeAngle = angle;
     }
@@ -488,6 +495,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     public void restoreDefaultVideoOptions() {
         videoOptions.restoreDefaults();
         setIpd(videoOptions.ipd);
+        setEyeAngle(videoOptions.eyeAngle);
         setZoom(videoOptions.zoom);
         videoPlayer.setVideoOptions(videoOptions);
     }

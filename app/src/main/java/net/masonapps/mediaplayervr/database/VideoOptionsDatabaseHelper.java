@@ -111,18 +111,18 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
                 videoOptions = new VideoOptions();
                 videoOptions.id = cursor.getLong(cursor.getColumnIndex(VideoOptions.Columns._ID));
                 videoOptions.title = cursor.getString(cursor.getColumnIndex(VideoOptions.Columns.TITLE));
-                videoOptions.useCustomCamera = cursor.getInt(cursor.getColumnIndex(VideoOptions.Columns.USE_CUSTOM_CAMERA)) == 1;
-                videoOptions.modeSelection = cursor.getInt(cursor.getColumnIndex(VideoOptions.Columns.MODE_SELECTION));
-                videoOptions.aspectRatioSelection = cursor.getInt(cursor.getColumnIndex(VideoOptions.Columns.ASPECT_RATIO_SELECTION));
-                videoOptions.textureStretch.x = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.TEXTURE_STRETCH_X));
-                videoOptions.textureStretch.y = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.TEXTURE_STRETCH_Y));
-                videoOptions.ipd = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.IPD));
-                videoOptions.eyeAngle = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.EYE_ANGLE));
-                videoOptions.zoom = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.ZOOM));
-                    videoOptions.tint = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.TINT));
-                    videoOptions.brightness = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.BRIGHTNESS));
-                    videoOptions.contrast = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.CONTRAST));
-                    videoOptions.colorTemp = cursor.getFloat(cursor.getColumnIndex(VideoOptions.Columns.COLOR_TEMP));
+                videoOptions.useCustomCamera = getInt(cursor, VideoOptions.Columns.USE_CUSTOM_CAMERA, 1) == 1;
+                videoOptions.modeSelection = getInt(cursor, VideoOptions.Columns.MODE_SELECTION, VideoOptions.DEFAULT_MODE_SELECTION);
+                videoOptions.aspectRatioSelection = getInt(cursor, VideoOptions.Columns.ASPECT_RATIO_SELECTION, VideoOptions.DEFAULT_ASPECT_SELECTION);
+                videoOptions.textureStretch.x = getFloat(cursor, VideoOptions.Columns.TEXTURE_STRETCH_X, 0f);
+                videoOptions.textureStretch.y = getFloat(cursor, VideoOptions.Columns.TEXTURE_STRETCH_Y, 0f);
+                videoOptions.ipd = getFloat(cursor, VideoOptions.Columns.IPD, VideoOptions.DEFAULT_IPD);
+                videoOptions.eyeAngle = getFloat(cursor, VideoOptions.Columns.EYE_ANGLE, VideoOptions.DEFAULT_EYE_ANGLE);
+                videoOptions.zoom = getFloat(cursor, VideoOptions.Columns.ZOOM, VideoOptions.DEFAULT_ZOOM);
+                videoOptions.tint = getFloat(cursor, VideoOptions.Columns.TINT, VideoOptions.DEFAULT_TINT);
+                videoOptions.brightness = getFloat(cursor, VideoOptions.Columns.BRIGHTNESS, VideoOptions.DEFAULT_BRIGHTNESS);
+                videoOptions.contrast = getFloat(cursor, VideoOptions.Columns.CONTRAST, VideoOptions.DEFAULT_CONTRAST);
+                videoOptions.colorTemp = getFloat(cursor, VideoOptions.Columns.COLOR_TEMP, VideoOptions.DEFAULT_COLOR_TEMP);
                 Log.d(VideoOptionsDatabaseHelper.class.getSimpleName(), "loading videoOptions successful");
             } catch (Exception e) {
                 Log.e(VideoOptionsDatabaseHelper.class.getSimpleName(), "loading existing videoOptions failed");
@@ -133,5 +133,19 @@ public class VideoOptionsDatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return videoOptions;
+    }
+
+    private int getInt(Cursor cursor, String columnName, int defaultValue) {
+        final int columnIndex = cursor.getColumnIndex(columnName);
+        if (columnIndex == -1)
+            return defaultValue;
+        return cursor.getInt(columnIndex);
+    }
+
+    private float getFloat(Cursor cursor, String columnName, float defaultValue) {
+        final int columnIndex = cursor.getColumnIndex(columnName);
+        if (columnIndex == -1)
+            return defaultValue;
+        return cursor.getFloat(columnIndex);
     }
 }

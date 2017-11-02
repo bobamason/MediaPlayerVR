@@ -30,6 +30,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
     private float s = 10f;
     private DecimalFormat df = new DecimalFormat("0.00");
     private float shift = 0f;
+    private float tilt = 0f;
 
     public PlaybackSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
@@ -97,6 +98,29 @@ public class PlaybackSettingsLayout extends SingleStageUi {
             }
         });
         table.add(yRight).pad(padding).row();
+        setVisible(false);
+
+        final ImageButton tiltLeft = new ImageButton(leftButtonStyle);
+        tiltLeft.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                tilt -= STEP * 4f;
+                screen.setTilt(tilt);
+            }
+        });
+        table.add(tiltLeft).pad(padding);
+
+        table.add(new Label(" Tilt ", skin)).pad(padding);
+
+        final ImageButton tiltRight = new ImageButton(rightButtonStyle);
+        tiltRight.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                tilt += STEP * 4f;
+                screen.setTilt(tilt);
+            }
+        });
+        table.add(tiltRight).pad(padding).row();
         setVisible(false);
 
 //        final ImageButton shiftLeft = new ImageButton(leftButtonStyle);
