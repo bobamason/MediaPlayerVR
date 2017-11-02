@@ -99,6 +99,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     private Vector3 rectPosition = new Vector3();
     private float perspectiveFOV = 100f;
     private Matrix4 transform = new Matrix4();
+    private float eyeAngle = 0f;
 
     public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
@@ -304,7 +305,13 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         final float defaultIpd = ((VrActivityGVR) GdxVr.app.getContext()).getGvrView().getInterpupillaryDistance();
         final float ipdHalf = defaultIpd * ipd / 2f;
         pos.set(eye.getType() == Eye.Type.LEFT ? -ipdHalf : ipdHalf, 0, 0);
-        dir.set(0, 0, -1);
+
+        final double a = Math.toRadians(eyeAngle / 2. * (eye.getType() == Eye.Type.LEFT ? 1. : -1.));
+        dir.set((float) Math.sin(a), 0, (float) -Math.cos(a));
+
+//        final float a = Math.toRadians(eyeAngle / 2f * (eye.getType() == Eye.Type.LEFT ? 1f : -1f));
+//        dir.set(0, 0, -1f).rotate(Vector3.Y, a);
+        
         camera.view.setToLookAt(pos, dir.add(pos), Vector3.Y);
         Pools.free(pos);
         Pools.free(dir);
@@ -425,16 +432,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     public void onControllerTouchPadEvent(Controller controller, DaydreamTouchEvent event) {
         super.onControllerTouchPadEvent(controller, event);
         if (!isButtonClicked) {
-            if (ui.thumbSeekbarLayout.isVisible())
-                ui.thumbSeekbarLayout.onTouchPadEvent(event);
-            switch (event.action) {
-                case DaydreamTouchEvent.ACTION_DOWN:
-                    break;
-                case DaydreamTouchEvent.ACTION_MOVE:
-                    break;
-                case DaydreamTouchEvent.ACTION_UP:
-                    break;
-            }
+            if (ui.sliderLayout.isVisible())
+                ui.sliderLayout.onTouchPadEvent(event);
         }
     }
 
@@ -468,6 +467,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     public void setIpd(float ipd) {
         this.ipd = MathUtils.clamp(ipd, VideoOptions.MIN_IPD, VideoOptions.MAX_IPD);
         invalidateProjection();
+    }
+
+    public void setEyeAngle(float angle) {
+        this.eyeAngle = angle;
     }
 
     public void exit() {

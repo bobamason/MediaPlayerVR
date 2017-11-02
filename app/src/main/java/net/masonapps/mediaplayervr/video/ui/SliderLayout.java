@@ -1,5 +1,7 @@
 package net.masonapps.mediaplayervr.video.ui;
 
+import android.support.annotation.Nullable;
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
@@ -17,7 +19,7 @@ import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
  * Created by Bob on 3/13/2017.
  */
 
-public class ThumbSeekbarLayout extends SingleStageUi {
+public class SliderLayout extends SingleStageUi {
 
     private static final float MIN_MOVEMENT = 0.125f;
     private static final float SENSITIVITY = 0.025f;
@@ -27,12 +29,13 @@ public class ThumbSeekbarLayout extends SingleStageUi {
     public Slider slider;
     private float downX;
     private float currentX;
+    @Nullable
     private OnThumbSeekListener listener = null;
 
-    public ThumbSeekbarLayout(Batch spriteBatch, Skin skin) {
+    public SliderLayout(Batch spriteBatch, Skin skin) {
         super(spriteBatch, skin);
-        dialogVR.setSize(720, 160);
-        dialogVR.setTouchable(false);
+        setSize(720, 160);
+        setTouchable(true);
 
         labelLow = new Label("-", skin);
         table.add(labelLow).pad(padding);
@@ -46,11 +49,17 @@ public class ThumbSeekbarLayout extends SingleStageUi {
         slider = new Slider(0f, 1f, 1f / 10000f, false, skin);
         slider.setValue(0.5f);
         table.add(slider).colspan(3).expandX().fillX().pad(padding);
-        dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
-        dialogVR.setVisible(false);
+        setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
+        setVisible(false);
     }
 
-    public void setListener(OnThumbSeekListener listener) {
+    public void setSliderValue(float value) {
+        slider.setValue(value);
+        if (listener != null)
+            listener.onSeekChanged(this, slider.getValue());
+    }
+
+    public void setListener(@Nullable OnThumbSeekListener listener) {
         this.listener = listener;
     }
 
@@ -67,7 +76,8 @@ public class ThumbSeekbarLayout extends SingleStageUi {
                     if (listener != null) {
                         final float x = diff > 0 ? (diff - MIN_MOVEMENT) : (diff + MIN_MOVEMENT);
                         slider.setValue(MathUtils.clamp(slider.getValue() + x * GdxVr.graphics.getDeltaTime() * SENSITIVITY, 0f, 1f));
-                        listener.onSeekChanged(slider.getValue());
+                        if (listener != null)
+                            listener.onSeekChanged(this, slider.getValue());
                     }
                 }
                 break;
@@ -77,6 +87,6 @@ public class ThumbSeekbarLayout extends SingleStageUi {
     }
 
     public interface OnThumbSeekListener {
-        void onSeekChanged(float value);
+        void onSeekChanged(SliderLayout sliderLayout, float value);
     }
 }

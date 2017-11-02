@@ -17,6 +17,7 @@ public class VideoOptions {
     public static final int KEY_CONTRAST = 4;
     public static final int KEY_COLOR_TEMPERATURE = 5;
     public static final int KEY_IPD = 6;
+    public static final int KEY_EYE_CROSS = 7;
 
     public static final float MIN_TINT = -0.2f;
     public static final float MAX_TINT = 0.2f;
@@ -43,6 +44,8 @@ public class VideoOptions {
     public static final int DEFAULT_ASPECT_SELECTION = 0;
     public static final float DEFAULT_IPD = 1f;
     public static final float DEFAULT_ZOOM = 1f;
+    public static final float MIN_EYE_ANGLE = -5f;
+    public static final float MAX_EYE_ANGLE = 5f;
     private static final Vector2 DEFAULT_TEXTURE_STRETCH = new Vector2();
     @Nullable
     public String title;
@@ -57,6 +60,7 @@ public class VideoOptions {
     public float brightness;
     public float contrast;
     public float colorTemp;
+    public float eyeAngle = 0f;
 
     public VideoOptions() {
         title = null;

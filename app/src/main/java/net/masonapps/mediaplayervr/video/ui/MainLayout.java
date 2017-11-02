@@ -140,15 +140,23 @@ public class MainLayout extends BaseUiLayout {
         });
         optionsTable.add(cameraBtn).padTop(padding).padBottom(padding).padRight(padding);
 
+        final TextButton colorBtn = new TextButton("Color", skin);
+        colorBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                videoPlayerGUI.switchToColorSettingsLayout();
+            }
+        });
+        optionsTable.add(colorBtn).padTop(padding).padBottom(padding).padRight(padding).row();
+
         final TextButton resetBtn = new TextButton("reset", skin);
         resetBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 videoPlayerGUI.getVideoPlayerScreen().restoreDefaultVideoOptions();
-//                player.set3dShift(shift);
             }
         });
-        optionsTable.add(resetBtn).pad(padding).colspan(3).row();
+        optionsTable.add(resetBtn).padTop(padding).padBottom(padding).padRight(padding).row();
     }
 
     private static String getTimeLabelString(long currentPosition, long duration) {

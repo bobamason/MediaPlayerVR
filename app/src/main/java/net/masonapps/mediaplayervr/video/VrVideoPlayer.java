@@ -8,6 +8,7 @@ import android.opengl.GLES20;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -326,6 +327,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     public void setDisplayMode(DisplayMode displayMode) {
         this.displayMode = displayMode;
+        final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        Log.d(stackTrace[1].toString(), displayMode.name() + " set from " + stackTrace[2]);
         if (useFlatRectangle()) {
             modelInstance = rectModelInstance;
         } else {

@@ -9,7 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Align;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
@@ -36,21 +35,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
         final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
-        dialogVR.setPosition(0, 0, -2.5f);
-
-        final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
-        closeButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setVisible(false);
-            }
-        });
-        dialogVR.addActor(closeButton);
-
-        closeButton.setPosition(dialogVR.getWidth() - padding, dialogVR.getHeight() - padding, Align.topRight);
-        table.padTop(closeButton.getHeight());
-        table.setFillParent(true);
-        table.center();
+        setPosition(0, 0, -2.5f);
 
         df.setDecimalSeparatorAlwaysShown(true);
         final VrVideoPlayer player = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
@@ -144,9 +129,8 @@ public class PlaybackSettingsLayout extends SingleStageUi {
             }
         });
         table.add(cylinderBtn).pad(padding).colspan(3).row();
-        dialogVR.setVisible(false);
-        dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
-        dialogVR.resizeToFitTable();
+        setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
+        resizeToFitTable();
         setVisible(false);
     }
 }

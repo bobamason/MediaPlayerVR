@@ -3,10 +3,8 @@ package net.masonapps.mediaplayervr.video.ui;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -68,21 +66,7 @@ public class ModeLayout extends SingleStageUi {
     public ModeLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
-        dialogVR.setPosition(0, 0, -2.5f);
-
-        final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
-        closeButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setVisible(false);
-            }
-        });
-        dialogVR.addActor(closeButton);
-
-        closeButton.setPosition(dialogVR.getWidth() - padding, dialogVR.getHeight() - padding, Align.topRight);
-        table.padTop(closeButton.getHeight());
-        table.setFillParent(true);
-        table.center();
+        setPosition(0, 0, -2.5f);
 
 
 
@@ -109,10 +93,9 @@ public class ModeLayout extends SingleStageUi {
                 }
             });
         }
-        dialogVR.setVisible(false);
         setVisible(false);
-        dialogVR.setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
-        dialogVR.resizeToFitTable();
+        setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
+        resizeToFitTable();
     }
 
     public static DisplayMode getMode(int modeSelection) {

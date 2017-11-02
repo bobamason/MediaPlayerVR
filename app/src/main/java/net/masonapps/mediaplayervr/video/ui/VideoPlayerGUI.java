@@ -1,7 +1,6 @@
 package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 import net.masonapps.mediaplayervr.VideoPlayerScreen;
@@ -16,13 +15,14 @@ import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
  */
 
 public class VideoPlayerGUI extends BaseUiLayout {
-    public final ThumbSeekbarLayout thumbSeekbarLayout;
+    public final SliderLayout sliderLayout;
     private final MainLayout mainLayout;
     private final ModeLayout modeLayout;
     private final VideoPlayerScreen videoPlayerScreen;
     private final Skin skin;
     private final AspectRatioLayout aspectRatioLayout;
     private final CameraSettingsLayout cameraSettingsLayout;
+    private final ColorSettingsLayout colorSettingsLayout;
     private final PlaybackSettingsLayout playbackSettingsLayout;
     private final SpriteBatch spriteBatch;
     private VideoOptions videoOptions;
@@ -38,6 +38,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         modeLayout = new ModeLayout(this);
         aspectRatioLayout = new AspectRatioLayout(this);
         cameraSettingsLayout = new CameraSettingsLayout(this);
+        colorSettingsLayout = new ColorSettingsLayout(this);
         playbackSettingsLayout = new PlaybackSettingsLayout(this);
 
         mainLayout.setVisible(true);
@@ -45,53 +46,10 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
-        thumbSeekbarLayout = new ThumbSeekbarLayout(spriteBatch, skin);
-        thumbSeekbarLayout.dialogVR.setPosition(0, -1f, -1.5f);
-        thumbSeekbarLayout.dialogVR.recalculateTransform();
-        thumbSeekbarLayout.setVisible(false);
-        thumbSeekbarLayout.setListener(value -> {
-            switch (currentSettingKey) {
-                case VideoOptions.KEY_IPD:
-                    final float ipd = MathUtils.lerp(VideoOptions.MIN_IPD, VideoOptions.MAX_IPD, value);
-                    VideoPlayerGUI.this.videoOptions.ipd = ipd;
-                    thumbSeekbarLayout.label.setText("Eye Spacing " + Math.round(ipd * 100) + "%");
-                    VideoPlayerGUI.this.videoPlayerScreen.setIpd(ipd);
-                    break;
-                case VideoOptions.KEY_ZOOM:
-                    final float z = MathUtils.lerp(VideoOptions.MIN_ZOOM, VideoOptions.MAX_ZOOM, value);
-                    VideoPlayerGUI.this.videoOptions.zoom = z;
-                    thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
-                    VideoPlayerGUI.this.videoPlayerScreen.setZoom(z);
-                    break;
-                case VideoOptions.KEY_TINT:
-                    final float tint = MathUtils.lerp(VideoOptions.MIN_TINT, VideoOptions.MAX_TINT, value);
-                    videoOptions.tint = tint;
-                    thumbSeekbarLayout.label.setText("Tint");
-                    VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setTint(tint);
-                    break;
-                case VideoOptions.KEY_BRIGHTNESS:
-                    final float brightness = MathUtils.lerp(VideoOptions.MIN_BRIGHTNESS, VideoOptions.MAX_BRIGHTNESS, value);
-                    videoOptions.brightness = brightness;
-                    thumbSeekbarLayout.label.setText("Brightness");
-                    VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setBrightness(brightness);
-                    break;
-                case VideoOptions.KEY_CONTRAST:
-                    final float contrast = MathUtils.lerp(VideoOptions.MIN_CONTRAST, VideoOptions.MAX_CONTRAST, value);
-                    videoOptions.contrast = contrast;
-                    thumbSeekbarLayout.label.setText("Contrast");
-                    VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setContrast(contrast);
-                    break;
-                case VideoOptions.KEY_COLOR_TEMPERATURE:
-                    final float colorTemp = MathUtils.lerp(VideoOptions.MIN_COLOR_TEMP, VideoOptions.MAX_COLOR_TEMP, value);
-                    videoOptions.colorTemp = colorTemp;
-                    thumbSeekbarLayout.label.setText("Color Temperature");
-                    VideoPlayerGUI.this.videoPlayerScreen.getVideoPlayer().getShader().setColorTemp(colorTemp);
-                    break;
-                default:
-                    thumbSeekbarLayout.setVisible(false);
-                    break;
-            }
-        });
+        sliderLayout = new SliderLayout(spriteBatch, skin);
+        sliderLayout.setPosition(0, -1f, -1.5f);
+        sliderLayout.recalculateTransform();
+        sliderLayout.setVisible(false);
     }
 
     private static float unLerp(float fromValue, float toValue, float value) {
@@ -110,8 +68,9 @@ public class VideoPlayerGUI extends BaseUiLayout {
         modeLayout.attach(container);
         aspectRatioLayout.attach(container);
         cameraSettingsLayout.attach(container);
+        colorSettingsLayout.attach(container);
         playbackSettingsLayout.attach(container);
-        thumbSeekbarLayout.attach(container);
+        sliderLayout.attach(container);
     }
 
     @Override
@@ -129,8 +88,9 @@ public class VideoPlayerGUI extends BaseUiLayout {
             modeLayout.setVisible(false);
             aspectRatioLayout.setVisible(false);
             cameraSettingsLayout.setVisible(false);
+            colorSettingsLayout.setVisible(false);
             playbackSettingsLayout.setVisible(false);
-            thumbSeekbarLayout.setVisible(false);
+            sliderLayout.setVisible(false);
         }
     }
 
@@ -138,8 +98,9 @@ public class VideoPlayerGUI extends BaseUiLayout {
         if (modeLayout.isVisible() ||
                 aspectRatioLayout.isVisible() ||
                 cameraSettingsLayout.isVisible() ||
+                colorSettingsLayout.isVisible() ||
                 playbackSettingsLayout.isVisible() ||
-                thumbSeekbarLayout.isVisible()) {
+                sliderLayout.isVisible()) {
             switchToMainLayout();
         } else {
             videoPlayerScreen.exit();
@@ -165,7 +126,8 @@ public class VideoPlayerGUI extends BaseUiLayout {
         aspectRatioLayout.dispose();
         cameraSettingsLayout.dispose();
         playbackSettingsLayout.dispose();
-        thumbSeekbarLayout.dispose();
+        colorSettingsLayout.dispose();
+        sliderLayout.dispose();
     }
 
     public void switchToMainLayout() {
@@ -174,8 +136,9 @@ public class VideoPlayerGUI extends BaseUiLayout {
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
+        colorSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
-        thumbSeekbarLayout.setVisible(false);
+        sliderLayout.setVisible(false);
     }
 
     public void switchToModeLayout() {
@@ -184,8 +147,9 @@ public class VideoPlayerGUI extends BaseUiLayout {
         modeLayout.setVisible(true);
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
+        colorSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
-        thumbSeekbarLayout.setVisible(false);
+        sliderLayout.setVisible(false);
     }
 
     public void switchToAspectRatioLayout() {
@@ -194,8 +158,9 @@ public class VideoPlayerGUI extends BaseUiLayout {
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(true);
         cameraSettingsLayout.setVisible(false);
+        colorSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
-        thumbSeekbarLayout.setVisible(false);
+        sliderLayout.setVisible(false);
     }
 
     public void switchToCameraSettingsLayout() {
@@ -204,8 +169,20 @@ public class VideoPlayerGUI extends BaseUiLayout {
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(true);
+        colorSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
-        thumbSeekbarLayout.setVisible(false);
+        sliderLayout.setVisible(false);
+    }
+
+    public void switchToColorSettingsLayout() {
+        currentSettingKey = VideoOptions.KEY_NONE;
+        mainLayout.setVisible(true);
+        modeLayout.setVisible(false);
+        aspectRatioLayout.setVisible(false);
+        cameraSettingsLayout.setVisible(false);
+        colorSettingsLayout.setVisible(true);
+        playbackSettingsLayout.setVisible(false);
+        sliderLayout.setVisible(false);
     }
 
     public void switchToPlaybackSettingsLayout() {
@@ -214,52 +191,26 @@ public class VideoPlayerGUI extends BaseUiLayout {
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
+        colorSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(true);
-        thumbSeekbarLayout.setVisible(false);
+        sliderLayout.setVisible(false);
     }
 
-    public void showThumbSeekbarLayout(int setting) {
+    public void setCurrentSetting(int setting) {
         currentSettingKey = setting;
-        switch (currentSettingKey) {
-            case VideoOptions.KEY_IPD:
-                final float ipd = videoOptions.ipd;
-                thumbSeekbarLayout.label.setText("Eye Spacing " + Math.round(ipd * 100) + "%");
-                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_IPD, VideoOptions.MAX_IPD, ipd));
-                break;
-            case VideoOptions.KEY_ZOOM:
-                final float z = videoOptions.zoom;
-                thumbSeekbarLayout.label.setText("Zoom " + Math.round(z * 100) + "%");
-                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_ZOOM, VideoOptions.MAX_ZOOM, z));
-                break;
-            case VideoOptions.KEY_TINT:
-                final float tint = videoOptions.tint;
-//                thumbSeekbarLayout.label.setText("Tint");
-                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_TINT, VideoOptions.MAX_TINT, tint));
-                break;
-            case VideoOptions.KEY_BRIGHTNESS:
-                final float brightness = videoOptions.brightness;
-//                thumbSeekbarLayout.label.setText("Brightness");
-                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_BRIGHTNESS, VideoOptions.MAX_BRIGHTNESS, brightness));
-                break;
-            case VideoOptions.KEY_CONTRAST:
-                final float contrast = videoOptions.contrast;
-//                thumbSeekbarLayout.label.setText("Contrast");
-                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_CONTRAST, VideoOptions.MAX_CONTRAST, contrast));
-                break;
-            case VideoOptions.KEY_COLOR_TEMPERATURE:
-                final float colorTemp = videoOptions.colorTemp;
-//                thumbSeekbarLayout.label.setText("Color Temperature");
-                thumbSeekbarLayout.slider.setValue(unLerp(VideoOptions.MIN_COLOR_TEMP, VideoOptions.MAX_COLOR_TEMP, colorTemp));
-                break;
-            default:
-                return;
-        }
+    }
+
+    public void showSeekbar(float value, float min, float max, SliderLayout.OnThumbSeekListener listener) {
+        sliderLayout.setListener(listener);
+        sliderLayout.slider.setValue(unLerp(min, max, value));
+        
         mainLayout.setVisible(false);
         modeLayout.setVisible(false);
         aspectRatioLayout.setVisible(false);
         cameraSettingsLayout.setVisible(false);
+        colorSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
-        thumbSeekbarLayout.setVisible(true);
+        sliderLayout.setVisible(true);
     }
 
     public int getCurrentSettingKey() {
@@ -268,7 +219,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
 
     public void hideThumbSeekbarLayout() {
         currentSettingKey = VideoOptions.KEY_NONE;
-        thumbSeekbarLayout.setVisible(false);
+        sliderLayout.setVisible(false);
     }
 
     public SpriteBatch getSpriteBatch() {

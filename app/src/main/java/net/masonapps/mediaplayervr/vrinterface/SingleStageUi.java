@@ -1,9 +1,12 @@
 package net.masonapps.mediaplayervr.vrinterface;
 
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+
+import net.masonapps.mediaplayervr.Style;
 
 import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
 
@@ -11,47 +14,37 @@ import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
  * Created by Bob on 3/13/2017.
  */
 
-public class SingleStageUi extends BaseUiLayout {
+public class SingleStageUi extends DialogVR {
 
-    public final DialogVR dialogVR;
-    public final Table table;
-    public final Skin skin;
+    protected final Skin skin;
+    protected int padding = 10;
 
     public SingleStageUi(Batch spriteBatch, Skin skin) {
-        this.dialogVR = new DialogVR(spriteBatch, skin, 512, 512);
-        this.table = dialogVR.getTable();
+        super(spriteBatch, skin, 512, 512);
         this.skin = skin;
+
+        final ImageButton closeButton = new ImageButton(Style.createImageButtonStyle(skin, Style.Drawables.ic_close_white_48dp, true));
+        closeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                setVisible(false);
+            }
+        });
+        getTable().add(closeButton).expandX().right().row();
+        setAnimationDuration(0.25f);
     }
 
-    @Override
     public void attach(VrUiContainer container) {
-        container.addProcessor(dialogVR);
+        container.addProcessor(this);
     }
 
-    @Override
     public void update() {
-        dialogVR.act();
-    }
-
-    @Override
-    public void draw(Camera camera) {
-        dialogVR.draw(camera);
-    }
-
-    @Override
-    public boolean isVisible() {
-        return dialogVR.isVisible();
+        act();
     }
 
     @Override
     public void setVisible(boolean visible) {
-        if (visible) dialogVR.show();
-        else dialogVR.hide();
-    }
-
-    @Override
-    public void dispose() {
-        if (dialogVR != null)
-            dialogVR.dispose();
+        if (visible) show();
+        else hide();
     }
 }
