@@ -5,9 +5,14 @@ import android.support.annotation.Nullable;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
@@ -38,25 +43,64 @@ public class SliderLayout extends SingleStageUi {
         setTouchable(true);
 
         labelLow = new Label("-", skin);
-        table.add(labelLow).pad(padding);
+        table.add(labelLow)
+                .left()
+                .pad(padding);
 
         label = new Label("Value 100%", skin);
-        table.add(label).expandX().center().pad(padding);
+        table.add(label)
+                .expandX()
+                .center()
+                .pad(padding);
 
         labelHigh = new Label("+", skin);
-        table.add(labelHigh).pad(padding).row();
+        table.add(labelHigh)
+                .right()
+                .pad(padding)
+                .row();
 
         slider = new Slider(0f, 1f, 1f / 10000f, false, skin);
         slider.setValue(0.5f);
-        table.add(slider).colspan(3).expandX().fillX().pad(padding);
+        slider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (listener != null)
+                    listener.onSeekChanged(SliderLayout.this, slider.getValue());
+            }
+        });
+        table.add(slider)
+                .colspan(3)
+                .growX()
+                .minWidth(720)
+                .padBottom(padding)
+                .padLeft(padding)
+                .padRight(padding)
+                .row();
+
+        final TextButton reset = new TextButton("reset", skin);
+        reset.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                slider.setValue(0.5f);
+            }
+        });
+        table.add(reset)
+                .colspan(3)
+                .expandX()
+                .center()
+                .padBottom(padding)
+                .padLeft(padding)
+                .padRight(padding);
+
         setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));
         setVisible(false);
+        resizeToFitTable();
     }
 
     public void setSliderValue(float value) {
         slider.setValue(value);
-        if (listener != null)
-            listener.onSeekChanged(this, slider.getValue());
+//        if (listener != null)
+//            listener.onSeekChanged(this, slider.getValue());
     }
 
     public void setListener(@Nullable OnThumbSeekListener listener) {
@@ -76,8 +120,8 @@ public class SliderLayout extends SingleStageUi {
                     if (listener != null) {
                         final float x = diff > 0 ? (diff - MIN_MOVEMENT) : (diff + MIN_MOVEMENT);
                         slider.setValue(MathUtils.clamp(slider.getValue() + x * GdxVr.graphics.getDeltaTime() * SENSITIVITY, 0f, 1f));
-                        if (listener != null)
-                            listener.onSeekChanged(this, slider.getValue());
+//                        if (listener != null)
+//                            listener.onSeekChanged(this, slider.getValue());
                     }
                 }
                 break;

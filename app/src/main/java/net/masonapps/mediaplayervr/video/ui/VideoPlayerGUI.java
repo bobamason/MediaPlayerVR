@@ -202,7 +202,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
 
     public void showSeekbar(float value, float min, float max, SliderLayout.OnThumbSeekListener listener) {
         sliderLayout.setListener(listener);
-        sliderLayout.slider.setValue(unLerp(min, max, value));
+        sliderLayout.setSliderValue(unLerp(min, max, value));
         
         mainLayout.setVisible(false);
         modeLayout.setVisible(false);
