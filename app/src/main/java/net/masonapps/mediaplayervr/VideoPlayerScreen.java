@@ -298,6 +298,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     private boolean shouldRenderMono() {
         return (videoPlayer.isStereoscopic() && isUiVisible) &&
                 ui.getCurrentSettingKey() != VideoOptions.KEY_IPD &&
+                ui.getCurrentSettingKey() != VideoOptions.KEY_EYE_ANGLE &&
                 ui.getCurrentSettingKey() != VideoOptions.KEY_ZOOM;
     }
 

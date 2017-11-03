@@ -10,6 +10,8 @@ import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.vrinterface.SingleStageUi;
 
+import java.text.DecimalFormat;
+
 /**
  * Created by Bob on 2/8/2017.
  */
@@ -19,11 +21,13 @@ public class CameraSettingsLayout extends SingleStageUi {
     private static final float STEP = 0.01f;
     private final VideoPlayerGUI videoPlayerGUI;
     private float z = 1f;
+    private DecimalFormat df = new DecimalFormat("0.00");
     private float ipd = 0f;
 
     public CameraSettingsLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
+        setPosition(0, 0, -2.5f);
 
         final VideoOptions videoOptions = videoPlayerGUI.getVideoOptions();
 
@@ -43,22 +47,22 @@ public class CameraSettingsLayout extends SingleStageUi {
                 });
             }
         });
-        table.add(ipdButton).colspan(3).padBottom(padding).row();
+        table.add(ipdButton).padBottom(padding).row();
 
         final TextButton crossButton = new TextButton("Eye Angle", skin);
         crossButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                videoPlayerGUI.setCurrentSetting(VideoOptions.KEY_EYE_CROSS);
-                videoPlayerGUI.showSeekbar(videoOptions.zoom, VideoOptions.MIN_EYE_ANGLE, VideoOptions.MAX_EYE_ANGLE, (sliderLayout, value) -> {
+                videoPlayerGUI.setCurrentSetting(VideoOptions.KEY_EYE_ANGLE);
+                videoPlayerGUI.showSeekbar(videoOptions.eyeAngle, VideoOptions.MIN_EYE_ANGLE, VideoOptions.MAX_EYE_ANGLE, (sliderLayout, value) -> {
                     final float a = MathUtils.lerp(VideoOptions.MIN_EYE_ANGLE, VideoOptions.MAX_EYE_ANGLE, value);
                     videoOptions.eyeAngle = a;
-                    sliderLayout.label.setText("Eye Angle " + a + "deg");
+                    sliderLayout.label.setText("Eye Angle " + df.format(a) + "deg");
                     videoPlayerGUI.getVideoPlayerScreen().setEyeAngle(a);
                 });
             }
         });
-        table.add(crossButton).colspan(3).padBottom(padding).row();
+        table.add(crossButton).padBottom(padding).row();
 
         final TextButton zoomButton = new TextButton("Zoom", skin);
         zoomButton.addListener(new ClickListener() {
@@ -73,7 +77,7 @@ public class CameraSettingsLayout extends SingleStageUi {
                 });
             }
         });
-        table.add(zoomButton).colspan(3).padBottom(padding).row();
+        table.add(zoomButton).padBottom(padding).row();
 
         setVisible(false);
         setBackground(skin.newDrawable(Style.Drawables.window, Color.BLACK));

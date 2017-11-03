@@ -17,7 +17,7 @@ public class VideoOptions {
     public static final int KEY_CONTRAST = 4;
     public static final int KEY_COLOR_TEMPERATURE = 5;
     public static final int KEY_IPD = 6;
-    public static final int KEY_EYE_CROSS = 7;
+    public static final int KEY_EYE_ANGLE = 7;
 
     public static final float MIN_TINT = -0.2f;
     public static final float MAX_TINT = 0.2f;

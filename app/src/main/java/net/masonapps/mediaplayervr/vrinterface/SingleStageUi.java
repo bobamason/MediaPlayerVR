@@ -41,10 +41,4 @@ public class SingleStageUi extends DialogVR {
     public void update() {
         act();
     }
-
-    @Override
-    public void setVisible(boolean visible) {
-        if (visible) show();
-        else hide();
-    }
 }
