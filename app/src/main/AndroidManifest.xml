@@ -20,7 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity"
-                  android:enableVrMode="true"
+                  android:configChanges="orientation|keyboardHidden|screenSize"
+                  android:enableVrMode="@string/gvr_vr_mode_component"
+                  android:resizeableActivity="false"
                   android:screenOrientation="landscape">
             <meta-data
                 android:name="com.google.android.vr.icon"
