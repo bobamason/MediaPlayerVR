@@ -288,9 +288,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //            }
 //        }
 
+        Quaternion tmpQ = Pools.obtain(Quaternion.class);
+        tmpQ.set(headQuaternion).conjugate();
         transform.idt()
                 .rotate(Vector3.X, tilt * -90f)
-                .rotate(rotation.set(headQuaternion).conjugate());
+                .rotate(rotation.set(tmpQ));
+        Pools.free(tmpQ);
 
         videoPlayer.update(transform);
     }
