@@ -280,7 +280,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         setCameraViewFromEye(rightEye, rightCamera);
         updateCamera(rightCamera);
 
-        final Quaternion headQuaternion = getHeadQuaternion();
 //        if (videoPlayer instanceof VrVideoPlayerExo) {
 //            final GvrAudioProcessor gvrAudioProcessor = ((VrVideoPlayerExo) videoPlayer).getGvrAudioProcessor();
 //            if (gvrAudioProcessor != null) {
@@ -288,14 +287,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //            }
 //        }
 
-        Quaternion tmpQ = Pools.obtain(Quaternion.class);
-        tmpQ.set(headQuaternion).conjugate();
-        transform.idt()
-                .rotate(Vector3.X, tilt * -90f)
-                .rotate(rotation.set(tmpQ));
-        Pools.free(tmpQ);
 
-        videoPlayer.update(transform);
+        videoPlayer.update();
     }
 
     private boolean shouldRenderMono() {
@@ -320,6 +313,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //        dir.set(0, 0, -1f).rotate(Vector3.Y, a);
         
         camera.view.setToLookAt(pos, dir.add(pos), Vector3.Y);
+        camera.position.set(pos);
         Pools.free(pos);
         Pools.free(dir);
     }
@@ -377,12 +371,34 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     public void render(Camera camera, int whichEye) {
         if (whichEye == Eye.Type.LEFT) {
             getModelBatch().begin(leftCamera);
-            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT);
+
+            Quaternion tmpQ = Pools.obtain(Quaternion.class);
+            final Quaternion headQuaternion = getHeadQuaternion();
+            rotation.set(headQuaternion).conjugate();
+            tmpQ.set(Vector3.X, tilt * -90f);
+            transform.idt()
+                    .translate(-leftCamera.position.x, -leftCamera.position.y, -leftCamera.position.z)
+                    .rotate(rotation.mulLeft(tmpQ))
+                    .translate(leftCamera.position.x, leftCamera.position.y, leftCamera.position.z);
+            Pools.free(tmpQ);
+
+            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
             getModelBatch().end();
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0f;
         } else {
             getModelBatch().begin(rightCamera);
-            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT);
+
+            Quaternion tmpQ = Pools.obtain(Quaternion.class);
+            final Quaternion headQuaternion = getHeadQuaternion();
+            rotation.set(headQuaternion).conjugate();
+            tmpQ.set(Vector3.X, tilt * -90f);
+            transform.idt()
+                    .translate(-rightCamera.position.x, -rightCamera.position.y, -rightCamera.position.z)
+                    .rotate(rotation.mulLeft(tmpQ))
+                    .translate(rightCamera.position.x, rightCamera.position.y, rightCamera.position.z);
+            Pools.free(tmpQ);
+
+            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
             getModelBatch().end();
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
         }

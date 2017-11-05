@@ -139,7 +139,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         }
     }
 
-    public void update(Matrix4 transform) {
+    public void update() {
         if (!prepared)
             return;
         synchronized (this) {
@@ -148,18 +148,18 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
                 frameAvailable = false;
             }
         }
+    }
+
+    public void render(ModelBatch batch, int eyeType, Matrix4 transform) {
+        if (!prepared)
+            return;
+
 
         if (useFlatRectangle())
             mapDistortModel();
         else
             mapDistortTextureCoordinates();
-
         modelInstance.transform.mulLeft(transform);
-    }
-
-    public void render(ModelBatch batch, int eyeType) {
-        if (!prepared)
-            return;
 
         shader.setUseFishEye(useFishEyeProjection);
 
@@ -199,7 +199,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     protected void mapDistortTextureCoordinates() {
-        modelInstance.transform.idt().scale(modelSize + stretch.x * modelSize, modelSize + stretch.y * modelSize, modelSize);
+        modelInstance.transform.idt().scale(modelSize, modelSize, modelSize);
     }
 
     protected void mapDistortModel() {

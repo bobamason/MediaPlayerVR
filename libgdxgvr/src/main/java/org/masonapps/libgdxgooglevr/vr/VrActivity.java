@@ -591,7 +591,7 @@ public class VrActivity extends Activity {
         private String apiStatus;
 
         // The state of a specific Controller connection.
-        private int connectionState = Controller.ConnectionStates.DISCONNECTED;
+        private int connectionState = Controller.ConnectionStates.CONNECTED;
 
         @Override
         public void onApiStatusChanged(int state) {
