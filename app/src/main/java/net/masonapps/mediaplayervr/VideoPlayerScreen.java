@@ -304,7 +304,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         final Vector3 dir = Pools.obtain(Vector3.class);
         final float defaultIpd = ((VrActivityGVR) GdxVr.app.getContext()).getGvrView().getInterpupillaryDistance();
         final float ipdHalf = defaultIpd * ipd / 2f;
-        pos.set(eye.getType() == Eye.Type.LEFT ? -ipdHalf : ipdHalf, 0, 0);
+        pos.set(eye.getType() == Eye.Type.LEFT ? -ipdHalf : ipdHalf, 0, 2f - zoom * 2f);
 
         final double a = Math.toRadians(eyeAngle / 2. * (eye.getType() == Eye.Type.LEFT ? 1. : -1.));
         dir.set((float) Math.sin(a), 0, (float) -Math.cos(a));
@@ -376,10 +376,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
             final Quaternion headQuaternion = getHeadQuaternion();
             rotation.set(headQuaternion).conjugate();
             tmpQ.set(Vector3.X, tilt * -90f);
-            transform.idt()
-                    .translate(-leftCamera.position.x, -leftCamera.position.y, -leftCamera.position.z)
-                    .rotate(rotation.mulLeft(tmpQ))
-                    .translate(leftCamera.position.x, leftCamera.position.y, leftCamera.position.z);
+            transform.idt().rotate(rotation.mulLeft(tmpQ));
+//                    .translate(-leftCamera.position.x, -leftCamera.position.y, -leftCamera.position.z)
+//                    .rotate(rotation.mulLeft(tmpQ))
+//                    .translate(leftCamera.position.x, leftCamera.position.y, leftCamera.position.z);
             Pools.free(tmpQ);
 
             videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
