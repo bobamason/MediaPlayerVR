@@ -392,10 +392,10 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
             final Quaternion headQuaternion = getHeadQuaternion();
             rotation.set(headQuaternion).conjugate();
             tmpQ.set(Vector3.X, tilt * -90f);
-            transform.idt()
-                    .translate(-rightCamera.position.x, -rightCamera.position.y, -rightCamera.position.z)
-                    .rotate(rotation.mulLeft(tmpQ))
-                    .translate(rightCamera.position.x, rightCamera.position.y, rightCamera.position.z);
+            transform.idt().rotate(rotation.mulLeft(tmpQ));
+//                    .translate(-rightCamera.position.x, -rightCamera.position.y, -rightCamera.position.z)
+//                    .rotate(rotation.mulLeft(tmpQ))
+//                    .translate(rightCamera.position.x, rightCamera.position.y, rightCamera.position.z);
             Pools.free(tmpQ);
 
             videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
