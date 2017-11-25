@@ -28,6 +28,7 @@ public class LoadingScreen extends VrWorldScreen {
         super(game);
         setBackgroundColor(Color.BLACK);
         getVrCamera().near = 0.1f;
+        getWorld().add(Style.newGradientBackground(getVrCamera().far - 1f));
         final Model rect = ModelGenerator.createRect(new ModelBuilder());
         final Texture texture = new Texture("loading.png");
         manageDisposable(texture);

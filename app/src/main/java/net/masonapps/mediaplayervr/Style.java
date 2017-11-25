@@ -6,6 +6,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
+import org.masonapps.libgdxgooglevr.gfx.Entity;
+
 /**
  * Created by Bob on 2/11/2017.
  */
@@ -56,6 +58,10 @@ public class Style {
         final Image bg = new Image(skin.newDrawable(Style.Drawables.window, Color.BLACK));
         bg.setFillParent(true);
         return bg;
+    }
+
+    public static Entity newGradientBackground(float r) {
+        return GradientSphere.newInstance(r, 32, 16, Color.BLACK, Color.DARK_GRAY);
     }
 
     public static class Drawables {

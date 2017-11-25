@@ -42,6 +42,7 @@ import java.util.concurrent.Executors;
  */
 
 public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamControllerInputListener {
+    public static final String ENVIRONMENT_FILENAME = "room/tron.g3db";
     private final Context context;
     private final SpriteBatch spriteBatch;
     //    private final VideoPreviewUi videoPreviewUi;
@@ -56,6 +57,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         spriteBatch = new SpriteBatch();
         manageDisposable(spriteBatch);
         container = new VrUiContainer();
+        getVrCamera().far = 0.1f;
+        getVrCamera().far = 500f;
 //        final ModelBuilder modelBuilder = new ModelBuilder();
 //        final Model rectModel = ModelGenerator.createRect(modelBuilder);
 //        final int divisionsU = 24;
@@ -80,16 +83,16 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
             showVideoList();
             loadVideoList();
         }
-        setBackgroundColor(Color.SLATE);
+        setBackgroundColor(Color.BLACK);
+//        getWorld().add(Style.newGradientBackground(getVrCamera().far - 1f));
 
         new Thread() {
             @Override
             public void run() {
-                final String roomFileName = "room/room_textured.g3db";
-                final ModelData modelData = ((G3dModelLoader) MediaSelectionScreen.this.game.getAssets().getLoader(Model.class, roomFileName)).loadModelData(GdxVr.files.internal(roomFileName));
+                final ModelData modelData = ((G3dModelLoader) MediaSelectionScreen.this.game.getAssets().getLoader(Model.class, ENVIRONMENT_FILENAME)).loadModelData(GdxVr.files.internal(ENVIRONMENT_FILENAME));
                 GdxVr.app.postRunnable(() -> {
-                    final Entity room = getWorld().add(new Entity(new ModelInstance(new Model(modelData)), new BoundingBox().set(new Vector3(-10, -10, -10), new Vector3(10, 10, 10))));
-                    room.modelInstance.transform.rotate(Vector3.Y, -90);
+                    final Entity room = getWorld().add(new Entity(new ModelInstance(new Model(modelData)), new BoundingBox().set(new Vector3(-100, -100, -100), new Vector3(100, 100, 100))));
+                    room.setScale(0.01f);
                     room.setLightingEnabled(false);
                 });
             }

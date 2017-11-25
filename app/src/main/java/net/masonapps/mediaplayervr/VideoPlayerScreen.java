@@ -61,8 +61,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     private static final Quaternion tempQ = new Quaternion();
     private static final Matrix4 tempM = new Matrix4();
     private static final Vector3 NEG_Z = new Vector3(0, 0, -1);
-    private static final float NEAR = 1f;
-    private static final float FAR = 101f;
 
     private final VideoDetails videoDetails;
     private final VideoPlayerGUI ui;
@@ -112,13 +110,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
             this.videoOptions = new VideoOptions();
             this.videoOptions.title = videoDetails.title;
         }
+        getWorld().add(Style.newGradientBackground(getVrCamera().far - 1f));
         setIpd(this.videoOptions.ipd);
         leftCamera = new VrCamera();
-        leftCamera.near = NEAR;
-        leftCamera.far = FAR;
+        leftCamera.near = getVrCamera().near;
+        leftCamera.far = getVrCamera().far;
         rightCamera = new VrCamera();
-        rightCamera.near = NEAR;
-        rightCamera.far = FAR;
+        rightCamera.near = getVrCamera().near;
+        rightCamera.far = getVrCamera().far;
         final MediaPlayerGame mediaPlayerGame = (MediaPlayerGame) game;
         videoPlayer = new VrVideoPlayerMP(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
         videoPlayer.setOnCompletionListener(this);
@@ -131,8 +130,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         final Skin skin = mediaPlayerGame.getSkin();
         ui = new VideoPlayerGUI(this, spriteBatch, skin, this.videoOptions);
         ui.attach(container);
-        getVrCamera().near = 0.125f;
-        getVrCamera().far = 101f;
         modelBuilder = new ModelBuilder();
         modelBuilder.begin();
         final MeshPartBuilder part = modelBuilder.part("outline", GL20.GL_LINES, VertexAttributes.Usage.Position, new Material(ColorAttribute.createDiffuse(Color.YELLOW)));
@@ -376,7 +373,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
             final Quaternion headQuaternion = getHeadQuaternion();
             rotation.set(headQuaternion).conjugate();
             tmpQ.set(Vector3.X, tilt * -90f);
-            transform.idt().rotate(rotation.mulLeft(tmpQ));
+            transform.idt().rotate(rotation.mul(tmpQ));
 //                    .translate(-leftCamera.position.x, -leftCamera.position.y, -leftCamera.position.z)
 //                    .rotate(rotation.mulLeft(tmpQ))
 //                    .translate(leftCamera.position.x, leftCamera.position.y, leftCamera.position.z);
@@ -392,7 +389,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
             final Quaternion headQuaternion = getHeadQuaternion();
             rotation.set(headQuaternion).conjugate();
             tmpQ.set(Vector3.X, tilt * -90f);
-            transform.idt().rotate(rotation.mulLeft(tmpQ));
+            transform.idt().rotate(rotation.mul(tmpQ));
 //                    .translate(-rightCamera.position.x, -rightCamera.position.y, -rightCamera.position.z)
 //                    .rotate(rotation.mulLeft(tmpQ))
 //                    .translate(rightCamera.position.x, rightCamera.position.y, rightCamera.position.z);
