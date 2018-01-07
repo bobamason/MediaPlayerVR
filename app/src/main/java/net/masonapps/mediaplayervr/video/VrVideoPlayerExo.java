@@ -14,7 +14,6 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
@@ -26,7 +25,6 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 
 import java.io.IOException;
 
@@ -34,7 +32,7 @@ import java.io.IOException;
  * Created by Bob on 12/21/2016.
  */
 
-public class VrVideoPlayerExo extends VrVideoPlayer implements Player.EventListener, ExtractorMediaSource.EventListener {
+public class VrVideoPlayerExo extends VrVideoPlayer implements ExtractorMediaSource.EventListener, ExoPlayer.EventListener {
 
     public static final String TAG = VrVideoPlayerExo.class.getSimpleName();
     //    @Nullable
@@ -54,12 +52,11 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements Player.EventListe
         final TrackSelector trackSelector = new DefaultTrackSelector();
         final LoadControl loadControl = new DefaultLoadControl();
         Renderer[] renderers = new Renderer[2];
-//        final MediaCodecVideoRendererNoDrop mediaCodecVideoRendererNoDrop = new MediaCodecVideoRendererNoDrop(context, MediaCodecSelector.DEFAULT);
-//        mediaCodecVideoRendererNoDrop.setDropLateFrames(false);
-//        mediaCodecVideoRendererNoDrop.setDropLateFrames(true);
-//        mediaCodecVideoRendererNoDrop.setDropLateMs(30);
-//        renderers[0] = mediaCodecVideoRendererNoDrop;
-        renderers[0] = new MediaCodecVideoRenderer(context, MediaCodecSelector.DEFAULT);
+        final MediaCodecVideoRendererNoDrop mediaCodecVideoRendererNoDrop = new MediaCodecVideoRendererNoDrop(context, MediaCodecSelector.DEFAULT);
+        mediaCodecVideoRendererNoDrop.setDropLateFrames(false);
+        mediaCodecVideoRendererNoDrop.setDropLateMs(30);
+        renderers[0] = mediaCodecVideoRendererNoDrop;
+//        renderers[0] = new MediaCodecVideoRenderer(context, MediaCodecSelector.DEFAULT);
         renderers[1] = new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT);
 
 //        gvrAudioProcessor = new GvrAudioProcessor();
@@ -108,7 +105,7 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements Player.EventListe
 
     @Override
     public void stop() {
-        if (exoPlayer != null && exoPlayer.getPlaybackState() == Player.STATE_READY) {
+        if (exoPlayer != null && exoPlayer.getPlaybackState() == ExoPlayer.STATE_READY) {
             exoPlayer.stop();
         }
         prepared = false;
@@ -184,26 +181,20 @@ public class VrVideoPlayerExo extends VrVideoPlayer implements Player.EventListe
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
-            case Player.STATE_READY:
+            case ExoPlayer.STATE_READY:
                 prepared = true;
                 break;
-            case Player.STATE_IDLE:
+            case ExoPlayer.STATE_IDLE:
                 break;
-            case Player.STATE_BUFFERING:
+            case ExoPlayer.STATE_BUFFERING:
                 break;
-            case Player.STATE_ENDED:
+            case ExoPlayer.STATE_ENDED:
                 if (completionListener != null) {
                     completionListener.onCompletion();
                 }
                 break;
         }
     }
-
-    @Override
-    public void onRepeatModeChanged(int repeatMode) {
-
-    }
-
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         Log.e(TAG, error.getMessage());

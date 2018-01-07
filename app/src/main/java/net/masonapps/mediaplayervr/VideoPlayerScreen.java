@@ -36,7 +36,7 @@ import com.google.vr.sdk.controller.Controller;
 import net.masonapps.mediaplayervr.database.VideoOptions;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
-import net.masonapps.mediaplayervr.video.VrVideoPlayerMP;
+import net.masonapps.mediaplayervr.video.VrVideoPlayerExo;
 import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
@@ -119,7 +119,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         rightCamera.near = getVrCamera().near;
         rightCamera.far = getVrCamera().far;
         final MediaPlayerGame mediaPlayerGame = (MediaPlayerGame) game;
-        videoPlayer = new VrVideoPlayerMP(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
+        videoPlayer = new VrVideoPlayerExo(context, videoDetails.uri, videoDetails.width, videoDetails.height, mediaPlayerGame.getRectModel(), mediaPlayerGame.getSphereModel(), mediaPlayerGame.getCylinderModel());
         videoPlayer.setOnCompletionListener(this);
         videoPlayer.setOnErrorListener(this);
         videoPlayer.setVideoOptions(this.videoOptions);
