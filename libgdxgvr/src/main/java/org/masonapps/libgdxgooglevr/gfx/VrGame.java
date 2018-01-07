@@ -27,7 +27,6 @@ import com.google.vr.sdk.controller.Controller;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
-import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.input.VrCursor;
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
@@ -37,7 +36,7 @@ import org.masonapps.libgdxgooglevr.vr.VrApplicationAdapter;
  * Created by Bob on 12/22/2016.
  */
 
-public class VrGame extends VrApplicationAdapter implements DaydreamControllerInputListener {
+public class VrGame extends VrApplicationAdapter {
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
     protected VrScreen screen;
@@ -67,23 +66,10 @@ public class VrGame extends VrApplicationAdapter implements DaydreamControllerIn
         cursor.setDeactivatedDiameter(0.02f);
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                GdxVr.app.postRunnable(new Runnable() {
-                    @Override
-                    public void run() {
-                        final ModelData modelData = new G3dModelLoader(new UBJsonReader(), new InternalFileHandleResolver()).loadModelData(GdxVr.files.internal(CONTROLLER_FILENAME));
-                        GdxVr.app.postRunnable(new Runnable() {
-                            @Override
-                            public void run() {
-                                controllerInstance = new ModelInstance(new Model(modelData));
-                            }
-                        });
-                    }
-                });
-            }
-        }).start();
+        new Thread(() -> GdxVr.app.postRunnable(() -> {
+            final ModelData modelData = new G3dModelLoader(new UBJsonReader(), new InternalFileHandleResolver()).loadModelData(GdxVr.files.internal(CONTROLLER_FILENAME));
+            GdxVr.app.postRunnable(() -> controllerInstance = new ModelInstance(new Model(modelData)));
+        })).start();
     }
 
     protected ModelBatch createModelBatch() {
@@ -93,13 +79,11 @@ public class VrGame extends VrApplicationAdapter implements DaydreamControllerIn
     @Override
     public void pause() {
         if (screen != null) screen.pause();
-        GdxVr.input.removeDaydreamControllerListener(this);
     }
 
     @Override
     public void resume() {
         if (screen != null) screen.resume();
-        GdxVr.input.addDaydreamControllerListener(this);
     }
 
     protected void doneLoading(AssetManager assets) {

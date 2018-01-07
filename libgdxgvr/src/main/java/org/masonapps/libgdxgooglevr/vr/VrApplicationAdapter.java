@@ -13,21 +13,23 @@ import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
+import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 
 /**
  * Created by Bob on 12/15/2016.
  */
 
-public abstract class VrApplicationAdapter implements ApplicationListener {
+public abstract class VrApplicationAdapter implements ApplicationListener, DaydreamControllerInputListener {
     protected VrCamera vrCamera;
 
     public VrApplicationAdapter() {
-        vrCamera = new VrCamera();
     }
 
     @Override
     @CallSuper
     public void create() {
+        vrCamera = new VrCamera();
+        GdxVr.input.addDaydreamControllerListener(this);
     }
 
     public void preloadSoundFiles(GvrAudioEngine gvrAudioEngine) {

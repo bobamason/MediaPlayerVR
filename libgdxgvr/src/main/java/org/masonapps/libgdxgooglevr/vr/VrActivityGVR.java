@@ -284,7 +284,7 @@ public class VrActivityGVR extends GvrActivity {
         @Override
         public void onConnectionStateChanged(int state) {
             connectionState = state;
-            app.postRunnable(this);
+//            gvrView.queueEvent(this);
         }
 
         @Override
@@ -296,14 +296,13 @@ public class VrActivityGVR extends GvrActivity {
 
         @Override
         public void onUpdate() {
-            app.postRunnable(this);
+//            gvrView.queueEvent(this);
         }
 
         // Update the various TextViews in the UI thread.
         @Override
         public void run() {
-            controller.update();
-            app.input.onDaydreamControllerUpdate(controller, connectionState);
+//            app.input.onDaydreamControllerUpdate(controller, connectionState);
         }
     }
 }

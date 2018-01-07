@@ -620,7 +620,8 @@ public class VrActivity extends Activity {
         @Override
         public void run() {
             controller.update();
-            app.input.onDaydreamControllerUpdate(controller, connectionState);
+            // TODO: 12/23/2017 fix controller update 
+//            app.input.onDaydreamControllerUpdate(controller, connectionState);
         }
     }
 }

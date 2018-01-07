@@ -541,6 +541,9 @@ public class VrGraphicsGVR implements Graphics, GvrView.Renderer {
             gvrAudioEngine.setHeadRotation(rotation.x, rotation.y, rotation.z, rotation.w);
             gvrAudioEngine.update();
 
+            app.input.getController().update();
+            app.input.onDaydreamControllerUpdate();
+
             ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, leftEye, rightEye);
             frameId++;
         }

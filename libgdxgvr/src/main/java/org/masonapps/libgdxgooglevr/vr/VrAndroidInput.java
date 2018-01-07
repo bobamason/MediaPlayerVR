@@ -574,7 +574,8 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
         }
     }
 
-    public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
+    public void onDaydreamControllerUpdate() {
+        int connectionState = Controller.ConnectionStates.CONNECTED;
         if (connectionState == Controller.ConnectionStates.CONNECTED) {
             isControllerConnected = true;
             armModel.updateHeadDirection(GdxVr.app.getVrApplicationAdapter().getVrCamera().direction);
@@ -630,10 +631,6 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
         return isControllerConnected;
     }
 
-    public void setController(Controller controller) {
-        this.controller = controller;
-    }
-
     public DaydreamControllerHandler getDaydreamControllerHandler() {
         return daydreamControllerHandler;
     }
@@ -644,6 +641,14 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
 
     public void removeDaydreamControllerListener(DaydreamControllerInputListener listener) {
         getDaydreamControllerHandler().removeListener(listener);
+    }
+
+    public Controller getController() {
+        return controller;
+    }
+
+    public void setController(Controller controller) {
+        this.controller = controller;
     }
 
     static class KeyEvent {
