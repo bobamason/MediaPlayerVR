@@ -68,6 +68,7 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
     private boolean isInputProcessorTouched = false;
     private GridPoint2 touch = new GridPoint2(-1, -1);
     private GridPoint2 lastTouch = new GridPoint2(-1, -1);
+    private boolean isUpdateRayEnabled = true;
 
     public VrAndroidInput(Application application, WeakReference<Context> contextRef) {
 //        this.onscreenKeyboard = new AndroidOnscreenKeyboard(context, new Handler(), this);
@@ -575,18 +576,20 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
     }
 
     public void onDaydreamControllerUpdate() {
-        int connectionState = Controller.ConnectionStates.CONNECTED;
-        if (connectionState == Controller.ConnectionStates.CONNECTED) {
+        if (isUpdateRayEnabled) {
+//        if (connectionState == Controller.ConnectionStates.CONNECTED) {
             isControllerConnected = true;
             armModel.updateHeadDirection(GdxVr.app.getVrApplicationAdapter().getVrCamera().direction);
             armModel.onControllerUpdate(controller);
             controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
             controllerPosition.set(armModel.pointerPosition).add(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
-        } else {
-            isControllerConnected = false;
+//        } else {
+//            isControllerConnected = false;
+//        }
+            processEvents();
         }
-        processEvents();
-        daydreamControllerHandler.process(controller, connectionState);
+//        daydreamControllerHandler.process(controller, connectionState);
+        daydreamControllerHandler.process(controller, Controller.ConnectionStates.CONNECTED);
     }
 
     private void postTouchEvent(int type, int x, int y) {
@@ -649,6 +652,10 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
 
     public void setController(Controller controller) {
         this.controller = controller;
+    }
+
+    public void setUpdateRayEnabled(boolean updateRayEnabled) {
+        this.isUpdateRayEnabled = updateRayEnabled;
     }
 
     static class KeyEvent {

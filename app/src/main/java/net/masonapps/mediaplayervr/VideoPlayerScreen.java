@@ -439,6 +439,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     private void setUiVisible(boolean uiVisible) {
         isUiVisible = uiVisible;
         ui.setVisible(isUiVisible);
+        GdxVr.input.setUpdateRayEnabled(uiVisible);
         game.setCursorVisible(uiVisible);
         game.setControllerVisible(uiVisible);
         invalidateProjection();
