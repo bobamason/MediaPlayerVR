@@ -10,10 +10,13 @@ import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
+import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
@@ -23,6 +26,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.google.vr.sdk.base.Eye;
 
 import net.masonapps.mediaplayervr.database.VideoOptions;
+import net.masonapps.mediaplayervr.video.ui.ModeLayout;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 
@@ -68,6 +72,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private Quaternion invHeadRotation = new Quaternion();
     private boolean useFishEyeProjection = false;
     private boolean useCylinder = false;
+    private com.badlogic.gdx.graphics.g3d.Renderable renderable;
+    private RenderContext renderContext;
 
     public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
         this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel, cylinderModel);
@@ -78,6 +84,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.width = width;
         this.height = height;
         shader = new VideoShader();
+        renderable = new Renderable();
+        renderContext = new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.WEIGHTED, 1));
         rectModelInstance = new ModelInstance(rectModel);
         sphereModelInstance = new ModelInstance(sphereModel);
         cylinderModelInstance = new ModelInstance(cylinderModel);
@@ -150,7 +158,15 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         }
     }
 
-    public void render(ModelBatch batch, int eyeType, Matrix4 transform) {
+    public void begin(Camera camera) {
+        shader.begin(camera, renderContext);
+    }
+
+    public void bindTexture() {
+        shader.bindTexture();
+    }
+
+    public void render(int eyeType, Matrix4 transform) {
         if (!prepared)
             return;
 
@@ -195,9 +211,11 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             shader.getDstRect().set(dstRect);
         }
 
-        synchronized (this) {
-            batch.render(modelInstance, shader);
-        }
+//        synchronized (this) {
+        modelInstance.getRenderable(renderable);
+        shader.render(renderable);
+//        }
+        shader.end();
     }
 
     protected void mapDistortTextureCoordinates() {
@@ -434,6 +452,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     public void setVideoOptions(VideoOptions videoOptions) {
         setStretch(videoOptions.textureStretch);
+        setDisplayMode(ModeLayout.getDisplayMode(videoOptions.modeSelection));
         getShader().setTint(videoOptions.tint);
         getShader().setBrightness(videoOptions.brightness);
         getShader().setContrast(videoOptions.contrast);

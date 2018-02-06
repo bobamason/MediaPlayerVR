@@ -98,6 +98,10 @@ public class ModeLayout extends SingleStageUi {
         resizeToFitTable();
     }
 
+    public static DisplayMode getDisplayMode(int i) {
+        return nameModeMap.get(modes.get(i));
+    }
+
     public static DisplayMode getMode(int modeSelection) {
         return nameModeMap.get(modes.get(modeSelection));
     }

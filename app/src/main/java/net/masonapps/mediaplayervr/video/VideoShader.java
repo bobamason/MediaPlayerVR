@@ -92,7 +92,7 @@ public class VideoShader extends BaseShader {
     @Override
     public void render(Renderable renderable) {
         set(u_worldTrans, renderable.worldTransform);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
+//        bindTexture();
         set(u_srcRect, srcRect.x, srcRect.y, srcRect.width, srcRect.height);
         set(u_dstRect, dstRect.x, dstRect.y, dstRect.width, dstRect.height);
         set(u_clip, srcRect.x, srcRect.y, srcRect.x + srcRect.width, srcRect.y + srcRect.height);
@@ -102,6 +102,10 @@ public class VideoShader extends BaseShader {
         set(u_colorTemp, colorTemp);
         set(u_useFishEye, useFishEye ? 1 : 0);
         renderable.meshPart.render(program);
+    }
+
+    public void bindTexture() {
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
     }
 
     @Override

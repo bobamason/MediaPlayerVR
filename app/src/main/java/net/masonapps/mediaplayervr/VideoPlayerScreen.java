@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -31,6 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Pools;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
+import com.google.vr.sdk.base.Viewport;
 import com.google.vr.sdk.controller.Controller;
 
 import net.masonapps.mediaplayervr.database.VideoOptions;
@@ -209,6 +211,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
+        final Color backgroundColor = getBackgroundColor();
+        Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         leftCamera.viewportWidth = leftEye.getViewport().width;
         leftCamera.viewportHeight = leftEye.getViewport().height;
@@ -284,8 +289,26 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //            }
 //        }
 
-
         videoPlayer.update();
+        videoPlayer.bindTexture();
+
+        Viewport viewport = leftEye.getViewport();
+        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        renderLeftVideo();
+
+        viewport = rightEye.getViewport();
+        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        renderRightVideo();
+
+        viewport = leftEye.getViewport();
+        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        getVrCamera().onDrawEye(leftEye);
+        renderUI(getVrCamera(), leftEye.getType());
+
+        viewport = rightEye.getViewport();
+        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        getVrCamera().onDrawEye(rightEye);
+        renderUI(getVrCamera(), rightEye.getType());
     }
 
     private boolean shouldRenderMono() {
@@ -360,50 +383,60 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     }
 
     @Override
+    public void onNewFrame(HeadTransform headTransform) {
+
+    }
+
+    @Override
     public void onDrawEye(Eye eye) {
     }
 
     @SuppressLint("MissingSuperCall")
     @Override
     public void render(Camera camera, int whichEye) {
-        if (whichEye == Eye.Type.LEFT) {
-            getModelBatch().begin(leftCamera);
+    }
 
-            Quaternion tmpQ = Pools.obtain(Quaternion.class);
-            final Quaternion headQuaternion = getHeadQuaternion();
-            rotation.set(headQuaternion).conjugate();
-            tmpQ.set(Vector3.X, tilt * -90f);
-            transform.idt().rotate(rotation.mul(tmpQ));
-//                    .translate(-leftCamera.position.x, -leftCamera.position.y, -leftCamera.position.z)
-//                    .rotate(rotation.mulLeft(tmpQ))
-//                    .translate(leftCamera.position.x, leftCamera.position.y, leftCamera.position.z);
-            Pools.free(tmpQ);
-
-            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
-            getModelBatch().end();
-//            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0f;
-        } else {
-            getModelBatch().begin(rightCamera);
-
-            Quaternion tmpQ = Pools.obtain(Quaternion.class);
-            final Quaternion headQuaternion = getHeadQuaternion();
-            rotation.set(headQuaternion).conjugate();
-            tmpQ.set(Vector3.X, tilt * -90f);
-            transform.idt().rotate(rotation.mul(tmpQ));
-//                    .translate(-rightCamera.position.x, -rightCamera.position.y, -rightCamera.position.z)
-//                    .rotate(rotation.mulLeft(tmpQ))
-//                    .translate(rightCamera.position.x, rightCamera.position.y, rightCamera.position.z);
-            Pools.free(tmpQ);
-
-            videoPlayer.render(getModelBatch(), shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
-            getModelBatch().end();
-//            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
-        }
+    private void renderUI(Camera camera, int whichEye) {
         super.render(camera, whichEye);
         container.draw(camera);
     }
 
-    public void setUiVisible(boolean uiVisible) {
+    private void renderRightVideo() {
+        videoPlayer.begin(rightCamera);
+
+        Quaternion tmpQ = Pools.obtain(Quaternion.class);
+        final Quaternion headQuaternion = getHeadQuaternion();
+        rotation.set(headQuaternion).conjugate();
+        tmpQ.set(Vector3.X, tilt * -90f);
+        transform.idt().rotate(rotation.mul(tmpQ));
+//                    .translate(-rightCamera.position.x, -rightCamera.position.y, -rightCamera.position.z)
+//                    .rotate(rotation.mulLeft(tmpQ))
+//                    .translate(rightCamera.position.x, rightCamera.position.y, rightCamera.position.z);
+        Pools.free(tmpQ);
+
+        videoPlayer.render(shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
+        getModelBatch().end();
+//            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
+    }
+
+    private void renderLeftVideo() {
+        videoPlayer.begin(leftCamera);
+
+        Quaternion tmpQ = Pools.obtain(Quaternion.class);
+        final Quaternion headQuaternion = getHeadQuaternion();
+        rotation.set(headQuaternion).conjugate();
+        tmpQ.set(Vector3.X, tilt * -90f);
+        transform.idt().rotate(rotation.mul(tmpQ));
+//                    .translate(-leftCamera.position.x, -leftCamera.position.y, -leftCamera.position.z)
+//                    .rotate(rotation.mulLeft(tmpQ))
+//                    .translate(leftCamera.position.x, leftCamera.position.y, leftCamera.position.z);
+        Pools.free(tmpQ);
+
+        videoPlayer.render(shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
+//            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0f;
+    }
+
+    private void setUiVisible(boolean uiVisible) {
         isUiVisible = uiVisible;
         ui.setVisible(isUiVisible);
         game.setCursorVisible(uiVisible);
