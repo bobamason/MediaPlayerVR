@@ -71,12 +71,16 @@ public abstract class VrWorldScreen extends VrScreen implements DaydreamControll
         world.update();
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @CallSuper
     public void render(Camera camera, int whichEye) {
-        getModelBatch().begin(camera);
-        world.render(getModelBatch(), environment);
-        getModelBatch().end();
+        final ModelBatch modelBatch = getModelBatch();
+        modelBatch.begin(camera);
+        world.render(modelBatch, environment);
+        if (game.shouldRenderControllerModel())
+            modelBatch.render(game.getControllerModelInstance());
+        modelBatch.end();
     }
 
     @Override

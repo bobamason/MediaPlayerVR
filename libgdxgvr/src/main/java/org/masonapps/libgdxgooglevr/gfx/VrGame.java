@@ -47,7 +47,7 @@ public class VrGame extends VrApplicationAdapter {
     private Color cursorColor1 = new Color(1f, 1f, 1f, 1f);
     private Color cursorColor2 = new Color(1f, 1f, 1f, 0f);
     @Nullable
-    private ModelInstance controllerInstance = null;
+    private ModelInstance controllerModelInstance = null;
     private ModelBatch modelBatch;
     private AssetManager assets;
     private boolean isControllerVisible = true;
@@ -68,7 +68,7 @@ public class VrGame extends VrApplicationAdapter {
         shapeRenderer.setAutoShapeType(true);
         new Thread(() -> GdxVr.app.postRunnable(() -> {
             final ModelData modelData = new G3dModelLoader(new UBJsonReader(), new InternalFileHandleResolver()).loadModelData(GdxVr.files.internal(CONTROLLER_FILENAME));
-            GdxVr.app.postRunnable(() -> controllerInstance = new ModelInstance(new Model(modelData)));
+            GdxVr.app.postRunnable(() -> controllerModelInstance = new ModelInstance(new Model(modelData)));
         })).start();
     }
 
@@ -123,18 +123,27 @@ public class VrGame extends VrApplicationAdapter {
         if (screen != null)
             screen.render(camera, whichEye);
 
-        renderController(camera);
+//        renderController(camera);
 
         if (isCursorVisible)
             renderCursor(camera);
     }
 
     protected void renderController(Camera camera) {
-        if (controllerInstance != null && GdxVr.input.isControllerConnected() && isControllerVisible) {
+        if (shouldRenderControllerModel()) {
             modelBatch.begin(camera);
-            modelBatch.render(controllerInstance);
+            modelBatch.render(controllerModelInstance);
             modelBatch.end();
         }
+    }
+
+    @Nullable
+    public ModelInstance getControllerModelInstance() {
+        return controllerModelInstance;
+    }
+
+    public boolean shouldRenderControllerModel() {
+        return controllerModelInstance != null && GdxVr.input.isControllerConnected() && isControllerVisible;
     }
 
     protected void renderCursor(Camera camera) {
@@ -174,8 +183,8 @@ public class VrGame extends VrApplicationAdapter {
     public void onDaydreamControllerUpdate(Controller controller, int connectionState) {
         if (GdxVr.input.isControllerConnected()) {
             ray.set(GdxVr.input.getInputRay());
-            if (controllerInstance != null) {
-                controllerInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), controllerScale);
+            if (controllerModelInstance != null) {
+                controllerModelInstance.transform.set(GdxVr.input.getControllerPosition(), GdxVr.input.getControllerOrientation(), controllerScale);
             }
         }
     }

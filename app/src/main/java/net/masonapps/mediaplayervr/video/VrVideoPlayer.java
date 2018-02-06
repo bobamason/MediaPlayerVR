@@ -195,7 +195,9 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             shader.getDstRect().set(dstRect);
         }
 
-        batch.render(modelInstance, shader);
+        synchronized (this) {
+            batch.render(modelInstance, shader);
+        }
     }
 
     protected void mapDistortTextureCoordinates() {
