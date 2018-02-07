@@ -8,7 +8,6 @@ import android.opengl.GLES20;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -71,7 +70,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private boolean useFishEyeProjection = false;
     private boolean useCylinder = false;
     private com.badlogic.gdx.graphics.g3d.Renderable renderable;
-//    private RenderContext renderContext;
 
     public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
         this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel, cylinderModel);
@@ -83,7 +81,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.height = height;
         shader = new VideoShader();
         renderable = new Renderable();
-//        renderContext = new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.WEIGHTED, 1));
         rectModelInstance = new ModelInstance(rectModel);
         sphereModelInstance = new ModelInstance(sphereModel);
         cylinderModelInstance = new ModelInstance(cylinderModel);
@@ -97,13 +94,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         if (handler == null)
             handler = new Handler(Looper.getMainLooper());
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (lock) {
-                    createMediaPlayer();
-                    lock.notify();
-                }
+        handler.post(() -> {
+            synchronized (lock) {
+                createMediaPlayer();
+                lock.notify();
             }
         });
     }
@@ -113,8 +107,6 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     public abstract boolean play(final Uri uri);
 
     protected void updateAspectRatio() {
-        if (!prepared)
-            return;
         float w;
         float h;
         if (isStereoscopic) {
@@ -160,11 +152,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     }
 
     public void render(Camera camera, int eyeType, Matrix4 transform) {
-        shader.begin(camera, null);
         if (!prepared)
             return;
 
-
+        shader.begin(camera, null);
         if (useFlatRectangle())
             mapDistortModel();
         else
@@ -337,8 +328,8 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
 
     public void setDisplayMode(DisplayMode displayMode) {
         this.displayMode = displayMode;
-        final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        Log.d(stackTrace[1].toString(), displayMode.name() + " set from " + stackTrace[2]);
+//        final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+//        Log.d(stackTrace[1].toString(), displayMode.name() + " set from " + stackTrace[2]);
         if (useFlatRectangle()) {
             modelInstance = rectModelInstance;
         } else {
@@ -351,49 +342,41 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             case Mono:
                 isStereoscopic = false;
                 isHorizontalSplit = false;
-                updateAspectRatio();
                 break;
             case Mono180:
                 isStereoscopic = false;
                 isHorizontalSplit = false;
-                updateAspectRatio();
                 break;
             case Mono360:
                 isStereoscopic = false;
                 isHorizontalSplit = false;
-                updateAspectRatio();
                 break;
             case LR3D:
                 isStereoscopic = true;
                 isHorizontalSplit = true;
-                updateAspectRatio();
                 break;
             case LR180:
                 isStereoscopic = true;
                 isHorizontalSplit = true;
-                updateAspectRatio();
                 break;
             case LR360:
                 isStereoscopic = true;
                 isHorizontalSplit = true;
-                updateAspectRatio();
                 break;
             case TB3D:
                 isStereoscopic = true;
                 isHorizontalSplit = false;
-                updateAspectRatio();
                 break;
             case TB180:
                 isStereoscopic = true;
                 isHorizontalSplit = false;
-                updateAspectRatio();
                 break;
             case TB360:
                 isStereoscopic = true;
                 isHorizontalSplit = false;
-                updateAspectRatio();
                 break;
         }
+        updateAspectRatio();
     }
 
     public abstract void seekTo(long position);
