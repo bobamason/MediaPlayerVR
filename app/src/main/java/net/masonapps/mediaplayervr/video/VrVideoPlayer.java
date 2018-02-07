@@ -15,8 +15,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
-import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Rectangle;
@@ -73,7 +71,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private boolean useFishEyeProjection = false;
     private boolean useCylinder = false;
     private com.badlogic.gdx.graphics.g3d.Renderable renderable;
-    private RenderContext renderContext;
+//    private RenderContext renderContext;
 
     public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
         this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel, cylinderModel);
@@ -85,7 +83,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         this.height = height;
         shader = new VideoShader();
         renderable = new Renderable();
-        renderContext = new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.WEIGHTED, 1));
+//        renderContext = new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.WEIGHTED, 1));
         rectModelInstance = new ModelInstance(rectModel);
         sphereModelInstance = new ModelInstance(sphereModel);
         cylinderModelInstance = new ModelInstance(cylinderModel);
@@ -157,16 +155,12 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             }
         }
     }
-
-    public void begin(Camera camera) {
-        shader.begin(camera, renderContext);
-    }
-
     public void bindTexture() {
         shader.bindTexture();
     }
 
-    public void render(int eyeType, Matrix4 transform) {
+    public void render(Camera camera, int eyeType, Matrix4 transform) {
+        shader.begin(camera, null);
         if (!prepared)
             return;
 

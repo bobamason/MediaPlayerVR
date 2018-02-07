@@ -5,7 +5,6 @@ import android.opengl.GLES20;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.BaseShader;
@@ -84,8 +83,8 @@ public class VideoShader extends BaseShader {
     @Override
     public void begin(Camera camera, RenderContext context) {
         program.begin();
-        context.setDepthTest(GL20.GL_LEQUAL, 0f, 1f);
-        context.setDepthMask(true);
+//        context.setDepthTest(GL20.GL_LEQUAL, 0f, 1f);
+//        context.setDepthMask(true);
         set(u_projTrans, camera.combined);
     }
 

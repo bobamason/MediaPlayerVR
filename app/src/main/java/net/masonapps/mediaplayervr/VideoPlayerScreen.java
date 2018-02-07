@@ -112,7 +112,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
             this.videoOptions = new VideoOptions();
             this.videoOptions.title = videoDetails.title;
         }
-        getWorld().add(Style.newGradientBackground(getVrCamera().far - 1f));
+//        getWorld().add(Style.newGradientBackground(getVrCamera().far - 1f));
         setIpd(this.videoOptions.ipd);
         leftCamera = new VrCamera();
         leftCamera.near = getVrCamera().near;
@@ -182,6 +182,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     public void show() {
         super.show();
         GdxVr.input.setInputProcessor(container);
+        GdxVr.input.setUpdateRayEnabled(true);
     }
 
     @Override
@@ -189,6 +190,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         super.hide();
         pause();
         GdxVr.input.setInputProcessor(null);
+        GdxVr.input.setUpdateRayEnabled(true);
     }
 
     @Override
@@ -211,9 +213,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
-        final Color backgroundColor = getBackgroundColor();
-        Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         leftCamera.viewportWidth = leftEye.getViewport().width;
         leftCamera.viewportHeight = leftEye.getViewport().height;
@@ -289,6 +288,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //            }
 //        }
 
+        clearColorAndDepthBuffers();
         videoPlayer.update();
         videoPlayer.bindTexture();
 
@@ -300,15 +300,23 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         renderRightVideo();
 
-        viewport = leftEye.getViewport();
-        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        getVrCamera().onDrawEye(leftEye);
-        renderUI(getVrCamera(), leftEye.getType());
+        if (ui.isVisible()) {
+            viewport = leftEye.getViewport();
+            GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+            getVrCamera().onDrawEye(leftEye);
+            renderUI(getVrCamera(), leftEye.getType());
 
-        viewport = rightEye.getViewport();
-        GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        getVrCamera().onDrawEye(rightEye);
-        renderUI(getVrCamera(), rightEye.getType());
+            viewport = rightEye.getViewport();
+            GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+            getVrCamera().onDrawEye(rightEye);
+            renderUI(getVrCamera(), rightEye.getType());
+        }
+    }
+
+    private void clearColorAndDepthBuffers() {
+        final Color backgroundColor = getBackgroundColor();
+        Gdx.gl.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
     }
 
     private boolean shouldRenderMono() {
@@ -402,8 +410,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     }
 
     private void renderRightVideo() {
-        videoPlayer.begin(rightCamera);
-
         Quaternion tmpQ = Pools.obtain(Quaternion.class);
         final Quaternion headQuaternion = getHeadQuaternion();
         rotation.set(headQuaternion).conjugate();
@@ -414,13 +420,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //                    .translate(rightCamera.position.x, rightCamera.position.y, rightCamera.position.z);
         Pools.free(tmpQ);
 
-        videoPlayer.render(shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
+        videoPlayer.render(rightCamera, shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
         getModelBatch().end();
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
     }
 
     private void renderLeftVideo() {
-        videoPlayer.begin(leftCamera);
 
         Quaternion tmpQ = Pools.obtain(Quaternion.class);
         final Quaternion headQuaternion = getHeadQuaternion();
@@ -432,7 +437,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //                    .translate(leftCamera.position.x, leftCamera.position.y, leftCamera.position.z);
         Pools.free(tmpQ);
 
-        videoPlayer.render(shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
+        videoPlayer.render(leftCamera, shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0f;
     }
 
@@ -476,6 +481,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
                 break;
             case DaydreamButtonEvent.BUTTON_APP:
                 if (event.action == DaydreamButtonEvent.ACTION_UP) {
+                    GdxVr.input.setUpdateRayEnabled(true);
                     ui.backButtonClicked();
                 }
                 break;
