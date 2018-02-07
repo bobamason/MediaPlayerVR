@@ -300,7 +300,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         renderRightVideo();
 
-        if (ui.isVisible()) {
+//        if (ui.isVisible()) {
             viewport = leftEye.getViewport();
             GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
             getVrCamera().onDrawEye(leftEye);
@@ -310,7 +310,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
             GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
             getVrCamera().onDrawEye(rightEye);
             renderUI(getVrCamera(), rightEye.getType());
-        }
+//        }
     }
 
     private void clearColorAndDepthBuffers() {
