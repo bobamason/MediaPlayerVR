@@ -295,21 +295,21 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         Viewport viewport = leftEye.getViewport();
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         renderLeftVideo();
+        getVrCamera().onDrawEye(leftEye);
+        renderUI(getVrCamera(), leftEye.getType());
 
         viewport = rightEye.getViewport();
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         renderRightVideo();
+        getVrCamera().onDrawEye(rightEye);
+        renderUI(getVrCamera(), rightEye.getType());
 
 //        if (ui.isVisible()) {
-            viewport = leftEye.getViewport();
-            GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-            getVrCamera().onDrawEye(leftEye);
-            renderUI(getVrCamera(), leftEye.getType());
-
-            viewport = rightEye.getViewport();
-            GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-            getVrCamera().onDrawEye(rightEye);
-            renderUI(getVrCamera(), rightEye.getType());
+//            viewport = leftEye.getViewport();
+//            GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+//
+//            viewport = rightEye.getViewport();
+//            GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
 //        }
     }
 
