@@ -96,11 +96,14 @@ public class DaydreamControllerHandler {
     }
 
     private void postButtonEvent(Controller controller, int action, int button) {
+//        Logger.d("postButtonEvent()");
         DaydreamButtonEvent event = Pools.obtain(DaydreamButtonEvent.class);
         event.action = action;
         event.button = button;
+//        int i = 0;
         for (DaydreamControllerInputListener listener : listeners) {
             listener.onControllerButtonEvent(controller, event);
+//            Logger.d("calling ButtonEvent listener " + (i++));
         }
         Pools.free(event);
 

@@ -6,7 +6,6 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -25,6 +24,7 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.TextureArray;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.GLVersion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -44,6 +44,7 @@ import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
+import org.masonapps.libgdxgooglevr.utils.Logger;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
@@ -118,6 +119,11 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     private float ppcX = 0;
     private float ppcY = 0;
     private float density = 1;
+    @Nullable
+    private ShaderProgram postProcessingShader = null;
+    private SpriteBatch spriteBatch;
+    private FrameBuffer fbo;
+    private Matrix4 postProjection = new Matrix4();
 
     public VrGraphics(VrActivity.VrApplication application, WeakReference<GLSurfaceView> surfaceViewRef, GvrApi api, GvrAudioEngine gvrAudioEngine) {
         this.app = application;
@@ -125,6 +131,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         this.surfaceViewRef = surfaceViewRef;
         this.gvrAudioEngine = gvrAudioEngine;
         final GLSurfaceView surfaceView = surfaceViewRef.get();
+        surfaceView.setRenderer(this);
 //        surfaceView.setPreserveEGLContextOnPause(true);
         recommendedList = api.createBufferViewportList();
         viewportList = api.createBufferViewportList();
@@ -143,7 +150,17 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     public static void checkGlError(String tag, String op) {
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            Log.e(tag, op + ": glError " + error);
+            final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[4];
+            Log.e(String.format("(%s:%d)", stackTraceElement.getFileName(), stackTraceElement.getLineNumber()), tag + " : " + op);
+//            throw new RuntimeException(op + ": glError " + error);
+        }
+    }
+
+    public static void checkGlError(String op) {
+        int error;
+        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+            final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[4];
+            Log.e(String.format("(%s:%d)", stackTraceElement.getFileName(), stackTraceElement.getLineNumber()), op);
 //            throw new RuntimeException(op + ": glError " + error);
         }
     }
@@ -195,16 +212,16 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
      * {@inheritDoc}
      */
     @Override
-    public int getHeight() {
-        return targetSize.y;
+    public int getWidth() {
+        return targetSize.x;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int getWidth() {
-        return targetSize.x;
+    public int getHeight() {
+        return targetSize.y;
     }
 
     @Override
@@ -288,6 +305,15 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         }
         app.getApplicationListener().dispose();
         clearManagedCaches();
+        if (spriteBatch != null) {
+            spriteBatch.dispose();
+            spriteBatch = null;
+        }
+        if (fbo != null) {
+            fbo.dispose();
+            fbo = null;
+        }
+//        shutdown();
     }
 
     /**
@@ -504,6 +530,16 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         return gl30;
     }
 
+//    @Override
+//    public void setGL20(GL20 gl20) {
+//        this.gl20 = gl20;
+//    }
+//
+//    @Override
+//    public void setGL30(GL30 gl30) {
+//        this.gl30 = gl30;
+//    }
+
     @Override
     public Cursor newCursor(Pixmap pixmap, int xHotspot, int yHotspot) {
         return null;
@@ -566,10 +602,12 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
                 try {
                     runnable.run();
                 } catch (Exception e) {
-                    Log.e(VrGraphics.class.getSimpleName(), e.getMessage());
+                    Logger.e("error running runnable", e);
                 }
             }
 
+            app.input.getController().update();
+            app.input.onDaydreamControllerUpdate();
             ((VrApplicationAdapter) GdxVr.app.getApplicationListener()).onDrawFrame(headTransform, leftEye, rightEye);
             frameId++;
         }
@@ -629,35 +667,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                GdxVr.app.getVrApplicationAdapter().preloadSoundFiles(gvrAudioEngine);
-            }
-        }).start();
-        
-        api.initializeGl();
-        checkGlError(TAG, "initializeGl");
-
-//        api.getScreenTargetSize(targetSize);
-//        Log.d(TAG, "getScreenTargetSize -> " + targetSize.toString());
-        api.getMaximumEffectiveRenderTargetSize(targetSize);
-        targetSize.x = (7 * targetSize.x) / 10;
-        targetSize.y = (7 * targetSize.y) / 10;
-//        Log.d(TAG, "getMaximumEffectiveRenderTargetSize -> " + targetSize.toString());
-
-        BufferSpec[] specList = new BufferSpec[1];
-        BufferSpec bufferSpec = api.createBufferSpec();
-        bufferSpec.setColorFormat(BufferSpec.ColorFormat.RGBA_8888);
-        bufferSpec.setDepthStencilFormat(BufferSpec.DepthStencilFormat.DEPTH_16);
-        bufferSpec.setSize(targetSize);
-        bufferSpec.setSamples(2);
-        specList[INDEX_SCENE_BUFFER] = bufferSpec;
-
-        swapChain = api.createSwapChain(specList);
-        for (BufferSpec spec : specList) {
-            spec.shutdown();
-        }
+        new Thread(() -> GdxVr.app.getVrApplicationAdapter().preloadSoundFiles(gvrAudioEngine)).start();
 
 //        eglContext = ((EGL10) EGLContext.getEGL()).eglGetCurrentContext();
         gl20 = new AndroidGL20();
@@ -669,6 +679,40 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         String vendorString = Gdx.gl.glGetString(GL10.GL_VENDOR);
         String rendererString = Gdx.gl.glGetString(GL10.GL_RENDERER);
         glVersion = new GLVersion(Application.ApplicationType.Android, versionString, vendorString, rendererString);
+
+        api.initializeGl();
+        checkGlError(TAG, "initializeGl");
+
+        spriteBatch = new SpriteBatch(1);
+
+        final String vertexShader = Gdx.files.internal("fxaa.vertex.glsl").readString();
+        final String fragmentShader = Gdx.files.internal("fxaa.fragment.glsl").readString();
+        Logger.d("post processing vertex shader:\n" + vertexShader);
+        Logger.d("post processing fragment shader:\n" + fragmentShader);
+        final ShaderProgram postProcessingShader = new ShaderProgram(vertexShader, fragmentShader);
+        GdxVr.graphics.setPostProcessingShader(postProcessingShader);
+
+        api.getScreenTargetSize(targetSize);
+//        Log.d(TAG, "getScreenTargetSize -> " + targetSize.toString());
+//        api.getMaximumEffectiveRenderTargetSize(targetSize);
+//        targetSize.x = (7 * targetSize.x) / 10;
+//        targetSize.y = (7 * targetSize.y) / 10;
+//        Log.d(TAG, "getMaximumEffectiveRenderTargetSize -> " + targetSize.toString());
+
+        BufferSpec[] specList = new BufferSpec[1];
+        BufferSpec bufferSpec = api.createBufferSpec();
+        bufferSpec.setColorFormat(BufferSpec.ColorFormat.RGBA_8888);
+        bufferSpec.setDepthStencilFormat(BufferSpec.DepthStencilFormat.DEPTH_16);
+        bufferSpec.setSize(targetSize);
+        bufferSpec.setSamples(1);
+        fbo = new FrameBuffer(Pixmap.Format.RGB565, targetSize.x, targetSize.y, true);
+        specList[INDEX_SCENE_BUFFER] = bufferSpec;
+
+        swapChain = api.createSwapChain(specList);
+        for (BufferSpec spec : specList) {
+            spec.shutdown();
+        }
+
         updatePpi();
 
         Mesh.invalidateAllMeshes(app);
@@ -703,32 +747,47 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         Matrix.multiplyMM(leftEye.getEyeView(), 0, tempMatrix, 0, headTransform.getHeadView(), 0);
         api.getEyeFromHeadMatrix(1, tempMatrix);
         Matrix.multiplyMM(rightEye.getEyeView(), 0, tempMatrix, 0, headTransform.getHeadView(), 0);
-        // Populate the BufferViewportList to describe to the GvrApi how the color buffer
-        // and video frame ExternalSurface buffer should be rendered. The eyeFromQuad matrix
-        // describes how the video Surface frame should be transformed and rendered in eye space.
+
         api.getRecommendedBufferViewports(recommendedList);
 
-        setEye(0, leftEye);
-        setEye(1, rightEye);
+        final Texture colorBufferTexture = fbo.getColorBufferTexture();
+        final int textureWidth = colorBufferTexture.getWidth();
+        final int textureHeight = colorBufferTexture.getHeight();
+        setEye(0, leftEye, textureWidth, textureHeight);
+        setEye(1, rightEye, textureWidth, textureHeight);
 
-        final Vector3 forward = getForward();
-        gvrAudioEngine.setHeadPosition(forward.x, forward.y, forward.z);
-        final Quaternion rotation = getHeadQuaternion();
-        gvrAudioEngine.setHeadRotation(rotation.x, rotation.y, rotation.z, rotation.w);
-        gvrAudioEngine.update();
-
-        frame.bindBuffer(INDEX_SCENE_BUFFER);
+        fbo.begin();
 
         onDrawFrame();
         checkGlError(TAG, "new frame");
+
+        fbo.end(0, 0, targetSize.x, targetSize.y);
+
+        frame.bindBuffer(INDEX_SCENE_BUFFER);
+        Gdx.gl.glClearColor(0f, 0.1f, 0.2f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+        spriteBatch.begin();
+        final int w = targetSize.x;
+        final int h = targetSize.y;
+        postProjection.setToOrtho2D(0, 0, w, h);
+        spriteBatch.setProjectionMatrix(postProjection);
+        try {
+            if (postProcessingShader != null) {
+                postProcessingShader.setUniformf("resolution", textureWidth, textureHeight);
+            }
+        } catch (Exception e) {
+            Logger.e("shader error", e);
+        }
+        spriteBatch.draw(colorBufferTexture, 0, 0, w, h, 0, 0, textureWidth, textureHeight, false, true);
+        spriteBatch.end();
 
         frame.unbind();
         frame.submit(viewportList, headTransform.getHeadView());
         checkGlError(TAG, "submit frame");
     }
 
-    @NonNull
-    private Eye setEye(int i, Eye eye) {
+    private void setEye(int i, Eye eye, int w, int h) {
         recommendedList.get(i, scratchViewport);
         scratchViewport.setReprojection(BufferViewport.Reprojection.FULL);
         scratchViewport.setSourceBufferIndex(INDEX_SCENE_BUFFER);
@@ -739,11 +798,20 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
 
         eye.getFov().setAngles(eyeFov.left, eyeFov.right, eyeFov.bottom, eyeFov.top);
 
-        eye.getViewport().x = (int) (eyeUv.left * targetSize.x);
-        eye.getViewport().y = (int) (eyeUv.bottom * targetSize.y);
-        eye.getViewport().width = (int) (eyeUv.width() * targetSize.x);
-        eye.getViewport().height = (int) (-eyeUv.height() * targetSize.y);
-        return eye;
+        eye.getViewport().x = (int) (eyeUv.left * w);
+        eye.getViewport().y = (int) (eyeUv.bottom * h);
+        eye.getViewport().width = (int) (eyeUv.width() * w);
+        eye.getViewport().height = (int) (-eyeUv.height() * h);
+    }
+
+    public void setPostProcessingShader(ShaderProgram postProcessingShader) {
+        if (postProcessingShader.isCompiled()) {
+            Logger.d("post processing shader program log:\n" + postProcessingShader.getLog());
+            this.postProcessingShader = postProcessingShader;
+            spriteBatch.setShader(postProcessingShader);
+        } else {
+            Logger.e("post processing shader program failed to compile:\n" + postProcessingShader.getLog());
+        }
     }
 
     public GvrAudioEngine getGvrAudioEngine() {

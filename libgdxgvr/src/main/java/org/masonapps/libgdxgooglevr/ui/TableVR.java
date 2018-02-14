@@ -13,7 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 public class TableVR extends VirtualStage {
 
-    protected final Table table;
+    protected Table table;
 
     public TableVR(Batch batch, int tableWidth, int tableHeight) {
         this(batch, null, tableWidth, tableHeight);
@@ -36,6 +36,11 @@ public class TableVR extends VirtualStage {
 
     public Table getTable() {
         return table;
+    }
+
+    public void setTable(Table table) {
+        this.table = table;
+        resizeToFitTable();
     }
 
     public void resizeToFitTable() {

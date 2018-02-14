@@ -8,12 +8,14 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
+import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
 import com.google.vr.sdk.base.Viewport;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
+import org.masonapps.libgdxgooglevr.utils.Logger;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
 /**
@@ -36,11 +38,13 @@ public abstract class VrScreen implements Disposable, DaydreamControllerInputLis
 
     @CallSuper
     public void show() {
+        Logger.d("show() -> addDaydreamControllerListener");
         GdxVr.input.addDaydreamControllerListener(this);
     }
 
     @CallSuper
     public void hide() {
+        Logger.d("hide() -> removeDaydreamControllerListener");
         GdxVr.input.removeDaydreamControllerListener(this);
     }
 
@@ -57,6 +61,7 @@ public abstract class VrScreen implements Disposable, DaydreamControllerInputLis
     }
 
     public void render(Camera camera, int whichEye) {
+
     }
 
     public Vector3 getForwardVector() {
@@ -85,6 +90,10 @@ public abstract class VrScreen implements Disposable, DaydreamControllerInputLis
 
     public VrCamera getVrCamera() {
         return game.getVrCamera();
+    }
+
+    public GvrAudioEngine getGvrAudioEngine() {
+        return game.getGvrAudioEngine();
     }
 
     protected void doneLoading(AssetManager assets) {}

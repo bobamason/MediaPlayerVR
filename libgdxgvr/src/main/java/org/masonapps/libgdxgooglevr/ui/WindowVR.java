@@ -9,8 +9,10 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 
@@ -19,7 +21,6 @@ import com.badlogic.gdx.utils.Align;
  */
 
 public class WindowVR extends VirtualStage {
-    private static final float MIN_TITLE_HEIGHT = 36f;
     @Nullable
     private OnDragStartedListener listener = null;
     private Table titleTable;
@@ -43,11 +44,21 @@ public class WindowVR extends VirtualStage {
         titleTable.setTouchable(Touchable.enabled);
         titleLabel = new Label("", new Label.LabelStyle(windowStyle.titleFont, windowStyle.fontColor));
         titleLabel.setEllipsis(true);
-        titleTable.add(titleLabel).expandX().fillX().minWidth(0);
+        titleTable.add(titleLabel).pad(8f).expandX().fillX().minWidth(0);
+        if (windowStyle.closeDrawable != null) {
+            final ImageButton closeBtn = new ImageButton(windowStyle.closeDrawable);
+            closeBtn.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    setVisible(false);
+                }
+            });
+            titleTable.add(closeBtn).width(28).height(28).pad(2f).right();
+        }
         titleTable.setFillParent(false);
         titleTable.layout();
 
-        titleBarHeight = Math.max(MIN_TITLE_HEIGHT, titleLabel.getPrefHeight());
+        titleBarHeight = titleTable.getPrefHeight();
         titleTable.setSize(getWidth(), titleBarHeight);
         titleTable.setPosition(0, getHeight(), Align.bottomLeft);
         titleTable.addListener(new InputListener() {
@@ -110,6 +121,8 @@ public class WindowVR extends VirtualStage {
 
         public BitmapFont titleFont;
         public Color fontColor = new Color(Color.WHITE);
+        @Nullable
+        public Drawable closeDrawable;
 
         public WindowVrStyle(@Nullable Drawable background, @Nullable Drawable titleBackground, @NonNull BitmapFont titleFont, Color fontColor) {
             this.background = background;

@@ -64,16 +64,16 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
         }
     }
 
-    private void snapDragTableToCylinder(WindowVR virtualStage) {
+    protected void snapDragTableToCylinder(WindowVR windowVR) {
         final Vector3 tmp = Pools.obtain(Vector3.class);
         final Vector3 tmp2 = Pools.obtain(Vector3.class);
         final CylindricalCoordinate cylCoord = Pools.obtain(CylindricalCoordinate.class);
 
-        cylCoord.setFromCartesian(virtualStage.getPosition());
+        cylCoord.setFromCartesian(windowVR.getPosition());
         cylCoord.radius = radius;
         cylCoord.vertical = Math.max(-height / 2f, Math.min(height / 2f, cylCoord.vertical));
-        virtualStage.setPosition(cylCoord.toCartesian(tmp));
-        virtualStage.lookAt(tmp2.set(0, cylCoord.vertical, 0), Vector3.Y);
+        windowVR.setPosition(cylCoord.toCartesian(tmp));
+        windowVR.lookAt(tmp2.set(0, cylCoord.vertical, 0), Vector3.Y);
 
         Pools.free(cylCoord);
         Pools.free(tmp);
@@ -96,7 +96,8 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
             cylCoord.radius = radius;
 
             cylCoord.vertical = Math.max(-height / 2f, Math.min(height / 2f, cylCoord.vertical));
-            focusedWindow.getPosition().lerp(cylCoord.toCartesian(tmp), 0.25f);
+            focusedWindow.setPosition(cylCoord.toCartesian(tmp));
+//            focusedWindow.lookAt(tmp.set(0, 0, 0), Vector3.Y);
             focusedWindow.lookAt(tmp.set(0, focusedWindow.getPosition().y, 0), Vector3.Y);
 
             Pools.free(cylCoord);
@@ -116,6 +117,13 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
             isDragging = false;
             focusedWindow = null;
         }
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        isDragging = false;
+        focusedWindow = null;
+        return super.touchUp(screenX, screenY, pointer, button);
     }
 
     @Override
@@ -161,6 +169,7 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
     @Override
     public void moveToFront(@NonNull WindowVR windowVR) {
         //move to front
+        if (processors.size() <= 1) return;
         processors.remove(windowVR);
         processors.add(processors.size() - 1, windowVR);
     }

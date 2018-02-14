@@ -42,9 +42,9 @@ import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.AndroidCompat;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
-import com.google.vrtoolkit.cardboard.ScreenOnFlagHelper;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
+import org.masonapps.libgdxgooglevr.utils.Logger;
 
 import java.lang.ref.WeakReference;
 import java.util.Queue;
@@ -57,13 +57,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class VrActivity extends Activity {
 
-    public static final String TAG = VrActivity.class.getName();
-
     static {
         GdxNativesLoader.load();
     }
 
-    private final ScreenOnFlagHelper screenOnFlagHelper = new ScreenOnFlagHelper(this);
     protected boolean firstResume = true;
     protected ControllerManager controllerManager;
     protected Controller controller;
@@ -71,7 +68,6 @@ public class VrActivity extends Activity {
     private GLSurfaceView surfaceView;
     private FullscreenMode fullscreenMode;
     private VrApplication app;
-    private GvrAudioEngine gvrAudioEngine;
 //    private int wasFocusChanged = -1;
 //    private boolean isWaitingForAudio = false;
 
@@ -79,12 +75,11 @@ public class VrActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(1);
-        this.fullscreenMode = new FullscreenMode(this.getWindow());
-        this.screenOnFlagHelper.setScreenAlwaysOn(true);
-        this.app = new VrApplication(new WeakReference<>((Activity) this));
+
+        fullscreenMode = new FullscreenMode(this.getWindow());
+        app = new VrApplication(new WeakReference<>(this));
 
         AndroidCompat.setVrModeEnabled(this, true);
-        AndroidCompat.setSustainedPerformanceMode(this, true);
 
         gvrLayout = new GvrLayout(this);
         surfaceView = new GLSurfaceView(this);
@@ -94,12 +89,6 @@ public class VrActivity extends Activity {
         gvrLayout.setPresentationView(surfaceView);
         initGvrLayout(gvrLayout);
 
-//        if (getGvrLayout().setAsyncReprojectionEnabled(true)) {
-////            // Async reprojection decouples the app framerate from the display framerate,
-////            // allowing immersive interaction even at the throttled clockrates set by
-////            // sustained performance mode.
-//            Log.d(VrActivity.class.getSimpleName(), "Async Reprojection Enabled");
-//        }
         setContentView(gvrLayout);
         final EventListener listener = new EventListener();
         controllerManager = new ControllerManager(this, listener);
@@ -113,37 +102,37 @@ public class VrActivity extends Activity {
 
     public void initialize(VrApplicationAdapter adapter) {
 
-        gvrAudioEngine = new GvrAudioEngine(this, GvrAudioEngine.RenderingMode.BINAURAL_HIGH_QUALITY);
-        app.graphics = new VrGraphicsGVR(app, gvrAudioEngine);
-        // TODO: 7/20/2017 uncomment 
-//        app.graphics = new VrGraphics(app, new WeakReference<>(getSurfaceView()), gvrLayout.getGvrApi());
-//        surfaceView.setRenderer(app.graphics);
-        app.input = new VrAndroidInput(app, new WeakReference<Context>(this));
-        app.input.setController(controller);
-//        audio = new AndroidAudio(this, config);
-        app.files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
-        app.net = new AndroidNet(app);
         app.vrApplicationAdapter = adapter;
-        app.handler = new Handler();
-
-
         Gdx.app = app;
-        Gdx.input = app.input;
-        Gdx.audio = app.getAudio();
-        Gdx.files = app.getFiles();
-        Gdx.graphics = app.graphics;
-        Gdx.gl = app.graphics.getGL20();
-        Gdx.gl20 = app.graphics.getGL20();
-        Gdx.net = app.getNet();
-
         GdxVr.app = app;
-        GdxVr.input = app.input;
-        GdxVr.audio = app.getAudio();
-        GdxVr.files = app.getFiles();
+
+        final GvrAudioEngine gvrAudioEngine = new GvrAudioEngine(this, GvrAudioEngine.RenderingMode.BINAURAL_LOW_QUALITY);
+        app.audio = new VrAudio(gvrAudioEngine);
+        Gdx.audio = app.getAudio();
+        GdxVr.audio = (VrAudio) app.getAudio();
+
+        app.graphics = new VrGraphics(app, new WeakReference<>(surfaceView), gvrLayout.getGvrApi(), gvrAudioEngine);
+        Gdx.graphics = app.graphics;
         GdxVr.graphics = app.graphics;
+        Gdx.gl = app.graphics.getGL20();
         GdxVr.gl = app.graphics.getGL20();
+        Gdx.gl20 = app.graphics.getGL20();
         GdxVr.gl20 = app.graphics.getGL20();
+
+        app.input = new VrAndroidInput(app, new WeakReference<>(this));
+        app.input.setController(controller);
+        Gdx.input = app.input;
+        GdxVr.input = app.input;
+
+        app.files = new AndroidFiles(this.getAssets(), this.getFilesDir().getAbsolutePath());
+        Gdx.files = app.getFiles();
+        GdxVr.files = app.getFiles();
+
+        app.net = new AndroidNet(app);
+        Gdx.net = app.getNet();
         GdxVr.net = app.getNet();
+
+        app.handler = new Handler();
     }
 
     @Override
@@ -164,25 +153,19 @@ public class VrActivity extends Activity {
 
     @Override
     protected void onPause() {
-        // calls to setContinuousRendering(false) from other thread (ex: GLThread)
-        // will be ignored at this point...
-        getSurfaceView().queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                app.graphics.pause();
-            }
-        });
+        if (surfaceView != null)
+            surfaceView.queueEvent(app.graphics::pause);
+        else
+            app.graphics.pause();
         gvrLayout.onPause();
-        gvrAudioEngine.pause();
-        this.screenOnFlagHelper.stop();
-
+        app.audio.pause();
         app.input.onPause();
 
-//        if (isFinishing()) {
-//            graphics.clearManagedCaches();
-//            graphics.destroy();
-//        }
-        Log.i(TAG, "onPause()");
+        if (isFinishing()) {
+            app.graphics.clearManagedCaches();
+            app.graphics.destroy();
+        }
+        Logger.d("onPause()");
 
         super.onPause();
     }
@@ -190,12 +173,11 @@ public class VrActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume()");
+        Logger.d("onResume()");
         gvrLayout.onResume();
-        gvrAudioEngine.resume();
+        app.audio.resume();
 
         this.fullscreenMode.goFullscreen();
-        this.screenOnFlagHelper.start();
 
         Gdx.app = app;
         Gdx.input = app.input;
@@ -208,7 +190,7 @@ public class VrActivity extends Activity {
 
         GdxVr.app = app;
         GdxVr.input = app.input;
-        GdxVr.audio = app.getAudio();
+        GdxVr.audio = (VrAudio) app.getAudio();
         GdxVr.files = app.files;
         GdxVr.graphics = app.graphics;
         GdxVr.gl = app.graphics.getGL20();
@@ -219,12 +201,7 @@ public class VrActivity extends Activity {
 
 
         if (!firstResume) {
-            getSurfaceView().queueEvent(new Runnable() {
-                @Override
-                public void run() {
-                    app.graphics.resume();
-                }
-            });
+            surfaceView.queueEvent(app.graphics::resume);
         } else
             firstResume = false;
 
@@ -242,18 +219,13 @@ public class VrActivity extends Activity {
         if (surfaceView != null && app.graphics != null) {
             // TODO: 7/20/2017 uncomment 
 //            app.graphics.shutdown();
-            surfaceView.queueEvent(new Runnable() {
-                @Override
-                public void run() {
-                    app.graphics.destroy();
-                }
-            });
+            surfaceView.queueEvent(app.graphics::destroy);
         }
         if (gvrLayout != null) {
             gvrLayout.shutdown();
             gvrLayout = null;
         }
-        Log.i(TAG, "onDestroy()");
+        Logger.d("onDestroy()");
         super.onDestroy();
     }
 
@@ -266,13 +238,13 @@ public class VrActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i(TAG, "onStart()");
+        Logger.d("onStart()");
         controllerManager.start();
     }
 
     @Override
     protected void onStop() {
-        Log.i(TAG, "onStop()");
+        Logger.d("onStop()");
         controllerManager.stop();
         super.onStop();
     }
@@ -315,6 +287,10 @@ public class VrActivity extends Activity {
         return app;
     }
 
+    public boolean isDaydreamViewer() {
+        return gvrLayout != null && gvrLayout.getGvrApi().getViewerType() == GvrApi.ViewerType.DAYDREAM;
+    }
+
     /**
      * Moved AndroidApplicationBase implementation to separate class with a WeakReference to the Activity to get rid of static references to the Context in Gdx.app and GdxVr.app
      */
@@ -322,11 +298,11 @@ public class VrActivity extends Activity {
 
         protected final SnapshotArray<LifecycleListener> lifecycleListeners = new SnapshotArray<>();
         private final Queue<Runnable> runnables = new LinkedBlockingQueue<>();
-        private final Array<AndroidEventListener> androidEventListeners = new Array<AndroidEventListener>();
+        private final Array<AndroidEventListener> androidEventListeners = new Array<>();
         public Handler handler;
-        protected VrGraphicsGVR graphics;
+        protected VrGraphics graphics;
         protected VrAndroidInput input;
-        //    protected AndroidAudio audio;
+        protected VrAudio audio;
         protected AndroidFiles files;
         protected AndroidNet net;
         protected VrApplicationAdapter vrApplicationAdapter;
@@ -334,10 +310,12 @@ public class VrActivity extends Activity {
         protected AndroidClipboard clipboard;
 
         private WeakReference<Activity> activityRef;
+//        private ApplicationLogger applicationLogger;
 
         public VrApplication(WeakReference<Activity> activityRef) {
             this.activityRef = activityRef;
             clipboard = (AndroidClipboard) getClipboard();
+//            applicationLogger = new AndroidApplicationLogger();
         }
 
         @Override
@@ -397,8 +375,7 @@ public class VrActivity extends Activity {
 
         @Override
         public Audio getAudio() {
-            // TODO: 10/11/2016 fix audio 
-            return null;
+            return audio;
         }
 
         @Override
@@ -480,6 +457,16 @@ public class VrActivity extends Activity {
         public int getLogLevel() {
             return logLevel;
         }
+
+//        @Override
+//        public void setApplicationLogger(ApplicationLogger applicationLogger) {
+//            this.applicationLogger = applicationLogger;
+//        }
+//
+//        @Override
+//        public ApplicationLogger getApplicationLogger() {
+//            return applicationLogger;
+//        }
 
         @Override
         public void setLogLevel(int logLevel) {
@@ -590,8 +577,9 @@ public class VrActivity extends Activity {
         // it rarely changes.
         private String apiStatus;
 
-        // The state of a specific Controller connection.
+        // The state of a specific Controller connection.        
         private int connectionState = Controller.ConnectionStates.CONNECTED;
+
 
         @Override
         public void onApiStatusChanged(int state) {
@@ -613,15 +601,14 @@ public class VrActivity extends Activity {
 
         @Override
         public void onUpdate() {
-            app.postRunnable(this);
+//            app.postRunnable(this);
         }
 
         // Update the various TextViews in the UI thread.
         @Override
         public void run() {
             controller.update();
-            // TODO: 12/23/2017 fix controller update 
-//            app.input.onDaydreamControllerUpdate(controller, connectionState);
+            app.input.setConnectionState(connectionState);
         }
     }
 }

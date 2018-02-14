@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Pools;
 import com.google.vr.sdk.audio.GvrAudioEngine;
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.HeadTransform;
@@ -42,6 +43,45 @@ public abstract class VrApplicationAdapter implements ApplicationListener, Daydr
             onDrawEye(leftEye);
         if (rightEye != null)
             onDrawEye(rightEye);
+        updateGvrAudioEngineSimple();
+    }
+
+    protected void updateGvrAudioEngine() {
+        final GvrAudioEngine gvrAudioEngine = getGvrAudioEngine();
+        final Vector3 translation = getHeadTranslation();
+        final VrCamera cam = getVrCamera();
+        final Quaternion cameraRotation = Pools.obtain(Quaternion.class);
+        final Quaternion rotation = Pools.obtain(Quaternion.class);
+        final Vector3 tmp = Pools.obtain(Vector3.class);
+        final Vector3 tmp2 = Pools.obtain(Vector3.class);
+
+        gvrAudioEngine.setHeadPosition(translation.x + cam.position.x, translation.y + cam.position.y, translation.z + cam.position.z);
+        final Vector3 dir = cam.direction;
+        final Vector3 up = cam.up;
+        tmp.set(up).crs(dir).nor();
+        tmp2.set(dir).crs(tmp).nor();
+        cameraRotation.setFromAxes(tmp.x, tmp2.x, dir.x, tmp.y, tmp2.y, dir.y, tmp.z, tmp2.z, dir.z);
+        rotation.set(getHeadQuaternion()).mulLeft(cameraRotation);
+        gvrAudioEngine.setHeadRotation(rotation.x, rotation.y, rotation.z, rotation.w);
+        gvrAudioEngine.update();
+
+        Pools.free(tmp);
+        Pools.free(tmp2);
+        Pools.free(rotation);
+        Pools.free(cameraRotation);
+    }
+
+    /**
+     * assumes vrCamera position, direction, and up never change
+     */
+    protected void updateGvrAudioEngineSimple() {
+        final GvrAudioEngine gvrAudioEngine = getGvrAudioEngine();
+        final Vector3 translation = getHeadTranslation();
+        final Quaternion rotation = getHeadQuaternion();
+
+        gvrAudioEngine.setHeadPosition(translation.x, translation.y, translation.z);
+        gvrAudioEngine.setHeadRotation(rotation.x, rotation.y, rotation.z, rotation.w);
+        gvrAudioEngine.update();
     }
 
     @CallSuper
@@ -116,6 +156,6 @@ public abstract class VrApplicationAdapter implements ApplicationListener, Daydr
     }
 
     public GvrAudioEngine getGvrAudioEngine() {
-        return GdxVr.graphics.getGvrAudioEngine();
+        return GdxVr.audio.getGvrAudioEngine();
     }
 }

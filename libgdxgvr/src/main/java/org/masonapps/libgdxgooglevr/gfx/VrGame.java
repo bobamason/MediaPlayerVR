@@ -39,6 +39,7 @@ import org.masonapps.libgdxgooglevr.vr.VrApplicationAdapter;
 public class VrGame extends VrApplicationAdapter {
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
     private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
+    private final Vector3 tmp = new Vector3();
     protected VrScreen screen;
     protected Ray ray = new Ray();
     protected boolean isCursorVisible = true;
@@ -66,10 +67,10 @@ public class VrGame extends VrApplicationAdapter {
         cursor.setDeactivatedDiameter(0.02f);
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
-        new Thread(() -> GdxVr.app.postRunnable(() -> {
+        new Thread(() -> {
             final ModelData modelData = new G3dModelLoader(new UBJsonReader(), new InternalFileHandleResolver()).loadModelData(GdxVr.files.internal(CONTROLLER_FILENAME));
             GdxVr.app.postRunnable(() -> controllerModelInstance = new ModelInstance(new Model(modelData)));
-        })).start();
+        }).start();
     }
 
     protected ModelBatch createModelBatch() {
@@ -105,9 +106,10 @@ public class VrGame extends VrApplicationAdapter {
             cursor.lookAtTarget(ray.origin, Vector3.Y);
             cursor.setVisible(true);
         } else {
-            cursor.position.set(ray.direction.x + ray.origin.x, ray.direction.y + ray.origin.y, ray.direction.z + ray.origin.z);
+            cursor.position.set(ray.origin.x + ray.direction.x * 2.5f, ray.origin.y + ray.direction.y * 2.5f, ray.origin.z + ray.direction.z * 2.5f);
             cursor.lookAtTarget(ray.origin, Vector3.Y);
-            cursor.setVisible(!GdxVr.input.isControllerConnected());
+//            cursor.setVisible(!GdxVr.input.isControllerConnected());
+            cursor.setVisible(true);
         }
         if (screen != null) screen.update();
     }
@@ -129,17 +131,13 @@ public class VrGame extends VrApplicationAdapter {
             renderCursor(camera);
     }
 
+    @SuppressWarnings("ConstantConditions")
     protected void renderController(Camera camera) {
         if (shouldRenderControllerModel()) {
             modelBatch.begin(camera);
             modelBatch.render(controllerModelInstance);
             modelBatch.end();
         }
-    }
-
-    @Nullable
-    public ModelInstance getControllerModelInstance() {
-        return controllerModelInstance;
     }
 
     public boolean shouldRenderControllerModel() {
@@ -153,7 +151,8 @@ public class VrGame extends VrApplicationAdapter {
             shapeRenderer.setProjectionMatrix(camera.combined);
             shapeRenderer.begin();
             Gdx.gl.glLineWidth(2f);
-            shapeRenderer.line(ray.origin.x, ray.origin.y, ray.origin.z, cursor.position.x, cursor.position.y, cursor.position.z, cursorColor1, cursorColor2);
+            tmp.set(ray.origin).lerp(cursor.position, 0.75f);
+            shapeRenderer.line(ray.origin.x, ray.origin.y, ray.origin.z, tmp.x, tmp.y, tmp.z, cursorColor1, cursorColor2);
             shapeRenderer.end();
         }
         cursor.render(camera);
@@ -225,6 +224,11 @@ public class VrGame extends VrApplicationAdapter {
         loadingAssets = true;
     }
 
+    @Nullable
+    public ModelInstance getControllerModelInstance() {
+        return controllerModelInstance;
+    }
+
     @Override
     public void dispose() {
         super.dispose();
@@ -273,6 +277,10 @@ public class VrGame extends VrApplicationAdapter {
         }
     }
 
+    public AssetManager getAssets() {
+        return assets;
+    }
+
     public Ray getControllerRay() {
         return ray;
     }
@@ -291,9 +299,5 @@ public class VrGame extends VrApplicationAdapter {
 
     public VrCursor getCursor() {
         return cursor;
-    }
-
-    public AssetManager getAssets() {
-        return assets;
     }
 }

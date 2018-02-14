@@ -6,7 +6,6 @@ import android.os.Build;
 import android.os.Vibrator;
 import android.view.View;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.GridPoint2;
@@ -21,6 +20,7 @@ import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerHandler;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
+import org.masonapps.libgdxgooglevr.utils.Logger;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import java.util.ArrayList;
 public class VrAndroidInput implements Input, View.OnKeyListener {
 
     public static final int SUPPORTED_KEYS = 260;
-    private final Application app;
+    private final VrActivity.VrApplication app;
     private final ArmModel armModel;
     private final Vibrator vibrator;
     protected Quaternion controllerOrientation = new Quaternion();
@@ -68,14 +68,13 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
     private boolean isInputProcessorTouched = false;
     private GridPoint2 touch = new GridPoint2(-1, -1);
     private GridPoint2 lastTouch = new GridPoint2(-1, -1);
-    private boolean isUpdateRayEnabled = true;
+    private int connectionState = Controller.ConnectionStates.CONNECTED;
 
-    public VrAndroidInput(Application application, WeakReference<Context> contextRef) {
+    public VrAndroidInput(VrActivity.VrApplication application, WeakReference<Context> contextRef) {
 //        this.onscreenKeyboard = new AndroidOnscreenKeyboard(context, new Handler(), this);
         daydreamControllerHandler = new DaydreamControllerHandler();
-        this.app = application;
+        app = application;
         armModel = ArmModel.getInstance();
-
         vibrator = (Vibrator) contextRef.get().getSystemService(Context.VIBRATOR_SERVICE);
     }
 
@@ -168,25 +167,31 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
 
     public void processEvents() {
         synchronized (this) {
+            currentEventTimeStamp = System.nanoTime();
             updateInputRay();
             if (processor instanceof VrInputProcessor) {
                 if (((VrInputProcessor) processor).performRayTest(inputRay)) {
 //                    Log.d(VrAndroidInput.class.getSimpleName(), event.toString());
                     final Vector2 hitPoint2D = ((VrInputProcessor) processor).getHitPoint2D();
+                    int x;
+                    int y;
                     if (hitPoint2D != null) {
-                        final int x = (int) hitPoint2D.x;
-                        final int y = (int) hitPoint2D.y;
-                        lastTouch.set(touch);
-                        touch.set(x, y);
-                        if (controller.clickButtonState && !isInputProcessorTouched) {
-                            postTouchEvent(TouchEvent.TOUCH_DOWN, x, y);
-                            isInputProcessorTouched = true;
-                        } else if (!controller.clickButtonState && isInputProcessorTouched) {
-                            postTouchEvent(TouchEvent.TOUCH_UP, x, y);
-                            isInputProcessorTouched = false;
-                        } else {
-                            postTouchEvent(isInputProcessorTouched ? TouchEvent.TOUCH_DRAGGED : TouchEvent.TOUCH_MOVED, x, y);
-                        }
+                        x = (int) hitPoint2D.x;
+                        y = (int) hitPoint2D.y;
+                    } else {
+                        x = 0;
+                        y = 0;
+                    }
+                    lastTouch.set(touch);
+                    touch.set(x, y);
+                    if (controller.clickButtonState && !isInputProcessorTouched) {
+                        postTouchEvent(TouchEvent.TOUCH_DOWN, x, y);
+                        isInputProcessorTouched = true;
+                    } else if (!controller.clickButtonState && isInputProcessorTouched) {
+                        postTouchEvent(TouchEvent.TOUCH_UP, x, y);
+                        isInputProcessorTouched = false;
+                    } else {
+                        postTouchEvent(isInputProcessorTouched ? TouchEvent.TOUCH_DRAGGED : TouchEvent.TOUCH_MOVED, x, y);
                     }
                 } else {
                     if (isInputProcessorTouched) {
@@ -210,7 +215,6 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
                 int len = keyEvents.size();
                 for (int i = 0; i < len; i++) {
                     KeyEvent e = keyEvents.get(i);
-                    currentEventTimeStamp = e.timeStamp;
                     switch (e.type) {
                         case KeyEvent.KEY_DOWN:
                             processor.keyDown(e.keyCode);
@@ -229,7 +233,6 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
                 len = touchEvents.size();
                 for (int i = 0; i < len; i++) {
                     TouchEvent e = touchEvents.get(i);
-                    currentEventTimeStamp = e.timeStamp;
                     switch (e.type) {
                         case TouchEvent.TOUCH_DOWN:
                             processor.touchDown(e.x, e.y, e.pointer, e.button);
@@ -576,20 +579,21 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
     }
 
     public void onDaydreamControllerUpdate() {
-        if (isUpdateRayEnabled) {
-//        if (connectionState == Controller.ConnectionStates.CONNECTED) {
+        if (connectionState == Controller.ConnectionStates.CONNECTED) {
             isControllerConnected = true;
             armModel.updateHeadDirection(GdxVr.app.getVrApplicationAdapter().getVrCamera().direction);
             armModel.onControllerUpdate(controller);
             controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
             controllerPosition.set(armModel.pointerPosition).add(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
-//        } else {
-//            isControllerConnected = false;
-//        }
-            processEvents();
+        } else {
+            isControllerConnected = false;
         }
-//        daydreamControllerHandler.process(controller, connectionState);
-        daydreamControllerHandler.process(controller, Controller.ConnectionStates.CONNECTED);
+        processEvents();
+        try {
+            daydreamControllerHandler.process(controller, connectionState);
+        } catch (Exception e) {
+            Logger.e("", e);
+        }
     }
 
     private void postTouchEvent(int type, int x, int y) {
@@ -646,6 +650,10 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
         getDaydreamControllerHandler().removeListener(listener);
     }
 
+    public void setConnectionState(int connectionState) {
+        this.connectionState = connectionState;
+    }
+
     public Controller getController() {
         return controller;
     }
@@ -654,11 +662,7 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
         this.controller = controller;
     }
 
-    public void setUpdateRayEnabled(boolean updateRayEnabled) {
-        this.isUpdateRayEnabled = updateRayEnabled;
-    }
-
-    static class KeyEvent {
+    protected static class KeyEvent {
         static final int KEY_DOWN = 0;
         static final int KEY_UP = 1;
         static final int KEY_TYPED = 2;
@@ -669,7 +673,7 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
         char keyChar;
     }
 
-    static class TouchEvent {
+    protected static class TouchEvent {
         static final int TOUCH_DOWN = 0;
         static final int TOUCH_UP = 1;
         static final int TOUCH_DRAGGED = 2;

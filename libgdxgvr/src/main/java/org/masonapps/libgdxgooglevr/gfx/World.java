@@ -47,24 +47,24 @@ public class World implements Disposable {
         return add(entity);
     }
 
-    public void render(final ModelBatch batch, final Environment lights) {
-        render(batch, lights, entities);
+    public void render(final ModelBatch batch, final Environment environment) {
+        render(batch, environment, entities);
     }
 
-    public void render(final ModelBatch batch, final Environment lights, final Iterable<Entity> entities) {
+    public void render(final ModelBatch batch, final Environment environment, final Iterable<Entity> entities) {
         for (final Entity e : entities) {
-            render(batch, lights, e);
+            render(batch, environment, e);
         }
     }
 
-    public void render(final ModelBatch batch, final Environment lights, final Entity entity) {
+    public void render(final ModelBatch batch, final Environment environment, final Entity entity) {
         if (!entity.updated) entity.recalculateTransform();
-        if (entity.isInCameraFrustum(batch.getCamera())) {
+        if (entity.isInCameraFrustum(batch.getCamera()) && entity.modelInstance != null) {
             if (entity.isLightingEnabled()) {
                 if (entity.shader != null)
-                    batch.render(entity.modelInstance, lights, entity.shader);
+                    batch.render(entity.modelInstance, environment, entity.shader);
                 else
-                    batch.render(entity.modelInstance, lights);
+                    batch.render(entity.modelInstance, environment);
             } else {
                 if (entity.shader != null)
                     batch.render(entity.modelInstance, entity.shader);

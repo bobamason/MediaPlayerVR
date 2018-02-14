@@ -68,6 +68,17 @@ public class CylindricalCoordinate implements Pool.Poolable {
         this.vertical = other.vertical;
     }
 
+    public void set(float radius, float theta, float vertical) {
+        this.set(radius, theta, vertical, this.angleMode);
+    }
+
+    public void set(float radius, float theta, float vertical, AngleMode angleMode) {
+        this.radius = radius;
+        this.theta = theta;
+        this.vertical = vertical;
+        this.angleMode = angleMode;
+    }
+
     public enum AngleMode {
         degrees, radians
     }

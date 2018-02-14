@@ -8,34 +8,32 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.google.vr.ndk.base.GvrLayout;
 import com.google.vr.sdk.base.AndroidCompat;
-import com.google.vr.sdk.base.GvrView;
 
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 
 import org.masonapps.libgdxgooglevr.vr.VrActivity;
-import org.masonapps.libgdxgooglevr.vr.VrActivityGVR;
 
-public class MainActivity extends VrActivityGVR {
+public class MainActivity extends VrActivity {
 
     private static final String READ_EXTERNAL_STORAGE = Manifest.permission.READ_EXTERNAL_STORAGE;
     private static final String RECORD_AUDIO = Manifest.permission.RECORD_AUDIO;
     private static final int RC_PERMISSIONS = 2001;
     private StoragePermissionResultListener listener = null;
-    private MediaPlayerGame game;
     private VideoOptionsDatabaseHelper videoOptionsDatabaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        game = new MediaPlayerGame(this);
+        final MediaPlayerGame game = new MediaPlayerGame(this);
         videoOptionsDatabaseHelper = new VideoOptionsDatabaseHelper(this);
         initialize(game);
     }
 
     @Override
-    protected void initGvrView(GvrView gvrView) {
-        super.initGvrView(gvrView);
+    protected void initGvrLayout(GvrLayout gvrView) {
+        super.initGvrLayout(gvrView);
         if (gvrView.setAsyncReprojectionEnabled(true)) {
 //            // Async reprojection decouples the app framerate from the display framerate,
 //            // allowing immersive interaction even at the throttled clockrates set by
@@ -43,8 +41,6 @@ public class MainActivity extends VrActivityGVR {
             AndroidCompat.setSustainedPerformanceMode(this, true);
             Log.d(VrActivity.class.getSimpleName(), "Async Reprojection Enabled");
         }
-        gvrView.setMultisampling(2);
-        gvrView.setNeckModelEnabled(false);
     }
 
     @Override

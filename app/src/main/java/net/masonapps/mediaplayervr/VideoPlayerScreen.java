@@ -48,7 +48,6 @@ import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
-import org.masonapps.libgdxgooglevr.vr.VrActivityGVR;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
 import java.nio.IntBuffer;
@@ -182,7 +181,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     public void show() {
         super.show();
         GdxVr.input.setInputProcessor(container);
-        GdxVr.input.setUpdateRayEnabled(true);
+//        GdxVr.input.setUpdateRayEnabled(true);
     }
 
     @Override
@@ -190,7 +189,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         super.hide();
         pause();
         GdxVr.input.setInputProcessor(null);
-        GdxVr.input.setUpdateRayEnabled(true);
+//        GdxVr.input.setUpdateRayEnabled(true);
     }
 
     @Override
@@ -330,7 +329,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //        camera.view.set(eye.getEyeView());
         final Vector3 pos = Pools.obtain(Vector3.class);
         final Vector3 dir = Pools.obtain(Vector3.class);
-        final float defaultIpd = ((VrActivityGVR) GdxVr.app.getContext()).getGvrView().getInterpupillaryDistance();
+//        final float defaultIpd = ((VrActivity) GdxVr.app.getContext()).getGvrLayout().getGvrApi();
+        final float defaultIpd = 0.064f;
         final float ipdHalf = defaultIpd * ipd / 2f;
         pos.set(eye.getType() == Eye.Type.LEFT ? -ipdHalf : ipdHalf, 0, 2f - zoom * 2f);
 
@@ -444,7 +444,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     private void setUiVisible(boolean uiVisible) {
         isUiVisible = uiVisible;
         ui.setVisible(isUiVisible);
-        GdxVr.input.setUpdateRayEnabled(uiVisible);
+//        GdxVr.input.setUpdateRayEnabled(uiVisible);
         game.setCursorVisible(uiVisible);
         game.setControllerVisible(uiVisible);
         invalidateProjection();
@@ -481,7 +481,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
                 break;
             case DaydreamButtonEvent.BUTTON_APP:
                 if (event.action == DaydreamButtonEvent.ACTION_UP) {
-                    GdxVr.input.setUpdateRayEnabled(true);
+//                    GdxVr.input.setUpdateRayEnabled(true);
                     ui.backButtonClicked();
                 }
                 break;
