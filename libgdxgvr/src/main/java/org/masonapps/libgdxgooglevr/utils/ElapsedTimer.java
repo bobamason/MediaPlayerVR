@@ -38,7 +38,7 @@ public class ElapsedTimer {
             return System.nanoTime();
     }
 
-    public void printMillis(String tag) {
+    public void print(String tag) {
         long start = getStartTime(tag);
         final long current = System.nanoTime();
         double millis = (current - start) / 1000000.;
@@ -59,10 +59,6 @@ public class ElapsedTimer {
         } else {
             Log.d(tag, tag + " eT = " + (current - start) + "ns");
         }
-    }
-
-    public void print(String tag) {
-        printMillis(tag);
     }
 
     public void setReflectionEnabled(boolean reflectionEnabled) {

@@ -690,11 +690,12 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         Logger.d("post processing vertex shader:\n" + vertexShader);
         Logger.d("post processing fragment shader:\n" + fragmentShader);
         final ShaderProgram postProcessingShader = new ShaderProgram(vertexShader, fragmentShader);
-        GdxVr.graphics.setPostProcessingShader(postProcessingShader);
-
+//         GdxVr.graphics.setPostProcessingShader(postProcessingShader);
+        api.getMaximumEffectiveRenderTargetSize(targetSize);
+        fbo = new FrameBuffer(Pixmap.Format.RGB565, targetSize.x, targetSize.y, true);
         api.getScreenTargetSize(targetSize);
 //        Log.d(TAG, "getScreenTargetSize -> " + targetSize.toString());
-//        api.getMaximumEffectiveRenderTargetSize(targetSize);
+
 //        targetSize.x = (7 * targetSize.x) / 10;
 //        targetSize.y = (7 * targetSize.y) / 10;
 //        Log.d(TAG, "getMaximumEffectiveRenderTargetSize -> " + targetSize.toString());
@@ -704,8 +705,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         bufferSpec.setColorFormat(BufferSpec.ColorFormat.RGBA_8888);
         bufferSpec.setDepthStencilFormat(BufferSpec.DepthStencilFormat.DEPTH_16);
         bufferSpec.setSize(targetSize);
-        bufferSpec.setSamples(1);
-        fbo = new FrameBuffer(Pixmap.Format.RGB565, targetSize.x, targetSize.y, true);
+        bufferSpec.setSamples(2);
         specList[INDEX_SCENE_BUFFER] = bufferSpec;
 
         swapChain = api.createSwapChain(specList);
