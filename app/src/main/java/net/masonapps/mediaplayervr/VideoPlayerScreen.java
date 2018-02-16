@@ -421,8 +421,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         Pools.free(tmpQ);
 
         videoPlayer.render(rightCamera, shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
-        getModelBatch().end();
-//            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
+//   ;         ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
     }
 
     private void renderLeftVideo() {
