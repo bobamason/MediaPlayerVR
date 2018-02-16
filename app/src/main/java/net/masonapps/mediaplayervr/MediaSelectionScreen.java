@@ -107,12 +107,9 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
 
         layoutVideoList = new VideoListLayout(context, skin, spriteBatch, executor);
         layoutVideoList.attach(container);
-        layoutVideoList.setOnItemClickedListener(new GridUiLayout.OnGridItemClickedListener<VideoDetails>() {
-            @Override
-            public void onItemClicked(int index, VideoDetails obj) {
-                mediaPlayerGame.playVideo(obj);
+        layoutVideoList.setOnItemClickedListener((index, obj) -> {
+            mediaPlayerGame.playVideo(obj);
 //                videoPreviewUi.load(mediaPlayerGame, obj);
-            }
         });
 
         manageDisposable(container);
@@ -134,14 +131,11 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         okButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                ((MainActivity) context).requestReadStoragePermission(new MainActivity.StoragePermissionResultListener() {
-                    @Override
-                    public void onResult(boolean granted) {
-                        stagePermissions.setVisible(!granted);
-                        if (granted) {
-                            showVideoList();
-                            loadVideoList();
-                        }
+                ((MainActivity) context).requestReadStoragePermission(granted -> {
+                    stagePermissions.setVisible(!granted);
+                    if (granted) {
+                        showVideoList();
+                        loadVideoList();
                     }
                 });
             }
@@ -150,20 +144,14 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     }
 
     private void loadVideoList() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final List<VideoDetails> list = MediaUtils.getVideoList(context);
-                Gdx.app.postRunnable(new Runnable() {
-                    @Override
-                    public void run() {
-                        layoutVideoList.clear();
-                        layoutVideoList.getList().addAll(list);
-                        layoutVideoList.displayList(0);
-                        showVideoList();
-                    }
-                });
-            }
+        new Thread(() -> {
+            final List<VideoDetails> list = MediaUtils.getVideoList(context);
+            Gdx.app.postRunnable(() -> {
+                layoutVideoList.clear();
+                layoutVideoList.getList().addAll(list);
+                layoutVideoList.displayList(0);
+                showVideoList();
+            });
         }).start();
     }
 

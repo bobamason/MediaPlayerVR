@@ -20,6 +20,7 @@ import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerHandler;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
+import org.masonapps.libgdxgooglevr.utils.ElapsedTimer;
 import org.masonapps.libgdxgooglevr.utils.Logger;
 
 import java.lang.ref.WeakReference;
@@ -579,21 +580,27 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
     }
 
     public void onDaydreamControllerUpdate() {
+        ElapsedTimer.getInstance().start("onDaydreamControllerUpdate");
         if (connectionState == Controller.ConnectionStates.CONNECTED) {
             isControllerConnected = true;
+            ElapsedTimer.getInstance().start("arm model");
             armModel.updateHeadDirection(GdxVr.app.getVrApplicationAdapter().getVrCamera().direction);
             armModel.onControllerUpdate(controller);
             controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
             controllerPosition.set(armModel.pointerPosition).add(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
+            ElapsedTimer.getInstance().print("arm model");
         } else {
             isControllerConnected = false;
         }
+        ElapsedTimer.getInstance().start("processEvents");
         processEvents();
+        ElapsedTimer.getInstance().print("processEvents");
         try {
             daydreamControllerHandler.process(controller, connectionState);
         } catch (Exception e) {
             Logger.e("", e);
         }
+        ElapsedTimer.getInstance().print("onDaydreamControllerUpdate");
     }
 
     private void postTouchEvent(int type, int x, int y) {
