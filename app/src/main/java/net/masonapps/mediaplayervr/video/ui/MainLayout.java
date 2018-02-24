@@ -1,6 +1,7 @@
 package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -17,6 +18,7 @@ import net.masonapps.mediaplayervr.Style;
 import net.masonapps.mediaplayervr.video.VrVideoPlayer;
 import net.masonapps.mediaplayervr.vrinterface.BaseUiLayout;
 
+import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.ui.VirtualStage;
 import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
 
@@ -28,12 +30,15 @@ import java.util.Locale;
 
 public class MainLayout extends BaseUiLayout {
 
+
+    private static final float MIN_MOVEMENT = 0.25f;
     private final Table videoTable;
     private final Table optionsTable;
     private final VideoPlayerGUI videoPlayerGUI;
     //    private final Table settingsTable;
     protected Label timeLabel;
     protected Slider slider;
+    private float downX;
     private VirtualStage videoStage;
     private VirtualStage optionsStage;
     private ImageButton playButton;
@@ -210,6 +215,10 @@ public class MainLayout extends BaseUiLayout {
         container.addProcessor(optionsStage);
     }
 
+    public boolean isCursorOverSeekbar() {
+        return videoStage.isCursorOver();
+    }
+
     @Override
     public boolean isVisible() {
         return videoStage.isVisible() || optionsStage.isVisible();
@@ -230,6 +239,31 @@ public class MainLayout extends BaseUiLayout {
         if (optionsStage != null) {
             optionsStage.dispose();
             optionsStage = null;
+        }
+    }
+
+    public void onTouchPadEvent(DaydreamTouchEvent event) {
+        switch (event.action) {
+            case DaydreamTouchEvent.ACTION_DOWN:
+                downX = event.x;
+                break;
+            case DaydreamTouchEvent.ACTION_MOVE:
+                float currentX = event.x;
+                final float diff = currentX - downX;
+                final float abs = Math.abs(diff);
+                if (abs > MIN_MOVEMENT) {
+//                        final float x = diff > 0 ? (diff - MIN_MOVEMENT) : (diff + MIN_MOVEMENT);
+                    long seek = (long) MathUtils.clamp(slider.getValue() + 5000d * Math.signum(diff), slider.getMinValue(), slider.getMaxValue());
+                    final VrVideoPlayer player = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
+                    if (player.isPrepared()) {
+                        player.seekTo(seek);
+                        updateSeek(player);
+                    }
+                    downX = currentX;
+                }
+                break;
+            case DaydreamTouchEvent.ACTION_UP:
+                break;
         }
     }
 }

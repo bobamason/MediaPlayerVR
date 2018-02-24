@@ -34,6 +34,7 @@ import net.masonapps.mediaplayervr.utils.ModelGenerator;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
+import org.masonapps.libgdxgooglevr.utils.ElapsedTimer;
 
 import java.util.List;
 
@@ -72,6 +73,7 @@ public class MediaPlayerGame extends VrGame {
         loadAsset(Style.ATLAS_FILE, TextureAtlas.class);
         getAssets().setLoader(Model.class, "vidmodel", new VideoModelLoader(new InternalFileHandleResolver()));
         loadAsset(SPHERE_FILENAME, Model.class);
+        ElapsedTimer.getInstance().setLogEnabled(false);
     }
 
     @Override

@@ -15,6 +15,7 @@ public class ElapsedTimer {
     private final DecimalFormat df;
     private final HashMap<String, Long> startTimes;
     private boolean isReflectionEnabled = true;
+    private boolean isLogEnabled = true;
 
     private ElapsedTimer() {
         df = new DecimalFormat("#,###.##");
@@ -38,7 +39,8 @@ public class ElapsedTimer {
             return System.nanoTime();
     }
 
-    public void print(String tag) {
+    public void log(String tag) {
+        if (!isLogEnabled) return;
         long start = getStartTime(tag);
         final long current = System.nanoTime();
         double millis = (current - start) / 1000000.;
@@ -50,7 +52,8 @@ public class ElapsedTimer {
         }
     }
 
-    public void printNanos(String tag) {
+    public void logNanos(String tag) {
+        if (!isLogEnabled) return;
         long start = getStartTime(tag);
         final long current = System.nanoTime();
         if (isReflectionEnabled) {
@@ -63,5 +66,9 @@ public class ElapsedTimer {
 
     public void setReflectionEnabled(boolean reflectionEnabled) {
         isReflectionEnabled = reflectionEnabled;
+    }
+
+    public void setLogEnabled(boolean isPrintEnabled) {
+        this.isLogEnabled = isPrintEnabled;
     }
 }

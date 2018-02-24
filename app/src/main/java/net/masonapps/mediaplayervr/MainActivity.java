@@ -6,10 +6,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
+import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
-import com.google.vr.sdk.base.AndroidCompat;
 
 import net.masonapps.mediaplayervr.database.VideoOptionsDatabaseHelper;
 
@@ -32,14 +31,10 @@ public class MainActivity extends VrActivity {
     }
 
     @Override
-    protected void initGvrLayout(GvrLayout gvrView) {
-        super.initGvrLayout(gvrView);
-        if (gvrView.setAsyncReprojectionEnabled(true)) {
-//            // Async reprojection decouples the app framerate from the display framerate,
-//            // allowing immersive interaction even at the throttled clockrates set by
-//            // sustained performance mode.
+    protected void initGvrLayout(GvrLayout gvrLayout) {
+        super.initGvrLayout(gvrLayout);
+        if (gvrLayout.setAsyncReprojectionEnabled(true)) {
             AndroidCompat.setSustainedPerformanceMode(this, true);
-            Log.d(VrActivity.class.getSimpleName(), "Async Reprojection Enabled");
         }
     }
 

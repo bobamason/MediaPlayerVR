@@ -16,7 +16,7 @@ import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
 
 public class VideoPlayerGUI extends BaseUiLayout {
     public final SliderLayout sliderLayout;
-    private final MainLayout mainLayout;
+    public final MainLayout mainLayout;
     private final ModeLayout modeLayout;
     private final VideoPlayerScreen videoPlayerScreen;
     private final Skin skin;
@@ -211,6 +211,10 @@ public class VideoPlayerGUI extends BaseUiLayout {
         colorSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
         sliderLayout.setVisible(true);
+    }
+
+    public boolean isCursorOverSeekbar() {
+        return mainLayout.isCursorOverSeekbar();
     }
 
     public int getCurrentSettingKey() {

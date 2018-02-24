@@ -588,19 +588,19 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
             armModel.onControllerUpdate(controller);
             controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
             controllerPosition.set(armModel.pointerPosition).add(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
-            ElapsedTimer.getInstance().print("arm model");
+            ElapsedTimer.getInstance().log("arm model");
         } else {
             isControllerConnected = false;
         }
         ElapsedTimer.getInstance().start("processEvents");
         processEvents();
-        ElapsedTimer.getInstance().print("processEvents");
+        ElapsedTimer.getInstance().log("processEvents");
         try {
             daydreamControllerHandler.process(controller, connectionState);
         } catch (Exception e) {
             Logger.e("", e);
         }
-        ElapsedTimer.getInstance().print("onDaydreamControllerUpdate");
+        ElapsedTimer.getInstance().log("onDaydreamControllerUpdate");
     }
 
     private void postTouchEvent(int type, int x, int y) {
