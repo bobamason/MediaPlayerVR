@@ -1,6 +1,7 @@
 package net.masonapps.mediaplayervr.video.ui;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -31,10 +32,11 @@ import java.util.Locale;
 public class MainLayout extends BaseUiLayout {
 
 
-    private static final float MIN_MOVEMENT = 0.25f;
+    private static final float MIN_MOVEMENT = 0.45f;
     private final Table videoTable;
     private final Table optionsTable;
     private final VideoPlayerGUI videoPlayerGUI;
+    private final GestureDetector gestureDetector;
     //    private final Table settingsTable;
     protected Label timeLabel;
     protected Slider slider;
@@ -42,6 +44,7 @@ public class MainLayout extends BaseUiLayout {
     private VirtualStage videoStage;
     private VirtualStage optionsStage;
     private ImageButton playButton;
+    private boolean isSwiping = false;
     private boolean isSliderDragging = false;
 
     public MainLayout(final VideoPlayerGUI videoPlayerGUI) {
@@ -162,6 +165,24 @@ public class MainLayout extends BaseUiLayout {
             }
         });
         optionsTable.add(resetBtn).padTop(padding).padBottom(padding).padRight(padding).row();
+
+        gestureDetector = new GestureDetector(new GestureDetector.GestureAdapter() {
+
+            @Override
+            public boolean touchDown(float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public boolean pan(float x, float y, float deltaX, float deltaY) {
+                return true;
+            }
+
+            @Override
+            public boolean fling(float velocityX, float velocityY, int button) {
+                return true;
+            }
+        });
     }
 
     private static String getTimeLabelString(long currentPosition, long duration) {
@@ -246,20 +267,22 @@ public class MainLayout extends BaseUiLayout {
         switch (event.action) {
             case DaydreamTouchEvent.ACTION_DOWN:
                 downX = event.x;
+                isSwiping = true;
                 break;
             case DaydreamTouchEvent.ACTION_MOVE:
+                if (!isSwiping) break;
                 float currentX = event.x;
                 final float diff = currentX - downX;
                 final float abs = Math.abs(diff);
                 if (abs > MIN_MOVEMENT) {
 //                        final float x = diff > 0 ? (diff - MIN_MOVEMENT) : (diff + MIN_MOVEMENT);
-                    long seek = (long) MathUtils.clamp(slider.getValue() + 5000d * Math.signum(diff), slider.getMinValue(), slider.getMaxValue());
+                    long seek = (long) MathUtils.clamp(slider.getValue() + 10000d * Math.signum(diff), slider.getMinValue(), slider.getMaxValue());
                     final VrVideoPlayer player = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();
                     if (player.isPrepared()) {
                         player.seekTo(seek);
                         updateSeek(player);
                     }
-                    downX = currentX;
+                    isSwiping = false;
                 }
                 break;
             case DaydreamTouchEvent.ACTION_UP:
