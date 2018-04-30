@@ -48,13 +48,6 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
     }
 
     @Override
-    public void recalculateTransform() {
-        if (transformable)
-            setTransformable(false);
-        super.recalculateTransform();
-    }
-
-    @Override
     public void addProcessor(VrInputProcessor processor) {
         super.addProcessor(processor);
         if (processor instanceof WindowVR) {
@@ -84,21 +77,32 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
     public boolean performRayTest(Ray ray) {
         if (isDragging && focusedWindow != null) {
             if (!visible) return false;
-            if (!Intersector.intersectRayPlane(ray, focusedWindow.getPlane(), hitPoint3D))
+            if (!updated && transformable) recalculateTransform();
+            if (transformable)
+                transformedRay.set(ray).mul(invTransform);
+            else
+                transformedRay.set(ray);
+            if (!Intersector.intersectRayPlane(transformedRay, focusedWindow.getPlane(), hitPoint3D))
                 return false;
 
             final Vector3 tmp = Pools.obtain(Vector3.class);
             final CylindricalCoordinate cylCoord = Pools.obtain(CylindricalCoordinate.class);
 
             cylCoord.setFromCartesian(hitPoint3D);
+//            Logger.d("hitPoint3D pre-transform = " + hitPoint3D);
+            if (transformable)
+                hitPoint3D.mul(transform);
+//            Logger.d("hitPoint3D post-transform = " + hitPoint3D);
+            
             cylCoord.theta += offsetCoord.theta;
             cylCoord.vertical += offsetCoord.vertical;
             cylCoord.radius = radius;
 
             cylCoord.vertical = Math.max(-height / 2f, Math.min(height / 2f, cylCoord.vertical));
             focusedWindow.setPosition(cylCoord.toCartesian(tmp));
-//            focusedWindow.lookAt(tmp.set(0, 0, 0), Vector3.Y);
             focusedWindow.lookAt(tmp.set(0, focusedWindow.getPosition().y, 0), Vector3.Y);
+//            Logger.d("cylCoord = " + cylCoord);
+//            Logger.d("focusedWindow.position = " + focusedWindow.position);
 
             Pools.free(cylCoord);
             Pools.free(tmp);
@@ -157,7 +161,12 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
         final CylindricalCoordinate cylCoord = Pools.obtain(CylindricalCoordinate.class);
         final CylindricalCoordinate hitCoord = Pools.obtain(CylindricalCoordinate.class);
         cylCoord.setFromCartesian(windowVR.getPosition());
-        hitCoord.setFromCartesian(hitPoint3D);
+        if (transformable) {
+            final Vector3 tmp = Pools.obtain(Vector3.class);
+            hitCoord.setFromCartesian(tmp.set(hitPoint3D).mul(invTransform));
+            Pools.free(tmp);
+        } else
+            hitCoord.setFromCartesian(hitPoint3D);
         offsetCoord.radius = radius;
         offsetCoord.theta = cylCoord.theta - hitCoord.theta;
         offsetCoord.vertical = cylCoord.vertical - hitCoord.vertical;

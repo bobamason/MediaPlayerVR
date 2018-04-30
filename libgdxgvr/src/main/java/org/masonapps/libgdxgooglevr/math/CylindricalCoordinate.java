@@ -29,11 +29,20 @@ public class CylindricalCoordinate implements Pool.Poolable {
         this.angleMode = angleMode;
     }
 
+    public CylindricalCoordinate(AngleMode angleMode) {
+        setAngleMode(angleMode);
+    }
+
     @Override
     public void reset() {
         radius = 0f;
         theta = 0f;
         vertical = 0f;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + radius + "," + theta + "," + vertical + ")";
     }
 
     public Vector3 toCartesian() {

@@ -87,7 +87,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         new Thread() {
             @Override
             public void run() {
-                final ModelData modelData = ((G3dModelLoader) MediaSelectionScreen.this.game.getAssets().getLoader(Model.class, ENVIRONMENT_FILENAME)).loadModelData(GdxVr.files.internal(ENVIRONMENT_FILENAME));
+                final ModelData modelData = ((G3dModelLoader) MediaSelectionScreen.this.game.getAssetManager().getLoader(Model.class, ENVIRONMENT_FILENAME)).loadModelData(GdxVr.files.internal(ENVIRONMENT_FILENAME));
                 GdxVr.app.postRunnable(() -> {
                     final Entity room = getWorld().add(new Entity(new ModelInstance(new Model(modelData)), new BoundingBox().set(new Vector3(-100, -100, -100), new Vector3(100, 100, 100))));
                     room.setScale(0.01f);

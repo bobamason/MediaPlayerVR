@@ -38,7 +38,7 @@ import org.masonapps.libgdxgooglevr.vr.VrApplicationAdapter;
 
 public class VrGame extends VrApplicationAdapter {
     public static final String CONTROLLER_FILENAME = "ddcontroller.g3db";
-    private final Vector3 controllerScale = new Vector3(10f, 10f, 10f);
+    private final Vector3 controllerScale = new Vector3(12f, 12f, 12f);
     private final Vector3 tmp = new Vector3();
     protected VrScreen screen;
     protected Ray ray = new Ray();
@@ -50,7 +50,7 @@ public class VrGame extends VrApplicationAdapter {
     @Nullable
     private ModelInstance controllerModelInstance = null;
     private ModelBatch modelBatch;
-    private AssetManager assets;
+    private AssetManager assetManager;
     private boolean isControllerVisible = true;
     private boolean loadingAssets = false;
 
@@ -61,7 +61,7 @@ public class VrGame extends VrApplicationAdapter {
     @Override
     public void create() {
         super.create();
-        assets = new AssetManager();
+        assetManager = new AssetManager();
         modelBatch = createModelBatch();
         cursor = new VrCursor();
         cursor.setDeactivatedDiameter(0.02f);
@@ -95,8 +95,8 @@ public class VrGame extends VrApplicationAdapter {
     @CallSuper
     public void update() {
         if (loadingAssets) {
-            if (assets.update()) {
-                doneLoading(assets);
+            if (assetManager.update()) {
+                doneLoading(assetManager);
                 loadingAssets = false;
             }
         }
@@ -104,20 +104,18 @@ public class VrGame extends VrApplicationAdapter {
         if (shouldShowCursor(vrInputProcessor)) {
             cursor.position.set(vrInputProcessor.getHitPoint3D());
             cursor.lookAtTarget(ray.origin, Vector3.Y);
-            cursor.setVisible(true);
         } else {
             cursor.position.set(ray.origin.x + ray.direction.x * 2.5f, ray.origin.y + ray.direction.y * 2.5f, ray.origin.z + ray.direction.z * 2.5f);
             cursor.lookAtTarget(ray.origin, Vector3.Y);
 //            cursor.setVisible(!GdxVr.input.isControllerConnected());
-            cursor.setVisible(true);
         }
         if (screen != null) screen.update();
     }
 
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
-        if (screen != null) screen.onDrawFrame(headTransform, leftEye, rightEye);
         super.onDrawFrame(headTransform, leftEye, rightEye);
+        if (screen != null) screen.onDrawFrame(headTransform, leftEye, rightEye);
     }
 
     @Override
@@ -144,7 +142,7 @@ public class VrGame extends VrApplicationAdapter {
         return controllerModelInstance != null && GdxVr.input.isControllerConnected() && isControllerVisible;
     }
 
-    protected void renderCursor(Camera camera) {
+    public void renderCursor(Camera camera) {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         if (GdxVr.input.isControllerConnected()) {
@@ -210,18 +208,22 @@ public class VrGame extends VrApplicationAdapter {
     }
 
     public void loadAsset(String fileName, Class type) {
-        assets.load(fileName, type);
+        assetManager.load(fileName, type);
         loadingAssets = true;
     }
 
     public void loadAsset(String fileName, Class type, AssetLoaderParameters params) {
-        assets.load(fileName, type, params);
+        assetManager.load(fileName, type, params);
         loadingAssets = true;
     }
 
     public void loadAsset(AssetDescriptor desc) {
-        assets.load(desc);
+        assetManager.load(desc);
         loadingAssets = true;
+    }
+
+    public AssetManager getAssetManager() {
+        return assetManager;
     }
 
     @Nullable
@@ -275,10 +277,6 @@ public class VrGame extends VrApplicationAdapter {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public AssetManager getAssets() {
-        return assets;
     }
 
     public Ray getControllerRay() {

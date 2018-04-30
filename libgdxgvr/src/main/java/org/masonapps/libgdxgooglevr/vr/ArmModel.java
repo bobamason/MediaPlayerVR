@@ -73,8 +73,8 @@ public class ArmModel {
         updateHandedness();
         updateTorsoDirection();
         applyArmModel(controller);
-//        UpdateTransparency();
-        updatePointer();
+
+        applyPointerTransform();
 
         firstUpdate = false;
         if (listener != null) {
@@ -171,10 +171,16 @@ public class ArmModel {
         Pools.free(lerpRotation);
     }
 
-    private void updatePointer() {
-        // Determine the direction of the ray.
+    private void applyPointerTransform() {
+        final Quaternion tmpQ = Pools.obtain(Quaternion.class);
+
+        final Vector3 pos = GdxVr.app.getVrApplicationAdapter().getVrCamera().position;
+        GdxVr.app.getVrApplicationAdapter().getVrCamera().getQuaternion(tmpQ);
         pointerPosition.set(POINTER_OFFSET).mul(wristRotation).add(wristPosition);
+        wristRotation.mulLeft(tmpQ);
+        pointerPosition.set(POINTER_OFFSET).mul(wristRotation).add(wristPosition).add(pos);
         pointerRotation.set(wristRotation).mul(pointerTilt);
+        Pools.free(tmpQ);
     }
 
     /// Represents when gaze-following behavior should occur.

@@ -2,8 +2,10 @@ package org.masonapps.libgdxgooglevr.vr;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.utils.Pools;
 import com.google.vr.sdk.base.Eye;
 
 /**
@@ -59,5 +61,19 @@ public class VrCamera extends Camera {
             Matrix4.inv(invProjectionView.val);
             frustum.update(invProjectionView);
         }
+    }
+
+    public Quaternion getQuaternion(Quaternion out) {
+        final Matrix4 tmp = Pools.obtain(Matrix4.class);
+
+        direction.nor();
+//        tmp.set(up).crs(direction).nor();
+//        up.set(direction).crs(tmp).nor();
+        tmp.setToLookAt(direction, up).inv().tra();
+        tmp.getRotation(out);
+//        out.setFromAxes(false, tmp.x, up.x, direction.x, tmp.y, up.y, direction.y, tmp.z, up.z, direction.z);
+//        out.setFromAxes(false, tmp.x, tmp.y, tmp.z, up.x, up.y, up.z, direction.x, direction.y, direction.z).conjugate();
+        Pools.free(tmp);
+        return out;
     }
 }

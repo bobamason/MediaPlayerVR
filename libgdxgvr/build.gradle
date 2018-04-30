@@ -1,14 +1,17 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+//        jackOptions {
+//            enabled true
+//        }
     }
     buildTypes {
         release {
@@ -21,6 +24,9 @@ android {
         jcenter()
         maven {
             url "http://google.bintray.com/googlevr"
+        }
+        maven {
+            url "https://maven.google.com"
         }
     }
 
@@ -36,13 +42,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.badlogicgames.gdx:gdx:1.9.4'
-    compile 'com.badlogicgames.gdx:gdx-backend-android:1.9.4'
-    compile 'com.badlogicgames.gdx:gdx-bullet:1.9.4'
-    compile 'com.android.support:support-annotations:26.1.0'
-    compile 'com.google.vr:sdk-audio:1.120.0'
-    compile 'com.google.vr:sdk-base:1.120.0'
-    compile 'com.google.vr:sdk-controller:1.120.0'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation 'junit:junit:4.12'
+    api 'com.badlogicgames.gdx:gdx:1.9.4'
+    api 'com.badlogicgames.gdx:gdx-backend-android:1.9.4'
+    api 'com.android.support:support-annotations:27.1.0'
+    api 'com.google.vr:sdk-audio:1.120.0'
+    api 'com.google.vr:sdk-base:1.120.0'
+    api 'com.google.vr:sdk-controller:1.120.0'
 }

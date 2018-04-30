@@ -20,7 +20,6 @@ import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerHandler;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
-import org.masonapps.libgdxgooglevr.utils.ElapsedTimer;
 import org.masonapps.libgdxgooglevr.utils.Logger;
 
 import java.lang.ref.WeakReference;
@@ -580,27 +579,21 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
     }
 
     public void onDaydreamControllerUpdate() {
-        ElapsedTimer.getInstance().start("onDaydreamControllerUpdate");
         if (connectionState == Controller.ConnectionStates.CONNECTED) {
             isControllerConnected = true;
-            ElapsedTimer.getInstance().start("arm model");
             armModel.updateHeadDirection(GdxVr.app.getVrApplicationAdapter().getVrCamera().direction);
             armModel.onControllerUpdate(controller);
-            controllerOrientation.set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
-            controllerPosition.set(armModel.pointerPosition).add(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
-            ElapsedTimer.getInstance().log("arm model");
+            controllerOrientation.set(armModel.wristRotation);
+            controllerPosition.set(armModel.pointerPosition);
         } else {
             isControllerConnected = false;
         }
-        ElapsedTimer.getInstance().start("processEvents");
         processEvents();
-        ElapsedTimer.getInstance().log("processEvents");
         try {
             daydreamControllerHandler.process(controller, connectionState);
         } catch (Exception e) {
             Logger.e("", e);
         }
-        ElapsedTimer.getInstance().log("onDaydreamControllerUpdate");
     }
 
     private void postTouchEvent(int type, int x, int y) {
@@ -620,10 +613,10 @@ public class VrAndroidInput implements Input, View.OnKeyListener {
 
     protected void updateInputRay() {
         if (isControllerConnected && controller != null) {
-            inputRay.origin.set(0, -0.002f, -0.053f).mul(controllerOrientation).add(GdxVr.app.getVrApplicationAdapter().getVrCamera().position).add(armModel.pointerPosition);
+            inputRay.origin.set(0, 0.001f, -0.085f).mul(armModel.pointerRotation).add(armModel.pointerPosition);
             inputRay.direction.set(ArmModel.WORLD_FORWARD).mul(armModel.pointerRotation);
         } else {
-            inputRay.origin.set(GdxVr.app.getVrApplicationAdapter().getVrCamera().position);
+            inputRay.origin.set(0, 0, 0);
             inputRay.direction.set(GdxVr.app.getVrApplicationAdapter().getForwardVector());
         }
     }

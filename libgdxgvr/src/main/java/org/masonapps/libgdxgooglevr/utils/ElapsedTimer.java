@@ -15,7 +15,6 @@ public class ElapsedTimer {
     private final DecimalFormat df;
     private final HashMap<String, Long> startTimes;
     private boolean isReflectionEnabled = true;
-    private boolean isLogEnabled = true;
 
     private ElapsedTimer() {
         df = new DecimalFormat("#,###.##");
@@ -39,8 +38,18 @@ public class ElapsedTimer {
             return System.nanoTime();
     }
 
-    public void log(String tag) {
-        if (!isLogEnabled) return;
+    public void printNanos(String tag) {
+        long start = getStartTime(tag);
+        final long current = System.nanoTime();
+        if (isReflectionEnabled) {
+            final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
+            Log.d(String.format("(%s:%d)", stackTraceElement.getFileName(), stackTraceElement.getLineNumber()), tag + " eT = " + (current - start) + "ns");
+        } else {
+            Log.d(tag, tag + " eT = " + (current - start) + "ns");
+        }
+    }
+
+    public void print(String tag) {
         long start = getStartTime(tag);
         final long current = System.nanoTime();
         double millis = (current - start) / 1000000.;
@@ -52,23 +61,7 @@ public class ElapsedTimer {
         }
     }
 
-    public void logNanos(String tag) {
-        if (!isLogEnabled) return;
-        long start = getStartTime(tag);
-        final long current = System.nanoTime();
-        if (isReflectionEnabled) {
-            final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
-            Log.d(String.format("(%s:%d)", stackTraceElement.getFileName(), stackTraceElement.getLineNumber()), tag + " eT = " + (current - start) + "ns");
-        } else {
-            Log.d(tag, tag + " eT = " + (current - start) + "ns");
-        }
-    }
-
     public void setReflectionEnabled(boolean reflectionEnabled) {
         isReflectionEnabled = reflectionEnabled;
-    }
-
-    public void setLogEnabled(boolean isPrintEnabled) {
-        this.isLogEnabled = isPrintEnabled;
     }
 }

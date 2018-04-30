@@ -19,11 +19,11 @@ import com.badlogic.gdx.utils.Pools;
  * Created by Bob on 8/10/2015.
  */
 public class Entity extends Transformable implements Disposable {
-    private final Vector3 dimensions = new Vector3();
-    private final Vector3 center = new Vector3();
-    private final float radius;
+    protected final Vector3 dimensions = new Vector3();
+    protected final Vector3 center = new Vector3();
     @Nullable
     public ModelInstance modelInstance;
+    protected float radius;
     @Nullable
     protected BaseShader shader = null;
     private BoundingBox bounds = new BoundingBox();
@@ -36,12 +36,10 @@ public class Entity extends Transformable implements Disposable {
             setTransform(modelInstance.transform);
             bounds.inf();
             for (Node node : modelInstance.nodes) {
-                node.extendBoundingBox(bounds, false);
+                node.extendBoundingBox(bounds);
             }
         }
-        bounds.getDimensions(dimensions);
-        bounds.getCenter(center);
-        radius = dimensions.len() / 2f;
+        updateDimensions();
     }
 
     public Entity(@Nullable ModelInstance modelInstance, BoundingBox bounds) {
@@ -49,8 +47,12 @@ public class Entity extends Transformable implements Disposable {
         if (modelInstance != null)
             setTransform(modelInstance.transform);
         this.bounds.set(bounds);
-        this.bounds.getDimensions(dimensions);
-        this.bounds.getCenter(center);
+        updateDimensions();
+    }
+
+    public void updateDimensions() {
+        bounds.getDimensions(dimensions);
+        bounds.getCenter(center);
         radius = dimensions.len() / 2f;
     }
 
@@ -154,16 +156,13 @@ public class Entity extends Transformable implements Disposable {
     }
 
     public boolean intersectsRaySphere(Ray ray, @Nullable Vector3 hitPoint) {
-        if (!updated) recalculateTransform();
-        final Ray tmpRay = Pools.obtain(Ray.class).set(ray);
-        final Vector3 tmp = Pools.obtain(Vector3.class);
+        validate();
+        final Ray tmpRay = Pools.obtain(Ray.class).set(ray).mul(inverseTransform);
         tmpRay.direction.nor();
-        tmp.set(position);
-        final boolean intersectRaySphere = Intersector.intersectRaySphere(tmpRay, tmp, radius * Math.min(scale.x, Math.min(scale.y, scale.z)), hitPoint);
-//        if (intersectRaySphere && hitPoint != null) hitPoint.mul(modelInstance.transform);
+        final boolean intersectRaySphere = Intersector.intersectRaySphere(tmpRay, center, radius, hitPoint);
+        if (intersectRaySphere && hitPoint != null) hitPoint.mul(transform);
 
         Pools.free(tmpRay);
-        Pools.free(tmp);
         return intersectRaySphere;
     }
 

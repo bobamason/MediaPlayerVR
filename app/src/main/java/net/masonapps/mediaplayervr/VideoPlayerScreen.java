@@ -48,7 +48,6 @@ import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
 import org.masonapps.libgdxgooglevr.ui.VrUiContainer;
-import org.masonapps.libgdxgooglevr.utils.ElapsedTimer;
 import org.masonapps.libgdxgooglevr.vr.VrCamera;
 
 import java.nio.IntBuffer;
@@ -213,8 +212,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     @SuppressLint("MissingSuperCall")
     @Override
     public void onDrawFrame(HeadTransform headTransform, Eye leftEye, Eye rightEye) {
-        final ElapsedTimer timer = ElapsedTimer.getInstance();
-        timer.start("draw video frame");
+//        final ElapsedTimer timer = ElapsedTimer.getInstance();
+//        timer.start("draw video frame");
+
         leftCamera.viewportWidth = leftEye.getViewport().width;
         leftCamera.viewportHeight = leftEye.getViewport().height;
         rightCamera.viewportWidth = rightEye.getViewport().width;
@@ -238,7 +238,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //            rectPosition.set((right + left) / 2f, (top + bottom) / 2f, -planeZ);
 //            perspectiveFOV = t + b;
 
-            timer.start("update projection");
             if (videoPlayer.useFlatRectangle()) {
                 leftCamera.projection.set(leftEye.getPerspective(leftCamera.near, leftCamera.far));
                 rightCamera.projection.set(rightEye.getPerspective(rightCamera.near, rightCamera.far));
@@ -251,7 +250,6 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //                createVisualization();
             }
             projectionChanged = false;
-            timer.log("update projection");
         }
 //        GLES20.glGetIntegerv(GLES20.GL_FRAMEBUFFER_BINDING, intBuffer);
 //        final int defaultBufferAddress = intBuffer.get(0);
@@ -277,13 +275,12 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //        GdxVr.gl.glBindFramebuffer(GL20.GL_FRAMEBUFFER, defaultBufferAddress);
 
 //        if (videoPlayer.useFlatRectangle() || shouldRenderMono()) {
-        timer.start("set cameras");
+
         setCameraViewFromEye(leftEye, leftCamera);
         updateCamera(leftCamera);
 
         setCameraViewFromEye(rightEye, rightCamera);
         updateCamera(rightCamera);
-        timer.log("set cameras");
 
 //        if (videoPlayer instanceof VrVideoPlayerExo) {
 //            final GvrAudioProcessor gvrAudioProcessor = ((VrVideoPlayerExo) videoPlayer).getGvrAudioProcessor();
@@ -291,39 +288,22 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //                gvrAudioProcessor.updateOrientation(headQuaternion.w, headQuaternion.x, headQuaternion.y, headQuaternion.z);
 //            }
 //        }
-        timer.start("clear buffer");
         clearColorAndDepthBuffers();
-        timer.log("clear buffer");
 
-        timer.start("update frame");
         videoPlayer.update();
-        timer.log("update frame");
-
-        timer.start("bind texture");
         videoPlayer.bindTexture();
-        timer.log("bind texture");
 
-        timer.start("draw eyes");
         Viewport viewport = leftEye.getViewport();
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        timer.start("draw video left");
         renderLeftVideo();
-        timer.log("draw video left");
-        timer.start("draw ui left");
         getVrCamera().onDrawEye(leftEye);
         renderUI(getVrCamera(), leftEye.getType());
-        timer.log("draw ui left");
 
         viewport = rightEye.getViewport();
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        timer.start("draw video right");
         renderRightVideo();
-        timer.log("draw video right");
-        timer.start("draw ui right");
         getVrCamera().onDrawEye(rightEye);
         renderUI(getVrCamera(), rightEye.getType());
-        timer.log("draw ui right");
-        timer.log("draw eyes");
 
 //        if (ui.isVisible()) {
 //            viewport = leftEye.getViewport();
@@ -332,7 +312,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //            viewport = rightEye.getViewport();
 //            GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
 //        }
-        timer.log("draw video frame");
+
+//        timer.print("draw video frame");
     }
 
     private void clearColorAndDepthBuffers() {
@@ -362,7 +343,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 
 //        final float a = Math.toRadians(eyeAngle / 2f * (eye.getType() == Eye.Type.LEFT ? 1f : -1f));
 //        dir.set(0, 0, -1f).rotate(Vector3.Y, a);
-        
+
         camera.view.setToLookAt(pos, dir.add(pos), Vector3.Y);
         camera.position.set(pos);
         Pools.free(pos);
@@ -430,6 +411,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     private void renderUI(Camera camera, int whichEye) {
         super.render(camera, whichEye);
         container.draw(camera);
+        if (isUiVisible)
+            game.renderCursor(camera);
     }
 
     private void renderRightVideo() {

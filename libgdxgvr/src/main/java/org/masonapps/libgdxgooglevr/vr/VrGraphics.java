@@ -122,7 +122,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     @Nullable
     private ShaderProgram postProcessingShader = null;
     private SpriteBatch spriteBatch;
-    //    private FrameBuffer fbo;
+    //        private FrameBuffer fbo;
     private Matrix4 postProjection = new Matrix4();
 
     public VrGraphics(VrActivity.VrApplication application, WeakReference<GLSurfaceView> surfaceViewRef, GvrApi api, GvrAudioEngine gvrAudioEngine) {
@@ -150,8 +150,8 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     public static void checkGlError(String tag, String op) {
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[4];
-            Log.e(String.format("(%s:%d)", stackTraceElement.getFileName(), stackTraceElement.getLineNumber()), tag + " : " + op);
+            final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
+            Log.e(String.format("(%s:%d)", stackTraceElement.getFileName(), stackTraceElement.getLineNumber()), tag + " : " + op + ": glError " + error);
 //            throw new RuntimeException(op + ": glError " + error);
         }
     }
@@ -159,8 +159,8 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     public static void checkGlError(String op) {
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[4];
-            Log.e(String.format("(%s:%d)", stackTraceElement.getFileName(), stackTraceElement.getLineNumber()), op);
+            final StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
+            Log.e(String.format("(%s:%d)", stackTraceElement.getFileName(), stackTraceElement.getLineNumber()), op + ": glError " + error);
 //            throw new RuntimeException(op + ": glError " + error);
         }
     }
@@ -685,17 +685,9 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
 
         spriteBatch = new SpriteBatch(1);
 
-//        final String vertexShader = Gdx.files.internal("fxaa.vertex.glsl").readString();
-//        final String fragmentShader = Gdx.files.internal("fxaa.fragment.glsl").readString();
-//        Logger.d("post processing vertex shader:\n" + vertexShader);
-//        Logger.d("post processing fragment shader:\n" + fragmentShader);
-//        final ShaderProgram postProcessingShader = new ShaderProgram(vertexShader, fragmentShader);
-//         GdxVr.graphics.setPostProcessingShader(postProcessingShader);
-//        api.getMaximumEffectiveRenderTargetSize(targetSize);
-//        fbo = new FrameBuffer(Pixmap.Format.RGB565, targetSize.x, targetSize.y, true);
         api.getScreenTargetSize(targetSize);
 //        Log.d(TAG, "getScreenTargetSize -> " + targetSize.toString());
-
+//        api.getMaximumEffectiveRenderTargetSize(targetSize);
 //        targetSize.x = (7 * targetSize.x) / 10;
 //        targetSize.y = (7 * targetSize.y) / 10;
 //        Log.d(TAG, "getMaximumEffectiveRenderTargetSize -> " + targetSize.toString());
@@ -706,6 +698,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         bufferSpec.setDepthStencilFormat(BufferSpec.DepthStencilFormat.DEPTH_16);
         bufferSpec.setSize(targetSize);
         bufferSpec.setSamples(4);
+//        fbo = new FrameBuffer(Pixmap.Format.RGB565, targetSize.x, targetSize.y, true);
         specList[INDEX_SCENE_BUFFER] = bufferSpec;
 
         swapChain = api.createSwapChain(specList);
@@ -742,7 +735,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         Frame frame = swapChain.acquireFrame();
-        api.getHeadSpaceFromStartSpaceRotation(headTransform.getHeadView(), System.nanoTime() + predictionOffsetNanos);
+        api.getHeadSpaceFromStartSpaceTransform(headTransform.getHeadView(), System.nanoTime() + predictionOffsetNanos);
         api.getEyeFromHeadMatrix(0, tempMatrix);
         Matrix.multiplyMM(leftEye.getEyeView(), 0, tempMatrix, 0, headTransform.getHeadView(), 0);
         api.getEyeFromHeadMatrix(1, tempMatrix);
@@ -753,19 +746,22 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
 //        final Texture colorBufferTexture = fbo.getColorBufferTexture();
 //        final int textureWidth = colorBufferTexture.getWidth();
 //        final int textureHeight = colorBufferTexture.getHeight();
+//        setEye(0, leftEye, textureWidth, textureHeight);
+//        setEye(1, rightEye, textureWidth, textureHeight);
+
         setEye(0, leftEye, targetSize.x, targetSize.y);
         setEye(1, rightEye, targetSize.x, targetSize.y);
 
 //        fbo.begin();
-
+//
 //        onDrawFrame();
 //        checkGlError(TAG, "new frame");
-
+//
 //        fbo.end(0, 0, targetSize.x, targetSize.y);
 
         frame.bindBuffer(INDEX_SCENE_BUFFER);
-//        Gdx.gl.glClearColor(0f, 0.1f, 0.2f, 1f);
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glClearColor(0f, 0.1f, 0.2f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 //        spriteBatch.begin();
 //        final int w = targetSize.x;
@@ -773,7 +769,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
 //        postProjection.setToOrtho2D(0, 0, w, h);
 //        spriteBatch.setProjectionMatrix(postProjection);
 //        try {
-//            if (postProcessingShader != null) {
+//            if (postProcessingShader != null && postProcessingShader.hasUniform("resolution")) {
 //                postProcessingShader.setUniformf("resolution", textureWidth, textureHeight);
 //            }
 //        } catch (Exception e) {
@@ -781,7 +777,6 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
 //        }
 //        spriteBatch.draw(colorBufferTexture, 0, 0, w, h, 0, 0, textureWidth, textureHeight, false, true);
 //        spriteBatch.end();
-
 
         onDrawFrame();
         checkGlError(TAG, "new frame");
@@ -814,6 +809,8 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
             this.postProcessingShader = postProcessingShader;
             spriteBatch.setShader(postProcessingShader);
         } else {
+            Logger.d("post processing vertex shader:\n" + postProcessingShader.getVertexShaderSource());
+            Logger.d("post processing fragment shader:\n" + postProcessingShader.getFragmentShaderSource());
             Logger.e("post processing shader program failed to compile:\n" + postProcessingShader.getLog());
         }
     }

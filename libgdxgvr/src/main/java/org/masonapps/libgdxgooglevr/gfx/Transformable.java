@@ -170,7 +170,7 @@ public class Transformable {
         final Vector3 tmp2 = Pools.obtain(Vector3.class);
         tmp.set(up).crs(dir).nor();
         tmp2.set(dir).crs(tmp).nor();
-        rotation.setFromAxes(tmp.x, tmp2.x, dir.x, tmp.y, tmp2.y, dir.y, tmp.z, tmp2.z, dir.z);
+        rotation.setFromAxes(false, tmp.x, tmp2.x, dir.x, tmp.y, tmp2.y, dir.y, tmp.z, tmp2.z, dir.z);
         invalidate();
         Pools.free(tmp);
         Pools.free(tmp2);
@@ -280,6 +280,7 @@ public class Transformable {
     public void recalculateTransform() {
         transform.set(position, rotation, scale);
         try {
+//            inverseTransform.set(-position.x, -position.y, -position.z, -rotation.x, -rotation.y, -rotation.z, rotation.w, 1f / scale.x, 1f / scale.y, 1f / scale.z);
             inverseTransform.set(transform).inv();
         } catch (Exception e) {
             inverseTransform.idt();
