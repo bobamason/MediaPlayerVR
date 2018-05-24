@@ -386,7 +386,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
             left = l - shift;
             right = r - shift;
         }
-        camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, camera.near, camera.far);
+//        camera.projection.setToProjection(left / zoom, right / zoom, bottom / zoom, top / zoom, camera.near, camera.far);
+        camera.projection.setToOrtho(left / zoom, right / zoom, bottom / zoom, top / zoom, camera.near, camera.far);
     }
 
     private void updateCamera(VrCamera camera) {
