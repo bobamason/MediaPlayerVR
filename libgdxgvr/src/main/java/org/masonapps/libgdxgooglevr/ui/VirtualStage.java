@@ -56,7 +56,7 @@ public class VirtualStage extends Stage implements VrInputProcessor {
     private Vector2 hitPoint2DPixels = new Vector2();
     private Vector3 hitPoint3D = new Vector3();
     private boolean touchable = true;
-    private float radius;
+    protected float radius;
     private Matrix4 batchTransform = new Matrix4();
     private float activationMovement = 0.025f;
     private float activation = 0f;

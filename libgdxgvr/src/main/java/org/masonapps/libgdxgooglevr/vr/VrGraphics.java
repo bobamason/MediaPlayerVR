@@ -122,7 +122,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     @Nullable
     private ShaderProgram postProcessingShader = null;
     private SpriteBatch spriteBatch;
-    //        private FrameBuffer fbo;
+    //    private FrameBuffer fbo;
     private Matrix4 postProjection = new Matrix4();
 
     public VrGraphics(VrActivity.VrApplication application, WeakReference<GLSurfaceView> surfaceViewRef, GvrApi api, GvrAudioEngine gvrAudioEngine) {
@@ -753,23 +753,23 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
         setEye(1, rightEye, targetSize.x, targetSize.y);
 
 //        fbo.begin();
-//
+
 //        onDrawFrame();
 //        checkGlError(TAG, "new frame");
-//
+
 //        fbo.end(0, 0, targetSize.x, targetSize.y);
 
         frame.bindBuffer(INDEX_SCENE_BUFFER);
-        Gdx.gl.glClearColor(0f, 0.1f, 0.2f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-
+//        Gdx.gl.glClearColor(0f, 0.1f, 0.2f, 1f);
+//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+//
 //        spriteBatch.begin();
 //        final int w = targetSize.x;
 //        final int h = targetSize.y;
 //        postProjection.setToOrtho2D(0, 0, w, h);
 //        spriteBatch.setProjectionMatrix(postProjection);
 //        try {
-//            if (postProcessingShader != null && postProcessingShader.hasUniform("resolution")) {
+//            if (postProcessingShader != null) {
 //                postProcessingShader.setUniformf("resolution", textureWidth, textureHeight);
 //            }
 //        } catch (Exception e) {
@@ -809,8 +809,6 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
             this.postProcessingShader = postProcessingShader;
             spriteBatch.setShader(postProcessingShader);
         } else {
-            Logger.d("post processing vertex shader:\n" + postProcessingShader.getVertexShaderSource());
-            Logger.d("post processing fragment shader:\n" + postProcessingShader.getFragmentShaderSource());
             Logger.e("post processing shader program failed to compile:\n" + postProcessingShader.getLog());
         }
     }

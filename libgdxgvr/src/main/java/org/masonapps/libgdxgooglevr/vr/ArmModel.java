@@ -9,6 +9,7 @@ import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.proto.nano.Preferences;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
+import org.masonapps.libgdxgooglevr.utils.Logger;
 
 /**
  * Created by Bob on 6/8/2017.
@@ -36,7 +37,7 @@ public class ArmModel {
     public float fadeDistanceFromFace = 0.32f;
     public float tooltipMinDistanceFromFace = 0.45f;
     public int tooltipMaxAngleFromCamera = 80;
-    public GazeBehavior followGaze = GazeBehavior.Always;
+    public GazeBehavior followGaze = GazeBehavior.Never;
     public Vector3 pointerPosition = new Vector3();
     public Quaternion pointerRotation = new Quaternion();
     public Vector3 wristPosition = new Vector3();
@@ -52,6 +53,8 @@ public class ArmModel {
     private boolean firstUpdate;
     private Vector3 handedMultiplier = new Vector3();
     private Vector3 cameraForward = new Vector3();
+    private Quaternion lastOrientation = new Quaternion();
+    private long lastTimeStamp = 0L;
 
     private ArmModel() {
         updateHandedness();
@@ -71,7 +74,7 @@ public class ArmModel {
 
     public void onControllerUpdate(Controller controller) {
         updateHandedness();
-        updateTorsoDirection();
+        updateTorsoDirection(controller);
         applyArmModel(controller);
 
         applyPointerTransform();
@@ -101,7 +104,7 @@ public class ArmModel {
         shoulderPosition.set(DEFAULT_SHOULDER_RIGHT).scl(handedMultiplier);
     }
 
-    private void updateTorsoDirection() {
+    private void updateTorsoDirection(Controller controller) {
         // Ignore updates here if requested.
         if (followGaze == GazeBehavior.Never) {
             return;
@@ -114,9 +117,20 @@ public class ArmModel {
         if (followGaze == GazeBehavior.Always || firstUpdate) {
             torsoDirection = gazeDirection;
         } else if (followGaze == GazeBehavior.DuringMotion) {
-//            float angularVelocity = controller..magnitude;
-//            float gazeFilterStrength = MathUtils.clamp((angularVelocity - 0.2f) / 45.0f, 0.0f, 0.1f);
-//            torsoDirection.slerp(gazeDirection, gazeFilterStrength);
+            Quaternion controllerOrientation = Pools.obtain(Quaternion.class).set(controller.orientation.x, controller.orientation.y, controller.orientation.z, controller.orientation.w);
+            final Quaternion rotDiff = Pools.obtain(Quaternion.class);
+
+            rotDiff.set(controllerOrientation).conjugate().mulLeft(lastOrientation);
+            final float angleRad = rotDiff.getAngleRad();
+            final float eT = (float) ((controller.timestamp - lastTimeStamp) * 1e-9);
+            Logger.d("contoller eT = " + eT + "s");
+            float angularVelocity = angleRad * eT;
+            float gazeFilterStrength = MathUtils.clamp((angularVelocity - 0.2f) / 45.0f, 0.0f, 0.1f);
+            torsoDirection.slerp(gazeDirection, gazeFilterStrength);
+
+            lastOrientation.set(controllerOrientation);
+            Pools.free(rotDiff);
+            Pools.free(controllerOrientation);
         }
 
         shoulderRotation.setFromCross(WORLD_FORWARD, torsoDirection);

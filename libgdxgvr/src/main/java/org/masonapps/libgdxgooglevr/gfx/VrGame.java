@@ -50,7 +50,7 @@ public class VrGame extends VrApplicationAdapter {
     @Nullable
     private ModelInstance controllerModelInstance = null;
     private ModelBatch modelBatch;
-    private AssetManager assetManager;
+    private AssetManager assets;
     private boolean isControllerVisible = true;
     private boolean loadingAssets = false;
 
@@ -61,7 +61,7 @@ public class VrGame extends VrApplicationAdapter {
     @Override
     public void create() {
         super.create();
-        assetManager = new AssetManager();
+        assets = new AssetManager();
         modelBatch = createModelBatch();
         cursor = new VrCursor();
         cursor.setDeactivatedDiameter(0.02f);
@@ -95,8 +95,8 @@ public class VrGame extends VrApplicationAdapter {
     @CallSuper
     public void update() {
         if (loadingAssets) {
-            if (assetManager.update()) {
-                doneLoading(assetManager);
+            if (assets.update()) {
+                doneLoading(assets);
                 loadingAssets = false;
             }
         }
@@ -208,22 +208,18 @@ public class VrGame extends VrApplicationAdapter {
     }
 
     public void loadAsset(String fileName, Class type) {
-        assetManager.load(fileName, type);
+        assets.load(fileName, type);
         loadingAssets = true;
     }
 
     public void loadAsset(String fileName, Class type, AssetLoaderParameters params) {
-        assetManager.load(fileName, type, params);
+        assets.load(fileName, type, params);
         loadingAssets = true;
     }
 
     public void loadAsset(AssetDescriptor desc) {
-        assetManager.load(desc);
+        assets.load(desc);
         loadingAssets = true;
-    }
-
-    public AssetManager getAssetManager() {
-        return assetManager;
     }
 
     @Nullable
@@ -297,5 +293,9 @@ public class VrGame extends VrApplicationAdapter {
 
     public VrCursor getCursor() {
         return cursor;
+    }
+
+    public ShapeRenderer getShapeRenderer() {
+        return shapeRenderer;
     }
 }

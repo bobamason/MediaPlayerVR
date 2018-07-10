@@ -3,7 +3,11 @@ package org.masonapps.libgdxgooglevr.input;
 import com.badlogic.gdx.utils.Pools;
 import com.google.vr.sdk.controller.Controller;
 
-import java.util.ArrayList;
+import org.masonapps.libgdxgooglevr.GdxVr;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by Bob on 1/9/2017.
@@ -11,7 +15,7 @@ import java.util.ArrayList;
 
 public class DaydreamControllerHandler {
 
-    private ArrayList<DaydreamControllerInputListener> listeners;
+    private final List<DaydreamControllerInputListener> listeners;
     private int currentConnectionState = Controller.ConnectionStates.CONNECTED;
     private boolean clickButtonState = false;
     private boolean appButtonState = false;
@@ -20,14 +24,14 @@ public class DaydreamControllerHandler {
     private boolean isTouching = false;
 
     public DaydreamControllerHandler() {
-        listeners = new ArrayList<>();
+        listeners = Collections.synchronizedList(new CopyOnWriteArrayList<>());
     }
 
     public void process(Controller controller, int connectionState) {
         for (DaydreamControllerInputListener listener : listeners) {
             listener.onDaydreamControllerUpdate(controller, connectionState);
         }
-        
+
         if (currentConnectionState != connectionState) {
             currentConnectionState = connectionState;
             for (DaydreamControllerInputListener listener : listeners) {
@@ -95,29 +99,30 @@ public class DaydreamControllerHandler {
         }
     }
 
-    private void postButtonEvent(Controller controller, int action, int button) {
-//        Logger.d("postButtonEvent()");
-        DaydreamButtonEvent event = Pools.obtain(DaydreamButtonEvent.class);
-        event.action = action;
-        event.button = button;
+    private void postButtonEvent(final Controller controller, final int action, final int button) {
+        GdxVr.app.postRunnable(() -> {
+            DaydreamButtonEvent event = Pools.obtain(DaydreamButtonEvent.class);
+            event.action = action;
+            event.button = button;
 //        int i = 0;
-        for (DaydreamControllerInputListener listener : listeners) {
-            listener.onControllerButtonEvent(controller, event);
-//            Logger.d("calling ButtonEvent listener " + (i++));
-        }
-        Pools.free(event);
-
+            for (DaydreamControllerInputListener listener : listeners) {
+                listener.onControllerButtonEvent(controller, event);
+            }
+            Pools.free(event);
+        });
     }
 
-    private void postTouchPadEvent(Controller controller, int action, float x, float y) {
-        DaydreamTouchEvent event = Pools.obtain(DaydreamTouchEvent.class);
-        event.action = action;
-        event.x = x;
-        event.y = y;
-        for (DaydreamControllerInputListener listener : listeners) {
-            listener.onControllerTouchPadEvent(controller, event);
-        }
-        Pools.free(event);
+    private void postTouchPadEvent(final Controller controller, final int action, final float x, final float y) {
+        GdxVr.app.postRunnable(() -> {
+            DaydreamTouchEvent event = Pools.obtain(DaydreamTouchEvent.class);
+            event.action = action;
+            event.x = x;
+            event.y = y;
+            for (DaydreamControllerInputListener listener : listeners) {
+                listener.onControllerTouchPadEvent(controller, event);
+            }
+            Pools.free(event);
+        });
     }
 
     public void addListener(DaydreamControllerInputListener listener) {

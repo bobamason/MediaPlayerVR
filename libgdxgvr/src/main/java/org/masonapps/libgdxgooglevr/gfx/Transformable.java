@@ -177,9 +177,9 @@ public class Transformable {
         return this;
     }
 
-    public Transformable lookAt(Vector3 position, Vector3 up) {
+    public Transformable lookAt(Vector3 target, Vector3 up) {
         final Vector3 dir = Pools.obtain(Vector3.class);
-        dir.set(position).sub(this.position).nor();
+        dir.set(target).sub(this.position).nor();
         setRotation(dir, up);
         Pools.free(dir);
         return this;

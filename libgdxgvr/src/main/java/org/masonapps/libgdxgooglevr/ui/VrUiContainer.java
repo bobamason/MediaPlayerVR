@@ -6,23 +6,17 @@ import android.util.Log;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pools;
 
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * Created by Bob on 3/15/2017.
  */
 
-public class VrUiContainer implements VrInputProcessor, Disposable {
-    protected final ArrayList<VrInputProcessor> processors;
+public class VrUiContainer extends VrInputMultiplexer {
     protected final Vector3 position = new Vector3();
     protected final Quaternion rotation = new Quaternion();
     protected final Quaternion rotator = new Quaternion();
@@ -30,22 +24,59 @@ public class VrUiContainer implements VrInputProcessor, Disposable {
     protected final Matrix4 globalTransform = new Matrix4();
     protected final Matrix4 invTransform = new Matrix4();
     protected final Ray transformedRay = new Ray();
-    protected boolean isCursorOver = false;
-    protected Vector2 hitPoint2DPixels = new Vector2();
-    protected Vector3 hitPoint3D = new Vector3();
     protected boolean updated = false;
     protected boolean transformable = false;
-    @Nullable
-    protected VrInputProcessor focusedProcessor;
     protected boolean visible = true;
 
     public VrUiContainer() {
-        processors = new ArrayList<>();
+        super();
     }
 
     public VrUiContainer(VrInputProcessor... processors) {
-        this();
-        Collections.addAll(this.processors, processors);
+        super(processors);
+    }
+
+    @Override
+    public boolean performRayTest(Ray ray) {
+        if (!visible) return false;
+        if (!updated && transformable) recalculateTransform();
+        if (transformable)
+            transformedRay.set(ray).mul(invTransform);
+        else
+            transformedRay.set(ray);
+        final boolean rayTest = super.performRayTest(transformedRay);
+        if (rayTest && transformable)
+            hitPoint3D.mul(transform);
+        return rayTest;
+    }
+
+    public void act() {
+        if (!visible) return;
+        if (!updated) recalculateTransform();
+        for (VrInputProcessor processor : processors) {
+            if (processor instanceof VirtualStage)
+                ((VirtualStage) processor).act();
+            if (processor instanceof VrUiContainer)
+                ((VrUiContainer) processor).act();
+        }
+    }
+
+    public void draw(Camera camera) {
+        draw(camera, null);
+    }
+
+    public void draw(Camera camera, @Nullable Matrix4 parentTransform) {
+        if (!visible) return;
+        if (!updated) recalculateTransform();
+        globalTransform.set(transform);
+        if (parentTransform != null)
+            globalTransform.mulLeft(parentTransform);
+        for (VrInputProcessor processor : processors) {
+            if (processor instanceof VirtualStage)
+                ((VirtualStage) processor).draw(camera, globalTransform);
+            if (processor instanceof VrUiContainer)
+                ((VrUiContainer) processor).draw(camera, globalTransform);
+        }
     }
 
     public void setRotationX(float angle) {
@@ -196,147 +227,6 @@ public class VrUiContainer implements VrInputProcessor, Disposable {
         updated = true;
     }
 
-    @Override
-    public boolean performRayTest(Ray ray) {
-        if (!visible) return false;
-        if (!updated && transformable) recalculateTransform();
-        VrInputProcessor newFocusedProcessor = null;
-        isCursorOver = false;
-        if (transformable)
-            transformedRay.set(ray).mul(invTransform);
-        else
-            transformedRay.set(ray);
-        for (int i = processors.size() - 1; i >= 0; i--) {
-            final VrInputProcessor inputProcessor = processors.get(i);
-            if (inputProcessor.performRayTest(transformedRay)) {
-                isCursorOver = true;
-
-                if (inputProcessor.getHitPoint2D() != null)
-                    hitPoint2DPixels.set(inputProcessor.getHitPoint2D());
-
-                if (inputProcessor.getHitPoint3D() != null) {
-                    if (transformable)
-                        hitPoint3D.set(inputProcessor.getHitPoint3D()).mul(transform);
-                    else
-                        hitPoint3D.set(inputProcessor.getHitPoint3D());
-                }
-
-                newFocusedProcessor = inputProcessor;
-                break;
-            }
-        }
-        if (focusedProcessor != null && focusedProcessor != newFocusedProcessor) {
-            if (focusedProcessor.getHitPoint2D() != null)
-                focusedProcessor.touchUp(Math.round(focusedProcessor.getHitPoint2D().x), Math.round(focusedProcessor.getHitPoint2D().y), 0, 0);
-            else
-                focusedProcessor.touchUp(0, 0, 0, 0);
-
-            if (focusedProcessor instanceof VirtualStage)
-                ((VirtualStage) focusedProcessor).isCursorOver = false;
-            else if (focusedProcessor instanceof VrUiContainer)
-                ((VrUiContainer) focusedProcessor).isCursorOver = false;
-        }
-
-        focusedProcessor = newFocusedProcessor;
-        return isCursorOver;
-    }
-
-    public void act() {
-        if (!visible) return;
-        if (!updated) recalculateTransform();
-        for (VrInputProcessor processor : processors) {
-            if (processor instanceof VirtualStage)
-                ((VirtualStage) processor).act();
-            if (processor instanceof VrUiContainer)
-                ((VrUiContainer) processor).act();
-        }
-    }
-
-    public void draw(Camera camera) {
-        draw(camera, null);
-    }
-
-    public void draw(Camera camera, @Nullable Matrix4 parentTransform) {
-        if (!visible) return;
-        if (!updated) recalculateTransform();
-        globalTransform.set(transform);
-        if (parentTransform != null)
-            globalTransform.mulLeft(parentTransform);
-        for (VrInputProcessor processor : processors) {
-            if (processor instanceof VirtualStage)
-                ((VirtualStage) processor).draw(camera, globalTransform);
-            if (processor instanceof VrUiContainer)
-                ((VrUiContainer) processor).draw(camera, globalTransform);
-        }
-    }
-
-    @Override
-    public Vector2 getHitPoint2D() {
-        return hitPoint2DPixels;
-    }
-
-    @Override
-    public Vector3 getHitPoint3D() {
-        return hitPoint3D;
-    }
-
-    @Override
-    public boolean isCursorOver() {
-        return isCursorOver && visible;
-    }
-
-    public void addProcessor(VrInputProcessor processor) {
-        processors.add(processor);
-    }
-
-    public void removeProcessor(VirtualStage stage) {
-        processors.remove(stage);
-    }
-
-    public void clearProcessors() {
-        processors.clear();
-    }
-
-    @Override
-    public boolean keyDown(int keycode) {
-        return focusedProcessor != null && focusedProcessor.keyDown(keycode);
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        return focusedProcessor != null && focusedProcessor.keyUp(keycode);
-    }
-
-    @Override
-    public boolean keyTyped(char character) {
-        return focusedProcessor != null && focusedProcessor.keyTyped(character);
-    }
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        return focusedProcessor != null && focusedProcessor.touchDown(screenX, screenY, pointer, button);
-    }
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return focusedProcessor != null && focusedProcessor.touchUp(screenX, screenY, pointer, button);
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return focusedProcessor != null && focusedProcessor.touchDragged(screenX, screenY, pointer);
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        return focusedProcessor != null && focusedProcessor.mouseMoved(screenX, screenY);
-    }
-
-    @Override
-    public boolean scrolled(int amount) {
-        return focusedProcessor != null && focusedProcessor.scrolled(amount);
-    }
-
     public boolean isVisible() {
         return visible;
     }
@@ -351,15 +241,6 @@ public class VrUiContainer implements VrInputProcessor, Disposable {
 
     public void setTransformable(boolean transformable) {
         this.transformable = transformable;
-    }
-
-    @Override
-    public void dispose() {
-        for (VrInputProcessor processor : processors) {
-            if (processor instanceof Disposable)
-                ((Disposable) processor).dispose();
-        }
-        clearProcessors();
     }
 
     public void setAlpha(float alpha) {

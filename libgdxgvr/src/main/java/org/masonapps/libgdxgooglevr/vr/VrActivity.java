@@ -578,7 +578,7 @@ public class VrActivity extends Activity {
         private String apiStatus;
 
         // The state of a specific Controller connection.        
-        private int connectionState = Controller.ConnectionStates.CONNECTED;
+        private int connectionState = Controller.ConnectionStates.DISCONNECTED;
 
 
         @Override
@@ -602,9 +602,14 @@ public class VrActivity extends Activity {
         @Override
         public void onUpdate() {
 //            app.postRunnable(this);
+
+//            try {
+//                GdxVr.input.getDaydreamControllerHandler().process(controller, connectionState);
+//            } catch (Exception e) {
+//                Logger.e("", e);
+//            }
         }
 
-        // Update the various TextViews in the UI thread.
         @Override
         public void run() {
             controller.update();
