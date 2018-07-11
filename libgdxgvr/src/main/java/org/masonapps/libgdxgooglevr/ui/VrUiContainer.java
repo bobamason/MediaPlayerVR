@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Pools;
 import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
 
 /**
+ * allows all added {@link VrInputProcessor} to be moved together 
  * Created by Bob on 3/15/2017.
  */
 

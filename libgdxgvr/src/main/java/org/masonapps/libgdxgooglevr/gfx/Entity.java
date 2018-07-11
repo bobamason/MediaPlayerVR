@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pools;
 
 /**
+ * 
  * Created by Bob on 8/10/2015.
  */
 public class Entity extends Transformable implements Disposable {

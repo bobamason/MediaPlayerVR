@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 
 /**
+ * a movable window with a drag bar at the top
  * Created by Bob Mason on 10/4/2017.
  */
 

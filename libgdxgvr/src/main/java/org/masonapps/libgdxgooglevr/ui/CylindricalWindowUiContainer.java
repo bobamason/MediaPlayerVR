@@ -16,6 +16,7 @@ import org.masonapps.libgdxgooglevr.input.VrInputProcessor;
 import org.masonapps.libgdxgooglevr.math.CylindricalCoordinate;
 
 /**
+ * VR UI container in which {@link WindowVR} windows can be dragged along the surface of an invisible cylinder
  * Created by Bob Mason on 10/4/2017.
  */
 
@@ -29,11 +30,23 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
     @Nullable
     private WindowVR focusedWindow = null;
 
+    /**
+     * create an empty CylindricalWindowUiContainer
+     *
+     * @param radius the radius of the invisible cylinder to snap windows to
+     * @param height the height of the invisible cylinder, allows windows to be between -height/2 and height/2
+     */
     public CylindricalWindowUiContainer(float radius, float height) {
         this.radius = radius;
         this.height = height;
     }
 
+    /**
+     * create a CylindricalWindowUiContainer with VrInputProcessors added
+     * @param radius the radius of the invisible cylinder to snap windows to
+     * @param height the height of the invisible cylinder, allows windows to be between -height/2 and height/2
+     * @param processors processors to add to container, only {@link WindowVR} will be snapped to the invisible cylinder
+     */
     public CylindricalWindowUiContainer(float radius, float height, VrInputProcessor... processors) {
         super(processors);
         this.radius = radius;
@@ -42,7 +55,7 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
             if (processor instanceof WindowVR) {
                 final WindowVR virtualStage = (WindowVR) processor;
                 virtualStage.setOnDragStartedListener(CylindricalWindowUiContainer.this);
-                snapDragTableToCylinder(virtualStage);
+                snapWindowToCylinder(virtualStage);
             }
         }
     }
@@ -52,12 +65,17 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
         super.addProcessor(processor);
         if (processor instanceof WindowVR) {
             final WindowVR tableVR = (WindowVR) processor;
-            snapDragTableToCylinder(tableVR);
+            snapWindowToCylinder(tableVR);
             tableVR.setOnDragStartedListener(CylindricalWindowUiContainer.this);
         }
     }
 
-    protected void snapDragTableToCylinder(WindowVR windowVR) {
+    /**
+     * snap window position to the closest {@link CylindricalCoordinate} on the surface of the cylinder and rotates the window to face a line on the y axis
+     *
+     * @param windowVR
+     */
+    public void snapWindowToCylinder(WindowVR windowVR) {
         final Vector3 tmp = Pools.obtain(Vector3.class);
         final Vector3 tmp2 = Pools.obtain(Vector3.class);
         final CylindricalCoordinate cylCoord = Pools.obtain(CylindricalCoordinate.class);
@@ -153,7 +171,7 @@ public class CylindricalWindowUiContainer extends VrUiContainer implements Daydr
     public void setHeight(float height) {
         this.height = height;
     }
-
+    
     @Override
     public void onDragStarted(@NonNull WindowVR windowVR) {
         isDragging = true;
