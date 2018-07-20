@@ -25,7 +25,7 @@ public class ColorSettingsLayout extends SingleStageUi {
         super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
         final VideoOptions videoOptions = this.videoPlayerGUI.getVideoOptions();
-        setPosition(0, 0, -2.5f);
+        setPosition(0, 0, -1.2f);
 
         final TextButton brightnessButton = new TextButton("Brightness", skin);
         brightnessButton.addListener(new ClickListener() {

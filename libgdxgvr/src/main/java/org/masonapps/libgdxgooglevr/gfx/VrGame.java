@@ -291,6 +291,10 @@ public class VrGame extends VrApplicationAdapter {
         this.isControllerVisible = controllerVisible;
     }
 
+    public AssetManager getAssetManager() {
+        return assets;
+    }
+
     public VrCursor getCursor() {
         return cursor;
     }

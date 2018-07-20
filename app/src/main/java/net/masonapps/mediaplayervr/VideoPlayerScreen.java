@@ -43,7 +43,6 @@ import net.masonapps.mediaplayervr.video.ui.VideoPlayerGUI;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.gfx.Entity;
-import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.gfx.VrWorldScreen;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamTouchEvent;
@@ -101,7 +100,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
     private float eyeAngle = 0f;
     private float tilt = 0f;
 
-    public VideoPlayerScreen(VrGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
+    public VideoPlayerScreen(MediaPlayerGame game, Context context, VideoDetails videoDetails, @Nullable VideoOptions videoOptions) {
         super(game);
         this.context = context;
         this.videoDetails = videoDetails;
@@ -222,6 +221,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 
 
         videoPlayer.setModelSize(videoPlayer.useFlatRectangle() ? 10f * zoom : sphereDiameter);
+        videoPlayer.setTransparent(isUiVisible);
 
         if (leftEye.getProjectionChanged() | rightEye.getProjectionChanged())
             invalidateProjection();
@@ -295,14 +295,16 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 
         Viewport viewport = leftEye.getViewport();
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        renderLeftVideo();
         getVrCamera().onDrawEye(leftEye);
+        renderEnvironment();
+        renderLeftVideo();
         renderUI(getVrCamera(), leftEye.getType());
 
         viewport = rightEye.getViewport();
         GdxVr.gl.glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        renderRightVideo();
         getVrCamera().onDrawEye(rightEye);
+        renderEnvironment();
+        renderRightVideo();
         renderUI(getVrCamera(), rightEye.getType());
 
 //        if (ui.isVisible()) {
@@ -314,6 +316,14 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //        }
 
 //        timer.print("draw video frame");
+    }
+
+    private void renderEnvironment() {
+        if (isUiVisible) {
+            getModelBatch().begin(getVrCamera());
+            getModelBatch().render(((MediaPlayerGame) game).getRoomEntity().modelInstance);
+            getModelBatch().end();
+        }
     }
 
     private void clearColorAndDepthBuffers() {
@@ -427,7 +437,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //                    .translate(rightCamera.position.x, rightCamera.position.y, rightCamera.position.z);
         Pools.free(tmpQ);
 
-        videoPlayer.render(rightCamera, shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
+//        videoPlayer.render(isUiVisible ? getVrCamera() : rightCamera, shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.RIGHT, transform);
+        videoPlayer.render(rightCamera, Eye.Type.RIGHT, transform);
 //   ;         ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0.5f;
     }
 
@@ -443,7 +454,8 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
 //                    .translate(leftCamera.position.x, leftCamera.position.y, leftCamera.position.z);
         Pools.free(tmpQ);
 
-        videoPlayer.render(leftCamera, shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
+//        videoPlayer.render(isUiVisible ? getVrCamera() : leftCamera, shouldRenderMono() ? Eye.Type.MONOCULAR : Eye.Type.LEFT, transform);
+        videoPlayer.render(leftCamera, Eye.Type.LEFT, transform);
 //            ((TextureAttribute) rectEntity.modelInstance.materials.get(0).get(TextureAttribute.Diffuse)).offsetU = 0f;
     }
 

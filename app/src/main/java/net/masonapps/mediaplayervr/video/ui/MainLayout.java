@@ -53,8 +53,8 @@ public class MainLayout extends BaseUiLayout {
         final Skin skin = videoPlayerGUI.getSkin();
         videoStage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 720, 100);
         optionsStage = new VirtualStage(videoPlayerGUI.getSpriteBatch(), 420, 340);
-        videoStage.setPosition(0, -1f, -2f);
-        optionsStage.setPosition(-1f, 0, -2f);
+        videoStage.setPosition(0, 0.65f, -1.2f);
+        optionsStage.setPosition(-1f, 0, -1.2f);
         optionsStage.lookAt(Vector3.Zero, Vector3.Y);
         videoStage.addActor(Style.newBackgroundImage(skin));
         optionsStage.addActor(Style.newBackgroundImage(skin));

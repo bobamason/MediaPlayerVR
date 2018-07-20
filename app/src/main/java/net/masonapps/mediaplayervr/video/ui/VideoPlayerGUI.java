@@ -47,7 +47,7 @@ public class VideoPlayerGUI extends BaseUiLayout {
         cameraSettingsLayout.setVisible(false);
         playbackSettingsLayout.setVisible(false);
         sliderLayout = new SliderLayout(spriteBatch, skin);
-        sliderLayout.setPosition(0, -1f, -1.5f);
+        sliderLayout.setPosition(0, 0.75f, -1.2f);
         sliderLayout.recalculateTransform();
         sliderLayout.setVisible(false);
     }

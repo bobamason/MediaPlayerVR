@@ -17,6 +17,7 @@ uniform float u_tint;
 uniform float u_brightness;
 uniform float u_contrast;
 uniform float u_colorTemp;
+uniform float u_alpha;
 uniform int u_useFishEye;
 uniform vec4 u_srcRect;
 uniform vec4 u_dstRect;
@@ -63,5 +64,5 @@ void main(){
     rgb.b -= u_colorTemp;
     rgb = (rgb - ONE_HALF) * max(u_contrast, 0.0) + ONE_HALF;
     rgb += vec3(u_brightness);
-    gl_FragColor = vec4(clamp(rgb, 0.0, 1.0), 1.0);
+    gl_FragColor = vec4(clamp(rgb, 0.0, 1.0), u_alpha);
 }

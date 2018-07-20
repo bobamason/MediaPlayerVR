@@ -36,7 +36,7 @@ public class PlaybackSettingsLayout extends SingleStageUi {
         super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
         final VideoPlayerScreen screen = videoPlayerGUI.getVideoPlayerScreen();
-        setPosition(0, 0, -2.5f);
+        setPosition(0, 0, -1.2f);
 
         df.setDecimalSeparatorAlwaysShown(true);
         final VrVideoPlayer player = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();

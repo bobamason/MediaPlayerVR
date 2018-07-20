@@ -70,6 +70,7 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
     private boolean useFishEyeProjection = false;
     private boolean useCylinder = false;
     private com.badlogic.gdx.graphics.g3d.Renderable renderable;
+    private boolean transparent = false;
 
     public VrVideoPlayer(Context context, Uri uri, int width, int height, Model rectModel, Model sphereModel, Model cylinderModel) {
         this(context, uri, width, height, DisplayMode.Mono, rectModel, sphereModel, cylinderModel);
@@ -196,11 +197,21 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
             shader.getDstRect().set(dstRect);
         }
 
+        if (transparent) {
+            GdxVr.gl.glDisable(GL20.GL_DEPTH_TEST);
+            GdxVr.gl.glEnable(GL20.GL_BLEND);
+            shader.setAlpha(0.2f);
+        } else {
+            shader.setAlpha(1f);
+        }
 //        synchronized (this) {
         modelInstance.getRenderable(renderable);
         shader.render(renderable);
 //        }
         shader.end();
+
+        GdxVr.gl.glEnable(GL20.GL_DEPTH_TEST);
+        GdxVr.gl.glDisable(GL20.GL_BLEND);
     }
 
     protected void mapDistortTextureCoordinates() {
@@ -434,6 +445,10 @@ public abstract class VrVideoPlayer implements Disposable, SurfaceTexture.OnFram
         getShader().setBrightness(videoOptions.brightness);
         getShader().setContrast(videoOptions.contrast);
         getShader().setColorTemp(videoOptions.colorTemp);
+    }
+
+    public void setTransparent(boolean transparent) {
+        this.transparent = transparent;
     }
 
     public interface VideoSizeListener {

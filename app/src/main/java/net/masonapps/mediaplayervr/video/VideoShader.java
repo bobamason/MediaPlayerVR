@@ -34,6 +34,7 @@ public class VideoShader extends BaseShader {
     private final int u_brightness = register(new Uniform("u_brightness"));
     private final int u_contrast = register(new Uniform("u_contrast"));
     private final int u_colorTemp = register(new Uniform("u_colorTemp"));
+    private final int u_alpha = register(new Uniform("u_alpha"));
     private final ShaderProgram program;
     private Rectangle srcRect = new Rectangle(0, 0, 1, 1);
     private Rectangle dstRect = new Rectangle(0, 0, 1, 1);
@@ -43,6 +44,7 @@ public class VideoShader extends BaseShader {
     private float colorTemp = VideoOptions.DEFAULT_COLOR_TEMP;
     private int textureId = -1;
     private boolean useFishEye = false;
+    private float alpha = 1f;
 
     public VideoShader() {
         program = new ShaderProgram(getVertexShader(), getFragmentShader());
@@ -99,6 +101,7 @@ public class VideoShader extends BaseShader {
         set(u_brightness, brightness);
         set(u_contrast, contrast);
         set(u_colorTemp, colorTemp);
+        set(u_alpha, alpha);
         set(u_useFishEye, useFishEye ? 1 : 0);
         renderable.meshPart.render(program);
     }
@@ -172,5 +175,9 @@ public class VideoShader extends BaseShader {
 
     public void setUseFishEye(boolean useFishEye) {
         this.useFishEye = useFishEye;
+    }
+
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
     }
 }

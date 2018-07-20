@@ -66,7 +66,7 @@ public class ModeLayout extends SingleStageUi {
     public ModeLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
-        setPosition(0, 0, -2.5f);
+        setPosition(0, 0, -1.2f);
 
 
 

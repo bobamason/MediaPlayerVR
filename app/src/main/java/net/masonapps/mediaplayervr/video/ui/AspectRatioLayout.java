@@ -27,7 +27,7 @@ public class AspectRatioLayout extends SingleStageUi {
     public AspectRatioLayout(final VideoPlayerGUI videoPlayerGUI) {
         super(videoPlayerGUI.getSpriteBatch(), videoPlayerGUI.getSkin());
         this.videoPlayerGUI = videoPlayerGUI;
-        setPosition(0, 0, -2.5f);
+        setPosition(0, 0, -1.2f);
 
 
         final VrVideoPlayer videoPlayer = videoPlayerGUI.getVideoPlayerScreen().getVideoPlayer();

@@ -14,9 +14,11 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
@@ -33,7 +35,9 @@ import net.masonapps.mediaplayervr.media.VideoDetails;
 import net.masonapps.mediaplayervr.utils.ModelGenerator;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
+import org.masonapps.libgdxgooglevr.gfx.Entity;
 import org.masonapps.libgdxgooglevr.gfx.VrGame;
+import org.masonapps.libgdxgooglevr.utils.Logger;
 
 import java.util.List;
 
@@ -42,7 +46,7 @@ import java.util.List;
  */
 
 public class MediaPlayerGame extends VrGame {
-    public static final String ROOM_FILENAME = "room/dome_room.g3db";
+    public static final String ROOM_FILENAME = "room/tron.g3db";
     //    public static final String HIGHLIGHT_FILENAME = "room/dome_highlight.g3db";
 //    public static final String FLOOR_FILENAME = "room/dome_floor.g3db";
     public static final String SPHERE_FILENAME = "sphere.vidmodel";
@@ -57,6 +61,7 @@ public class MediaPlayerGame extends VrGame {
     private Model sphereModel;
     private Model cylinderModel;
     private Model rectModel;
+    private Entity roomEntity;
 
     public MediaPlayerGame(Context context) {
         super();
@@ -72,6 +77,7 @@ public class MediaPlayerGame extends VrGame {
         loadAsset(Style.ATLAS_FILE, TextureAtlas.class);
         getAssetManager().setLoader(Model.class, "vidmodel", new VideoModelLoader(new InternalFileHandleResolver()));
         loadAsset(SPHERE_FILENAME, Model.class);
+        loadAsset(ROOM_FILENAME, Model.class);
 //        ElapsedTimer.getInstance().setLogEnabled(false);
 //        GdxVr.graphics.setPostProcessingShader(new ShaderProgram(GdxVr.files.internal("shaders/stereo_debug.vertex.glsl"), GdxVr.files.internal("shaders/stereo_debug.fragment.glsl")));
     }
@@ -79,7 +85,7 @@ public class MediaPlayerGame extends VrGame {
     @Override
     protected void doneLoading(AssetManager assets) {
         super.doneLoading(assets);
-        Log.d(MediaPlayerGame.class.getSimpleName(), "doneLoading()");
+        Logger.d("doneLoading");
         skin.addRegions(assets.get(Style.ATLAS_FILE, TextureAtlas.class));
         setupSkin();
 
@@ -87,6 +93,9 @@ public class MediaPlayerGame extends VrGame {
         sphereModel = assets.get(SPHERE_FILENAME, Model.class);
         cylinderModel = ModelGenerator.createCylinder(modelBuilder, 0.5f, 64, 64);
 
+        roomEntity = new Entity(new ModelInstance(assets.get(ROOM_FILENAME, Model.class)), new BoundingBox().set(new Vector3(-100, -100, -100), new Vector3(100, 100, 100)));
+        roomEntity.setScale(0.01f);
+        roomEntity.setLightingEnabled(false);
         goToSelectionScreen();
     }
 
@@ -243,5 +252,9 @@ public class MediaPlayerGame extends VrGame {
 
     public Model getRectModel() {
         return rectModel;
+    }
+
+    public Entity getRoomEntity() {
+        return roomEntity;
     }
 }

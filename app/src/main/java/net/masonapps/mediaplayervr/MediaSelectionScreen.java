@@ -6,12 +6,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
-import com.badlogic.gdx.graphics.g3d.model.data.ModelData;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -24,8 +19,6 @@ import net.masonapps.mediaplayervr.media.MediaUtils;
 import net.masonapps.mediaplayervr.media.VideoDetails;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
-import org.masonapps.libgdxgooglevr.gfx.Entity;
-import org.masonapps.libgdxgooglevr.gfx.VrGame;
 import org.masonapps.libgdxgooglevr.input.DaydreamButtonEvent;
 import org.masonapps.libgdxgooglevr.input.DaydreamControllerInputListener;
 import org.masonapps.libgdxgooglevr.ui.VirtualStage;
@@ -40,7 +33,6 @@ import java.util.concurrent.Executors;
  */
 
 public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamControllerInputListener {
-    public static final String ENVIRONMENT_FILENAME = "room/tron.g3db";
     private final Context context;
     private final SpriteBatch spriteBatch;
     //    private final VideoPreviewUi videoPreviewUi;
@@ -49,7 +41,7 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
     private GridUiLayout<VideoDetails> layoutVideoList;
     private ExecutorService executor;
 
-    public MediaSelectionScreen(final Context context, VrGame game) {
+    public MediaSelectionScreen(final Context context, MediaPlayerGame game) {
         super(game);
         this.context = context;
         spriteBatch = new SpriteBatch();
@@ -84,17 +76,8 @@ public class MediaSelectionScreen extends MediaPlayerScreen implements DaydreamC
         setBackgroundColor(Color.BLACK);
 //        getWorld().add(Style.newGradientBackground(getVrCamera().far - 1f));
 
-        new Thread() {
-            @Override
-            public void run() {
-                final ModelData modelData = ((G3dModelLoader) MediaSelectionScreen.this.game.getAssetManager().getLoader(Model.class, ENVIRONMENT_FILENAME)).loadModelData(GdxVr.files.internal(ENVIRONMENT_FILENAME));
-                GdxVr.app.postRunnable(() -> {
-                    final Entity room = getWorld().add(new Entity(new ModelInstance(new Model(modelData)), new BoundingBox().set(new Vector3(-100, -100, -100), new Vector3(100, 100, 100))));
-                    room.setScale(0.01f);
-                    room.setLightingEnabled(false);
-                });
-            }
-        }.start();
+
+        getWorld().add(game.getRoomEntity());
     }
 
     private void initStage() {
