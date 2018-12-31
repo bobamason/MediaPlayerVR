@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Pools;
 import com.google.vr.ndk.base.GvrApi;
 import com.google.vr.sdk.controller.Controller;
-import com.google.vr.sdk.proto.nano.Preferences;
+import com.google.vrtoolkit.cardboard.proto.nano.Preferences;
 
 import org.masonapps.libgdxgooglevr.GdxVr;
 import org.masonapps.libgdxgooglevr.utils.Logger;

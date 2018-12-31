@@ -49,7 +49,7 @@ public class CameraSettingsLayout extends SingleStageUi {
         });
         table.add(ipdButton).padBottom(padding).row();
 
-        final TextButton crossButton = new TextButton("Eye Angle", skin);
+        final TextButton crossButton = new TextButton("Pitch Correction", skin);
         crossButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

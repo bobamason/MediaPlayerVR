@@ -735,7 +735,7 @@ public class VrGraphics implements Graphics, GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         Frame frame = swapChain.acquireFrame();
-        api.getHeadSpaceFromStartSpaceTransform(headTransform.getHeadView(), System.nanoTime() + predictionOffsetNanos);
+        api.getHeadSpaceFromStartSpaceRotation(headTransform.getHeadView(), System.nanoTime() + predictionOffsetNanos);
         api.getEyeFromHeadMatrix(0, tempMatrix);
         Matrix.multiplyMM(leftEye.getEyeView(), 0, tempMatrix, 0, headTransform.getHeadView(), 0);
         api.getEyeFromHeadMatrix(1, tempMatrix);

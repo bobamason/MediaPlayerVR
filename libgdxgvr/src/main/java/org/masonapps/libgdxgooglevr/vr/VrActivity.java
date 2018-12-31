@@ -232,7 +232,7 @@ public class VrActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        gvrLayout.onBackPressed();
+//        gvrLayout.onBackPressed();
     }
 
     @Override

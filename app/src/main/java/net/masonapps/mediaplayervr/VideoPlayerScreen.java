@@ -348,8 +348,9 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         final float ipdHalf = defaultIpd * ipd / 2f;
         pos.set(eye.getType() == Eye.Type.LEFT ? -ipdHalf : ipdHalf, 0, 2f - zoom * 2f);
 
-        final double a = Math.toRadians(eyeAngle / 2. * (eye.getType() == Eye.Type.LEFT ? 1. : -1.));
-        dir.set((float) Math.sin(a), 0, (float) -Math.cos(a));
+//        final double a = Math.toRadians(eyeAngle / 2. * (eye.getType() == Eye.Type.LEFT ? 1. : -1.));
+//        dir.set((float) Math.sin(a), 0, (float) -Math.cos(a));
+        dir.set(0f, 0f, -1f);
 
 //        final float a = Math.toRadians(eyeAngle / 2f * (eye.getType() == Eye.Type.LEFT ? 1f : -1f));
 //        dir.set(0, 0, -1f).rotate(Vector3.Y, a);
@@ -430,7 +431,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         Quaternion tmpQ = Pools.obtain(Quaternion.class);
         final Quaternion headQuaternion = getHeadQuaternion();
         rotation.set(headQuaternion).conjugate();
-        tmpQ.set(Vector3.X, tilt * -90f);
+        tmpQ.set(Vector3.X, tilt * -90f + eyeAngle * 0.5f);
         transform.idt().rotate(rotation.mul(tmpQ));
 //                    .translate(-rightCamera.position.x, -rightCamera.position.y, -rightCamera.position.z)
 //                    .rotate(rotation.mulLeft(tmpQ))
@@ -447,7 +448,7 @@ public class VideoPlayerScreen extends VrWorldScreen implements VrVideoPlayer.Co
         Quaternion tmpQ = Pools.obtain(Quaternion.class);
         final Quaternion headQuaternion = getHeadQuaternion();
         rotation.set(headQuaternion).conjugate();
-        tmpQ.set(Vector3.X, tilt * -90f);
+        tmpQ.set(Vector3.X, tilt * -90f - eyeAngle * 0.5f);
         transform.idt().rotate(rotation.mul(tmpQ));
 //                    .translate(-leftCamera.position.x, -leftCamera.position.y, -leftCamera.position.z)
 //                    .rotate(rotation.mulLeft(tmpQ))
